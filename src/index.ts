@@ -7,10 +7,14 @@ export { OpenAIChatCompletionsFormat } from "./formats/openai-chat-completions/i
 export { OpenAIResponsesFormat } from "./formats/openai-responses/index";
 export {
   AnthropicProvider,
+  CustomProvider,
+  DeepSeekProvider,
   GenericHttpProvider,
   GoogleAIStudioProvider,
+  NanoGPTProvider,
   OllamaCloudProvider,
   OpenAIProvider,
+  OpenRouterProvider,
   VercelAIGatewayProvider,
   VertexAIProvider,
 } from "./providers/index";
@@ -66,11 +70,21 @@ export type {
 } from "./formats/openai-responses/index";
 export type {
   AnthropicProviderOptions,
+  CustomProviderBodyContext,
+  CustomProviderBodyFactory,
+  CustomProviderHeadersContext,
+  CustomProviderHeadersFactory,
+  CustomProviderOptions,
+  CustomProviderRequestPathResolver,
+  DeepSeekProviderOptions,
   GenericHttpProviderOptions,
   GoogleAIStudioProviderOptions,
+  NanoGPTAuthentication,
+  NanoGPTProviderOptions,
   OllamaCloudProviderOptions,
   OpenAIProviderOptions,
   OpenAIServiceTier,
+  OpenRouterProviderOptions,
   VercelAIGatewayProviderOptions,
   VercelAIGatewayProviderOptionsMap,
   VercelAIGatewayByokCredentials,
