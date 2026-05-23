@@ -5,7 +5,8 @@ Typed LLM input/output adapters.
 The package keeps application call sites stable while provider wire formats vary:
 
 - call sites send the same `LlmRequest`
-- each `LlmFormat` builds provider-specific request bodies
+- each provider decides request URLs and auth for a format
+- each `LlmFormat` builds provider wire request bodies
 - each `LlmFormat` parses and validates raw provider responses internally
 - outputs expose common `message`, `reasoning`, `usage`, and typed `raw`
 

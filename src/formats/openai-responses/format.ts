@@ -12,9 +12,8 @@ export interface OpenAIResponsesFormatOptions {
 
 export class OpenAIResponsesFormat implements LlmFormat<OpenAIResponsesRaw, OpenAIResponsesExtras> {
   readonly id = "openai-responses";
-  readonly requestPath = "/responses";
   private readonly extraBody: Record<string, unknown> | undefined;
-  private readonly model: string;
+  readonly model: string;
 
   constructor(options: OpenAIResponsesFormatOptions) {
     this.model = options.model;

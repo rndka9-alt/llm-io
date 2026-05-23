@@ -1,5 +1,5 @@
 import type { LlmProvider, LlmProviderRequest, LlmProviderRequestInput } from "../core/provider.js";
-import { createBearerHeaders, joinUrlPath } from "./utils.js";
+import { createBearerHeaders, joinUrlPath, resolveOpenAICompatibleRequestPath } from "./utils.js";
 
 export interface VercelAIGatewayProviderOptions {
   apiKey?: string;
@@ -24,14 +24,14 @@ export class VercelAIGatewayProvider implements LlmProvider {
 
   createRequest(input: LlmProviderRequestInput): LlmProviderRequest {
     return {
-      body: this.createBody(input.body),
+      body: this.createBody(input.format.createRequestBody(input.request)),
       headers: createBearerHeaders({
         ...(this.apiKey === undefined ? {} : { apiKey: this.apiKey }),
         ...(this.headers === undefined ? {} : { headers: this.headers }),
       }),
       method: "POST",
-      ...(input.signal === undefined ? {} : { signal: input.signal }),
-      url: joinUrlPath(this.baseUrl, input.requestPath),
+      ...(input.request.signal === undefined ? {} : { signal: input.request.signal }),
+      url: joinUrlPath(this.baseUrl, resolveOpenAICompatibleRequestPath(input.format)),
     };
   }
 

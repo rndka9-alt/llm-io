@@ -12,9 +12,8 @@ export interface OpenAIChatCompletionsFormatOptions {
 
 export class OpenAIChatCompletionsFormat implements LlmFormat<OpenAIChatCompletionsRaw> {
   readonly id = "openai-chat-completions";
-  readonly requestPath = "/chat/completions";
   private readonly extraBody: Record<string, unknown> | undefined;
-  private readonly model: string;
+  readonly model: string;
 
   constructor(options: OpenAIChatCompletionsFormatOptions) {
     this.model = options.model;

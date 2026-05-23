@@ -1,5 +1,5 @@
 import type { LlmProvider, LlmProviderRequest, LlmProviderRequestInput } from "../core/provider.js";
-import { joinUrlPath } from "./utils.js";
+import { createGeminiGenerateContentRequestPath, joinUrlPath } from "./utils.js";
 
 export interface GoogleAIStudioProviderOptions {
   apiKey: string;
@@ -21,14 +21,17 @@ export class GoogleAIStudioProvider implements LlmProvider {
 
   createRequest(input: LlmProviderRequestInput): LlmProviderRequest {
     return {
-      body: input.body,
+      body: input.format.createRequestBody(input.request),
       headers: {
         "content-type": "application/json",
         ...this.headers,
       },
       method: "POST",
-      ...(input.signal === undefined ? {} : { signal: input.signal }),
-      url: appendApiKey(joinUrlPath(this.baseUrl, input.requestPath), this.apiKey),
+      ...(input.request.signal === undefined ? {} : { signal: input.request.signal }),
+      url: appendApiKey(
+        joinUrlPath(this.baseUrl, createGeminiGenerateContentRequestPath(input.format, this.id)),
+        this.apiKey,
+      ),
     };
   }
 }

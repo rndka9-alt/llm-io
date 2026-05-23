@@ -12,9 +12,8 @@ export interface OllamaChatFormatOptions {
 
 export class OllamaChatFormat implements LlmFormat<OllamaChatRaw, OllamaChatExtras> {
   readonly id = "ollama-chat";
-  readonly requestPath = "chat";
   private readonly extraBody: Record<string, unknown> | undefined;
-  private readonly model: string;
+  readonly model: string;
 
   constructor(options: OllamaChatFormatOptions) {
     this.extraBody = options.extraBody;

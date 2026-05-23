@@ -37,9 +37,8 @@ export class Llm<TRaw, TExtras = undefined> {
 
   async generate(request: LlmRequest): Promise<LlmOutput<TRaw, TExtras>> {
     const providerRequest = await this.provider.createRequest({
-      body: this.format.createRequestBody(request),
-      ...(this.format.requestPath === undefined ? {} : { requestPath: this.format.requestPath }),
-      ...(request.signal === undefined ? {} : { signal: request.signal }),
+      format: this.format,
+      request,
     });
 
     const response = await this.fetchImplementation(providerRequest.url, {

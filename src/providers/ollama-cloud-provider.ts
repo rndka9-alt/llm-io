@@ -1,6 +1,10 @@
 import { GenericHttpProvider, type GenericHttpProviderOptions } from "./generic-http-provider.js";
+import { resolveOllamaRequestPath } from "./utils.js";
 
-export interface OllamaCloudProviderOptions extends Omit<GenericHttpProviderOptions, "baseUrl"> {
+export interface OllamaCloudProviderOptions extends Omit<
+  GenericHttpProviderOptions,
+  "baseUrl" | "resolveRequestPath"
+> {
   baseUrl?: string;
 }
 
@@ -11,6 +15,7 @@ export class OllamaCloudProvider extends GenericHttpProvider {
     super({
       ...options,
       baseUrl: options.baseUrl ?? "https://ollama.com/api",
+      resolveRequestPath: resolveOllamaRequestPath,
     });
   }
 }

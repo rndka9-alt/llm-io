@@ -1,5 +1,5 @@
 import type { LlmProvider, LlmProviderRequest, LlmProviderRequestInput } from "../core/provider.js";
-import { joinUrlPath } from "./utils.js";
+import { readGeminiGenerateContentModel } from "./utils.js";
 
 export interface VertexAIProviderOptions {
   accessToken: string;
@@ -27,31 +27,30 @@ export class VertexAIProvider implements LlmProvider {
 
   createRequest(input: LlmProviderRequestInput): LlmProviderRequest {
     return {
-      body: input.body,
+      body: input.format.createRequestBody(input.request),
       headers: {
         "content-type": "application/json",
         ...this.headers,
         authorization: `Bearer ${this.accessToken}`,
       },
       method: "POST",
-      ...(input.signal === undefined ? {} : { signal: input.signal }),
-      url: this.createUrl(input.requestPath),
+      ...(input.request.signal === undefined ? {} : { signal: input.request.signal }),
+      url: this.createUrl(input.format),
     };
   }
 
-  private createUrl(requestPath: string | undefined): string {
-    return joinUrlPath(
-      this.baseUrl,
-      [
-        "projects",
-        encodeURIComponent(this.projectId),
-        "locations",
-        encodeURIComponent(this.location),
-        "publishers/google",
-        requestPath?.replace(/^\//, ""),
-      ]
-        .filter((pathPart): pathPart is string => pathPart !== undefined && pathPart.length > 0)
-        .join("/"),
-    );
+  private createUrl(format: LlmProviderRequestInput["format"]): string {
+    const model = readGeminiGenerateContentModel(format, this.id);
+    const normalizedBaseUrl = this.baseUrl.replace(/\/$/, "");
+
+    return [
+      normalizedBaseUrl,
+      "projects",
+      encodeURIComponent(this.projectId),
+      "locations",
+      encodeURIComponent(this.location),
+      "publishers/google/models",
+      `${encodeURIComponent(model)}:generateContent`,
+    ].join("/");
   }
 }

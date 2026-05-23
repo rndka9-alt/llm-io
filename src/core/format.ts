@@ -3,7 +3,7 @@ import type { LlmOutput } from "./output.js";
 
 export interface LlmFormat<TRaw, TExtras = undefined> {
   readonly id: string;
-  readonly requestPath?: string;
+  readonly model?: string;
   createRequestBody(request: LlmRequest): Record<string, unknown>;
   parseResponse(responseJson: unknown): LlmOutput<TRaw, TExtras>;
 }

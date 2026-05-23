@@ -3,6 +3,7 @@ import {
   GeminiGenerateContentFormat,
   GoogleAIStudioProvider,
   Llm,
+  LlmIoError,
   OllamaChatFormat,
   OllamaCloudProvider,
   OpenAIChatCompletionsFormat,
@@ -29,6 +30,24 @@ describe("providers", () => {
 
     expect(fetchRecorder.calls[0]?.input).toBe("https://api.openai.com/v1/chat/completions");
     expect(fetchRecorder.calls[0]?.init?.headers?.authorization).toBe("Bearer openai-key");
+  });
+
+  it("throws when provider and format are not compatible", async () => {
+    const fetchRecorder = createRecordingFetch({
+      choices: [{ message: { content: "ok" } }],
+    });
+    const client = new Llm({
+      fetch: fetchRecorder.fetch,
+      format: new GeminiGenerateContentFormat({ model: "gemini-2.5-flash" }),
+      provider: new OpenAIProvider({ apiKey: "openai-key" }),
+    });
+
+    await expect(
+      client.generate({
+        messages: [{ role: "user", content: [{ type: "text", text: "hi" }] }],
+      }),
+    ).rejects.toThrow(LlmIoError);
+    expect(fetchRecorder.calls).toHaveLength(0);
   });
 
   it("injects Vercel AI Gateway providerOptions into OpenAI-compatible bodies", async () => {

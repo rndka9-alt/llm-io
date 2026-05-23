@@ -1,7 +1,9 @@
+import type { LlmFormat } from "./format.js";
+import type { LlmRequest } from "./message.js";
+
 export interface LlmProviderRequestInput {
-  body: Record<string, unknown>;
-  requestPath?: string;
-  signal?: AbortSignal;
+  format: LlmFormat<unknown, unknown>;
+  request: LlmRequest;
 }
 
 export interface LlmProviderRequest {

@@ -12,12 +12,12 @@ export interface GeminiGenerateContentFormatOptions {
 
 export class GeminiGenerateContentFormat implements LlmFormat<GeminiGenerateContentRaw> {
   readonly id = "gemini-generate-content";
-  readonly requestPath: string;
+  readonly model: string;
   private readonly extraBody: Record<string, unknown> | undefined;
 
   constructor(options: GeminiGenerateContentFormatOptions) {
     this.extraBody = options.extraBody;
-    this.requestPath = `models/${options.model}:generateContent`;
+    this.model = options.model;
   }
 
   createRequestBody(request: LlmRequest): Record<string, unknown> {
