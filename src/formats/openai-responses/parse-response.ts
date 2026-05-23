@@ -4,11 +4,11 @@ import { createTextAssistantMessage } from "../../core/output.js";
 import {
   openAIResponsesRawSchema,
   type OpenAIResponsesRaw,
-} from "./openai-responses-raw-schema.js";
+} from "./raw-schema.js";
 import {
   readOpenAIResponsesOutputText,
   readOpenAIResponsesReasoningText,
-} from "./read-openai-responses-output.js";
+} from "./read-output.js";
 
 export interface OpenAIResponsesExtras {
   provider: "openai-responses";

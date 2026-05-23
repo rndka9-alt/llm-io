@@ -4,7 +4,7 @@ import { createTextAssistantMessage } from "../../core/output.js";
 import {
   openAIChatCompletionsRawSchema,
   type OpenAIChatCompletionsRaw,
-} from "./openai-chat-completions-raw-schema.js";
+} from "./raw-schema.js";
 
 export function parseOpenAIChatCompletionsResponse(
   responseJson: unknown,

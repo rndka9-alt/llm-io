@@ -10,12 +10,11 @@ The package keeps application call sites stable while provider wire formats vary
 - outputs expose common `message`, `reasoning`, `usage`, and typed `raw`
 
 ```ts
-import { Llm, OpenAIResponsesFormat } from "llm-io";
+import { Llm, OpenAIProvider, OpenAIResponsesFormat } from "llm-io";
 
 const client = new Llm({
-  apiKey: process.env.OPENAI_API_KEY,
-  baseUrl: "https://api.openai.com/v1",
   format: new OpenAIResponsesFormat({ model: "gpt-5.1" }),
+  provider: new OpenAIProvider({ apiKey: process.env.OPENAI_API_KEY }),
 });
 
 const output = await client.generate({
@@ -31,4 +30,19 @@ output.message.text;
 output.reasoning?.text;
 output.usage?.totalTokens;
 output.raw.output;
+```
+
+Providers and formats are intentionally separate. Google AI Studio and Vertex AI can share the same Gemini wire format while using different auth and URL construction:
+
+```ts
+import { GeminiGenerateContentFormat, Llm, VertexAIProvider } from "llm-io";
+
+const vertex = new Llm({
+  format: new GeminiGenerateContentFormat({ model: "gemini-2.5-flash" }),
+  provider: new VertexAIProvider({
+    accessToken,
+    location: "us-central1",
+    projectId: "my-project",
+  }),
+});
 ```

@@ -2,9 +2,21 @@ import { LlmHttpError } from "./core/errors.js";
 import type { LlmFormat } from "./core/format.js";
 import type { LlmRequest } from "./core/message.js";
 import type { LlmOutput } from "./core/output.js";
+import type { LlmProvider } from "./core/provider.js";
+import { GenericHttpProvider } from "./providers/generic-http-provider.js";
 import type { FetchLike } from "./transport/fetch-like.js";
 
-export interface LlmOptions<TRaw, TExtras = undefined> {
+export type LlmOptions<TRaw, TExtras = undefined> =
+  | LlmProviderOptions<TRaw, TExtras>
+  | LlmLegacyHttpOptions<TRaw, TExtras>;
+
+export interface LlmProviderOptions<TRaw, TExtras = undefined> {
+  fetch?: FetchLike;
+  format: LlmFormat<TRaw, TExtras>;
+  provider: LlmProvider;
+}
+
+export interface LlmLegacyHttpOptions<TRaw, TExtras = undefined> {
   apiKey?: string;
   baseUrl: string;
   fetch?: FetchLike;
@@ -13,31 +25,29 @@ export interface LlmOptions<TRaw, TExtras = undefined> {
 }
 
 export class Llm<TRaw, TExtras = undefined> {
-  private readonly apiKey: string | undefined;
-  private readonly baseUrl: string;
   private readonly fetchImplementation: FetchLike;
   private readonly format: LlmFormat<TRaw, TExtras>;
-  private readonly headers: Record<string, string>;
+  private readonly provider: LlmProvider;
 
   constructor(options: LlmOptions<TRaw, TExtras>) {
-    this.apiKey = options.apiKey;
-    this.baseUrl = options.baseUrl.replace(/\/$/, "");
     this.fetchImplementation = options.fetch ?? fetch;
     this.format = options.format;
-    this.headers = options.headers ?? {};
+    this.provider = createProvider(options);
   }
 
   async generate(request: LlmRequest): Promise<LlmOutput<TRaw, TExtras>> {
-    const requestInit = {
-      body: JSON.stringify(this.format.createRequestBody(request)),
-      headers: this.createHeaders(),
-      method: "POST",
-    };
+    const providerRequest = await this.provider.createRequest({
+      body: this.format.createRequestBody(request),
+      ...(this.format.requestPath === undefined ? {} : { requestPath: this.format.requestPath }),
+      ...(request.signal === undefined ? {} : { signal: request.signal }),
+    });
 
-    const response = await this.fetchImplementation(
-      this.createRequestUrl(),
-      request.signal === undefined ? requestInit : { ...requestInit, signal: request.signal },
-    );
+    const response = await this.fetchImplementation(providerRequest.url, {
+      body: JSON.stringify(providerRequest.body),
+      headers: providerRequest.headers,
+      method: providerRequest.method,
+      ...(providerRequest.signal === undefined ? {} : { signal: providerRequest.signal }),
+    });
 
     const responseText = await response.text();
 
@@ -49,19 +59,19 @@ export class Llm<TRaw, TExtras = undefined> {
 
     return this.format.parseResponse(responseJson);
   }
-
-  private createRequestUrl(): string {
-    return `${this.baseUrl}${this.format.requestPath ?? ""}`;
-  }
-
-  private createHeaders(): Record<string, string> {
-    return {
-      "content-type": "application/json",
-      ...this.headers,
-      ...(this.apiKey === undefined ? {} : { authorization: `Bearer ${this.apiKey}` }),
-    };
-  }
 }
 
 export type HttpLlmContainerOptions<TRaw, TExtras = undefined> = LlmOptions<TRaw, TExtras>;
 export const HttpLlmContainer = Llm;
+
+function createProvider<TRaw, TExtras>(options: LlmOptions<TRaw, TExtras>): LlmProvider {
+  if ("provider" in options) {
+    return options.provider;
+  }
+
+  return new GenericHttpProvider({
+    baseUrl: options.baseUrl,
+    ...(options.apiKey === undefined ? {} : { apiKey: options.apiKey }),
+    ...(options.headers === undefined ? {} : { headers: options.headers }),
+  });
+}
