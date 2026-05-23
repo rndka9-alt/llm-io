@@ -34,6 +34,18 @@ describe("OpenAI formats", () => {
     });
   });
 
+  it("rejects non-JSON extraBody at compile time", () => {
+    const formatOptions = {
+      extraBody: {
+        // @ts-expect-error extraBody is serialized into the JSON request body.
+        transform: () => "not-json",
+      },
+      model: "example-model",
+    } satisfies ConstructorParameters<typeof OpenAIChatCompletionsFormat>[0];
+
+    expect(formatOptions.model).toBe("example-model");
+  });
+
   it("normalizes chat completions output", async () => {
     const client = new Llm({
       fetch: createJsonFetch({

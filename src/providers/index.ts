@@ -9,5 +9,12 @@ export type { GenericHttpProviderOptions } from "./generic-http-provider";
 export type { GoogleAIStudioProviderOptions } from "./google-ai-studio-provider";
 export type { OllamaCloudProviderOptions } from "./ollama-cloud-provider";
 export type { OpenAIProviderOptions } from "./openai-provider";
-export type { VercelAIGatewayProviderOptions } from "./vercel-ai-gateway-provider";
+export type {
+  VercelAIGatewayByokCredentials,
+  VercelAIGatewayOptions,
+  VercelAIGatewayProviderId,
+  VercelAIGatewayProviderOptions,
+  VercelAIGatewayProviderOptionsMap,
+  VercelAIGatewayProviderTimeouts,
+} from "./vercel-ai-gateway-provider";
 export type { VertexAIProviderOptions } from "./vertex-ai-provider";

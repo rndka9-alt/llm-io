@@ -1,4 +1,5 @@
-import type { FetchLike } from "../src/index";
+import { isJsonObject } from "../src/core/json";
+import type { FetchLike, JsonObject } from "../src/index";
 
 export interface FetchCall {
   input: string;
@@ -45,14 +46,14 @@ export function createRecordingFetch(responseJson: unknown): {
   };
 }
 
-export function readRequestBody(call: FetchCall | undefined): Record<string, unknown> {
+export function readRequestBody(call: FetchCall | undefined): JsonObject {
   if (call?.init?.body === undefined) {
     throw new Error("Expected request body.");
   }
 
   const parsed: unknown = JSON.parse(call.init.body);
 
-  if (typeof parsed !== "object" || parsed === null || Array.isArray(parsed)) {
+  if (!isJsonObject(parsed)) {
     throw new Error("Expected object request body.");
   }
 

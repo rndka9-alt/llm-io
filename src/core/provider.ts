@@ -1,4 +1,5 @@
 import type { LlmFormat } from "./format";
+import type { JsonValue } from "./json";
 import type { LlmRequest } from "./message";
 
 export interface LlmProviderRequestInput {
@@ -7,7 +8,7 @@ export interface LlmProviderRequestInput {
 }
 
 export interface LlmProviderRequest {
-  body: unknown;
+  body: JsonValue;
   headers: Record<string, string>;
   method: string;
   signal?: AbortSignal;

@@ -1,16 +1,17 @@
+import type { JsonObject } from "../../core/json";
 import type { LlmMessage, LlmRequest } from "../../core/message";
 import { getMessageText } from "../../core/message";
 
 export interface CreateOpenAIResponsesRequestBodyOptions {
-  extraBody?: Record<string, unknown>;
+  extraBody?: JsonObject;
   model: string;
 }
 
 export function createOpenAIResponsesRequestBody(
   request: LlmRequest,
   options: CreateOpenAIResponsesRequestBodyOptions,
-): Record<string, unknown> {
-  const requestBody: Record<string, unknown> = {
+): JsonObject {
+  const requestBody: JsonObject = {
     model: options.model,
     input: request.messages.map(toOpenAIResponsesInput),
   };

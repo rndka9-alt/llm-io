@@ -1,16 +1,17 @@
+import type { JsonObject } from "../../core/json";
 import type { LlmMessage, LlmRequest } from "../../core/message";
 import { getMessageText } from "../../core/message";
 
 export interface CreateGeminiGenerateContentRequestBodyOptions {
-  extraBody?: Record<string, unknown>;
+  extraBody?: JsonObject;
 }
 
 export function createGeminiGenerateContentRequestBody(
   request: LlmRequest,
   options: CreateGeminiGenerateContentRequestBodyOptions = {},
-): Record<string, unknown> {
+): JsonObject {
   const systemInstruction = createSystemInstruction(request.messages);
-  const requestBody: Record<string, unknown> = {
+  const requestBody: JsonObject = {
     contents: request.messages.filter(isGeminiContentMessage).map(toGeminiContent),
   };
 
@@ -63,8 +64,8 @@ function isGeminiContentMessage(
   return message.role === "assistant" || message.role === "user";
 }
 
-function createGenerationConfig(request: LlmRequest): Record<string, unknown> | undefined {
-  const generationConfig: Record<string, unknown> = {};
+function createGenerationConfig(request: LlmRequest): JsonObject | undefined {
+  const generationConfig: JsonObject = {};
 
   if (request.options?.maxTokens !== undefined) {
     generationConfig.maxOutputTokens = request.options.maxTokens;

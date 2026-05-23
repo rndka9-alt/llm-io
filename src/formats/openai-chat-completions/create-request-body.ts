@@ -1,16 +1,17 @@
+import type { JsonObject } from "../../core/json";
 import type { LlmMessage, LlmRequest } from "../../core/message";
 import { getMessageText } from "../../core/message";
 
 export interface CreateOpenAIChatCompletionsRequestBodyOptions {
-  extraBody?: Record<string, unknown>;
+  extraBody?: JsonObject;
   model: string;
 }
 
 export function createOpenAIChatCompletionsRequestBody(
   request: LlmRequest,
   options: CreateOpenAIChatCompletionsRequestBodyOptions,
-): Record<string, unknown> {
-  const requestBody: Record<string, unknown> = {
+): JsonObject {
+  const requestBody: JsonObject = {
     model: options.model,
     messages: request.messages.map(toOpenAIMessage),
   };

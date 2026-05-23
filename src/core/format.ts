@@ -1,10 +1,11 @@
+import type { JsonObject } from "./json";
 import type { LlmRequest } from "./message";
 import type { LlmOutput } from "./output";
 
 export interface LlmFormat<TRaw, TExtras = undefined> {
   readonly id: string;
   readonly model?: string;
-  createRequestBody(request: LlmRequest): Record<string, unknown>;
+  createRequestBody(request: LlmRequest): JsonObject;
   parseResponse(responseJson: unknown): LlmOutput<TRaw, TExtras>;
 }
 

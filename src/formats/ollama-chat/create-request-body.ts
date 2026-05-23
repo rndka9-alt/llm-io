@@ -1,15 +1,16 @@
+import type { JsonObject } from "../../core/json";
 import type { LlmMessage, LlmRequest } from "../../core/message";
 import { getMessageText } from "../../core/message";
 
 export interface CreateOllamaChatRequestBodyOptions {
-  extraBody?: Record<string, unknown>;
+  extraBody?: JsonObject;
   model: string;
 }
 
 export function createOllamaChatRequestBody(
   request: LlmRequest,
   options: CreateOllamaChatRequestBodyOptions,
-): Record<string, unknown> {
+): JsonObject {
   return {
     model: options.model,
     stream: false,
@@ -26,7 +27,7 @@ function toOllamaMessage(message: LlmMessage): { content: string; role: LlmMessa
   };
 }
 
-function createOllamaOptions(request: LlmRequest): Record<string, unknown> {
+function createOllamaOptions(request: LlmRequest): JsonObject {
   return {
     ...(request.options?.maxTokens === undefined ? {} : { num_predict: request.options.maxTokens }),
     ...(request.options?.temperature === undefined

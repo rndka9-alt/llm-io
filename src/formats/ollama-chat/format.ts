@@ -1,4 +1,5 @@
 import type { LlmFormat } from "../../core/format";
+import type { JsonObject } from "../../core/json";
 import type { LlmRequest } from "../../core/message";
 import type { LlmOutput } from "../../core/output";
 import { createOllamaChatRequestBody } from "./create-request-body";
@@ -6,13 +7,13 @@ import type { OllamaChatRaw } from "./raw-schema";
 import { parseOllamaChatResponse, type OllamaChatExtras } from "./parse-response";
 
 export interface OllamaChatFormatOptions {
-  extraBody?: Record<string, unknown>;
+  extraBody?: JsonObject;
   model: string;
 }
 
 export class OllamaChatFormat implements LlmFormat<OllamaChatRaw, OllamaChatExtras> {
   readonly id = "ollama-chat";
-  private readonly extraBody: Record<string, unknown> | undefined;
+  private readonly extraBody: JsonObject | undefined;
   readonly model: string;
 
   constructor(options: OllamaChatFormatOptions) {
@@ -20,7 +21,7 @@ export class OllamaChatFormat implements LlmFormat<OllamaChatRaw, OllamaChatExtr
     this.model = options.model;
   }
 
-  createRequestBody(request: LlmRequest): Record<string, unknown> {
+  createRequestBody(request: LlmRequest): JsonObject {
     return createOllamaChatRequestBody(request, {
       model: this.model,
       ...(this.extraBody === undefined ? {} : { extraBody: this.extraBody }),

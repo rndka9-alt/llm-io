@@ -4,11 +4,38 @@ import {
   OpenAIChatCompletionsFormat,
   OpenAIResponsesFormat,
   VercelAIGatewayProvider,
+  type VercelAIGatewayProviderOptionsMap,
 } from "../src/index";
 import { createRecordingFetch, readRequestBody } from "./test-utils";
 
 describe("VercelAIGatewayProvider", () => {
   it("injects providerOptions into OpenAI-compatible bodies", async () => {
+    const providerOptions = {
+      gateway: {
+        byok: {
+          openai: [{ apiKey: "openai-key" }],
+        },
+        caching: "auto",
+        models: ["openai/gpt-5.1-mini"],
+        only: ["openai"],
+        order: ["openai"],
+        providerTimeouts: {
+          byok: {
+            openai: 15_000,
+          },
+        },
+        tags: ["typed-provider-options"],
+        user: "user-123",
+        zeroDataRetention: true,
+      },
+      openai: {
+        reasoningEffort: "high",
+      },
+    } satisfies VercelAIGatewayProviderOptionsMap<{
+      openai: {
+        reasoningEffort: "high";
+      };
+    }>;
     const fetchRecorder = createRecordingFetch({
       choices: [{ message: { content: "ok" } }],
     });
@@ -17,11 +44,7 @@ describe("VercelAIGatewayProvider", () => {
       format: new OpenAIChatCompletionsFormat({ model: "openai/gpt-5.1" }),
       provider: new VercelAIGatewayProvider({
         apiKey: "gateway-key",
-        providerOptions: {
-          gateway: {
-            only: ["openai"],
-          },
-        },
+        providerOptions,
       }),
     });
 
@@ -32,9 +55,37 @@ describe("VercelAIGatewayProvider", () => {
     expect(fetchRecorder.calls[0]?.input).toBe("https://ai-gateway.vercel.sh/v1/chat/completions");
     expect(readRequestBody(fetchRecorder.calls[0]).providerOptions).toEqual({
       gateway: {
+        byok: {
+          openai: [{ apiKey: "openai-key" }],
+        },
+        caching: "auto",
+        models: ["openai/gpt-5.1-mini"],
         only: ["openai"],
+        order: ["openai"],
+        providerTimeouts: {
+          byok: {
+            openai: 15_000,
+          },
+        },
+        tags: ["typed-provider-options"],
+        user: "user-123",
+        zeroDataRetention: true,
+      },
+      openai: {
+        reasoningEffort: "high",
       },
     });
+  });
+
+  it("rejects non-JSON providerOptions at compile time", () => {
+    const providerOptions = {
+      openai: {
+        // @ts-expect-error provider options are serialized into the JSON request body.
+        transform: () => "not-json",
+      },
+    } satisfies VercelAIGatewayProviderOptionsMap;
+
+    expect(providerOptions.openai).toBeDefined();
   });
 
   it("uses responses endpoint", async () => {

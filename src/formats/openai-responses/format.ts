@@ -1,4 +1,5 @@
 import type { LlmFormat } from "../../core/format";
+import type { JsonObject } from "../../core/json";
 import type { LlmRequest } from "../../core/message";
 import type { LlmOutput } from "../../core/output";
 import { createOpenAIResponsesRequestBody } from "./create-request-body";
@@ -7,12 +8,12 @@ import { parseOpenAIResponsesResponse, type OpenAIResponsesExtras } from "./pars
 
 export interface OpenAIResponsesFormatOptions {
   model: string;
-  extraBody?: Record<string, unknown>;
+  extraBody?: JsonObject;
 }
 
 export class OpenAIResponsesFormat implements LlmFormat<OpenAIResponsesRaw, OpenAIResponsesExtras> {
   readonly id = "openai-responses";
-  private readonly extraBody: Record<string, unknown> | undefined;
+  private readonly extraBody: JsonObject | undefined;
   readonly model: string;
 
   constructor(options: OpenAIResponsesFormatOptions) {
@@ -20,7 +21,7 @@ export class OpenAIResponsesFormat implements LlmFormat<OpenAIResponsesRaw, Open
     this.extraBody = options.extraBody;
   }
 
-  createRequestBody(request: LlmRequest): Record<string, unknown> {
+  createRequestBody(request: LlmRequest): JsonObject {
     return createOpenAIResponsesRequestBody(request, {
       model: this.model,
       ...(this.extraBody === undefined ? {} : { extraBody: this.extraBody }),

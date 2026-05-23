@@ -1,3 +1,5 @@
+import { isJsonObject } from "../../core/json";
+
 export function readOpenAIResponsesOutputText(outputItems: readonly unknown[]): string {
   return outputItems.flatMap(readOutputTextFromItem).join("");
 }
@@ -8,7 +10,7 @@ export function readOpenAIResponsesReasoningText(outputItems: readonly unknown[]
 
 function readOutputTextFromItem(outputItem: unknown): string[] {
   if (
-    !isRecord(outputItem) ||
+    !isJsonObject(outputItem) ||
     outputItem.type !== "message" ||
     !Array.isArray(outputItem.content)
   ) {
@@ -17,7 +19,7 @@ function readOutputTextFromItem(outputItem: unknown): string[] {
 
   return outputItem.content.flatMap((contentPart) => {
     if (
-      !isRecord(contentPart) ||
+      !isJsonObject(contentPart) ||
       contentPart.type !== "output_text" ||
       typeof contentPart.text !== "string"
     ) {
@@ -30,7 +32,7 @@ function readOutputTextFromItem(outputItem: unknown): string[] {
 
 function readReasoningTextFromItem(outputItem: unknown): string[] {
   if (
-    !isRecord(outputItem) ||
+    !isJsonObject(outputItem) ||
     outputItem.type !== "reasoning" ||
     !Array.isArray(outputItem.summary)
   ) {
@@ -38,14 +40,10 @@ function readReasoningTextFromItem(outputItem: unknown): string[] {
   }
 
   return outputItem.summary.flatMap((summaryPart) => {
-    if (!isRecord(summaryPart) || typeof summaryPart.text !== "string") {
+    if (!isJsonObject(summaryPart) || typeof summaryPart.text !== "string") {
       return [];
     }
 
     return [summaryPart.text];
   });
-}
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === "object" && value !== null;
 }

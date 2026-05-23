@@ -20,6 +20,7 @@ export type {
   InferFormatRaw,
   LlmFormat,
 } from "./core/format";
+export type { JsonArray, JsonObject, JsonPrimitive, JsonValue } from "./core/json";
 export type {
   LlmContentPart,
   LlmMessage,
@@ -63,6 +64,11 @@ export type {
   OllamaCloudProviderOptions,
   OpenAIProviderOptions,
   VercelAIGatewayProviderOptions,
+  VercelAIGatewayProviderOptionsMap,
+  VercelAIGatewayByokCredentials,
+  VercelAIGatewayOptions,
+  VercelAIGatewayProviderId,
+  VercelAIGatewayProviderTimeouts,
   VertexAIProviderOptions,
 } from "./providers/index";
 export type { FetchLike } from "./transport/fetch-like";
