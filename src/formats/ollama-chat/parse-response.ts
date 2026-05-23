@@ -7,7 +7,9 @@ export interface OllamaChatExtras {
   model?: string;
 }
 
-export function parseOllamaChatResponse(responseJson: unknown): LlmOutput<OllamaChatRaw, OllamaChatExtras> {
+export function parseOllamaChatResponse(
+  responseJson: unknown,
+): LlmOutput<OllamaChatRaw, OllamaChatExtras> {
   const raw = ollamaChatRawSchema.parse(responseJson);
   const text = raw.message?.content;
 
@@ -21,7 +23,9 @@ export function parseOllamaChatResponse(responseJson: unknown): LlmOutput<Ollama
 
   return {
     message: createTextAssistantMessage(text),
-    ...(reasoningText === undefined || reasoningText.length === 0 ? {} : { reasoning: { text: reasoningText } }),
+    ...(reasoningText === undefined || reasoningText.length === 0
+      ? {}
+      : { reasoning: { text: reasoningText } }),
     ...(usage === undefined ? {} : { usage }),
     ...(finishReason === undefined ? {} : { finishReason }),
     raw,

@@ -10,7 +10,8 @@ export interface LlmFormat<TRaw, TExtras = undefined> {
 
 export type InferFormatRaw<TFormat> = TFormat extends LlmFormat<infer TRaw, unknown> ? TRaw : never;
 
-export type InferFormatExtras<TFormat> = TFormat extends LlmFormat<unknown, infer TExtras> ? TExtras : never;
+export type InferFormatExtras<TFormat> =
+  TFormat extends LlmFormat<unknown, infer TExtras> ? TExtras : never;
 
 export type InferFormatOutput<TFormat> =
   TFormat extends LlmFormat<infer TRaw, infer TExtras> ? LlmOutput<TRaw, TExtras> : never;

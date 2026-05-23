@@ -3,10 +3,7 @@ import type { LlmRequest } from "../../core/message.js";
 import type { LlmOutput } from "../../core/output.js";
 import { createOpenAIResponsesRequestBody } from "./create-request-body.js";
 import type { OpenAIResponsesRaw } from "./raw-schema.js";
-import {
-  parseOpenAIResponsesResponse,
-  type OpenAIResponsesExtras,
-} from "./parse-response.js";
+import { parseOpenAIResponsesResponse, type OpenAIResponsesExtras } from "./parse-response.js";
 
 export interface OpenAIResponsesFormatOptions {
   model: string;

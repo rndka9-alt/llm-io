@@ -1,10 +1,7 @@
 import { LlmIoError } from "../../core/errors.js";
 import type { LlmFinishReason, LlmOutput, LlmUsage } from "../../core/output.js";
 import { createTextAssistantMessage } from "../../core/output.js";
-import {
-  openAIChatCompletionsRawSchema,
-  type OpenAIChatCompletionsRaw,
-} from "./raw-schema.js";
+import { openAIChatCompletionsRawSchema, type OpenAIChatCompletionsRaw } from "./raw-schema.js";
 
 export function parseOpenAIChatCompletionsResponse(
   responseJson: unknown,
@@ -19,10 +16,14 @@ export function parseOpenAIChatCompletionsResponse(
   const text = firstChoice.message.content;
 
   if (text === undefined || text === null || text.length === 0) {
-    throw new LlmIoError("OpenAI chat completions response message.content must be a non-empty string.");
+    throw new LlmIoError(
+      "OpenAI chat completions response message.content must be a non-empty string.",
+    );
   }
 
-  const reasoning = createReasoning(firstChoice.message.reasoning_content ?? firstChoice.message.reasoning);
+  const reasoning = createReasoning(
+    firstChoice.message.reasoning_content ?? firstChoice.message.reasoning,
+  );
   const usage = createUsage(raw.usage);
   const finishReason = normalizeFinishReason(firstChoice.finish_reason);
 
@@ -43,9 +44,7 @@ function createReasoning(text: string | undefined): { text: string } | undefined
   return { text };
 }
 
-function createUsage(
-  usage: OpenAIChatCompletionsRaw["usage"],
-): LlmUsage | undefined {
+function createUsage(usage: OpenAIChatCompletionsRaw["usage"]): LlmUsage | undefined {
   if (usage === undefined) {
     return undefined;
   }

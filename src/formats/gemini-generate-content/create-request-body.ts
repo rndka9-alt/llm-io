@@ -30,7 +30,9 @@ export function createGeminiGenerateContentRequestBody(
   };
 }
 
-function createSystemInstruction(messages: readonly LlmMessage[]): { parts: { text: string }[] } | undefined {
+function createSystemInstruction(
+  messages: readonly LlmMessage[],
+): { parts: { text: string }[] } | undefined {
   const text = messages
     .filter((message) => message.role === "system")
     .map(getMessageText)
@@ -45,14 +47,19 @@ function createSystemInstruction(messages: readonly LlmMessage[]): { parts: { te
   };
 }
 
-function toGeminiContent(message: LlmMessage): { parts: { text: string }[]; role: "model" | "user" } {
+function toGeminiContent(message: LlmMessage): {
+  parts: { text: string }[];
+  role: "model" | "user";
+} {
   return {
     role: message.role === "assistant" ? "model" : "user",
     parts: [{ text: getMessageText(message) }],
   };
 }
 
-function isGeminiContentMessage(message: LlmMessage): message is LlmMessage & { role: "assistant" | "user" } {
+function isGeminiContentMessage(
+  message: LlmMessage,
+): message is LlmMessage & { role: "assistant" | "user" } {
   return message.role === "assistant" || message.role === "user";
 }
 

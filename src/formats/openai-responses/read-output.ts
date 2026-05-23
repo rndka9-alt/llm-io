@@ -7,12 +7,20 @@ export function readOpenAIResponsesReasoningText(outputItems: readonly unknown[]
 }
 
 function readOutputTextFromItem(outputItem: unknown): string[] {
-  if (!isRecord(outputItem) || outputItem.type !== "message" || !Array.isArray(outputItem.content)) {
+  if (
+    !isRecord(outputItem) ||
+    outputItem.type !== "message" ||
+    !Array.isArray(outputItem.content)
+  ) {
     return [];
   }
 
   return outputItem.content.flatMap((contentPart) => {
-    if (!isRecord(contentPart) || contentPart.type !== "output_text" || typeof contentPart.text !== "string") {
+    if (
+      !isRecord(contentPart) ||
+      contentPart.type !== "output_text" ||
+      typeof contentPart.text !== "string"
+    ) {
       return [];
     }
 
@@ -21,7 +29,11 @@ function readOutputTextFromItem(outputItem: unknown): string[] {
 }
 
 function readReasoningTextFromItem(outputItem: unknown): string[] {
-  if (!isRecord(outputItem) || outputItem.type !== "reasoning" || !Array.isArray(outputItem.summary)) {
+  if (
+    !isRecord(outputItem) ||
+    outputItem.type !== "reasoning" ||
+    !Array.isArray(outputItem.summary)
+  ) {
     return [];
   }
 

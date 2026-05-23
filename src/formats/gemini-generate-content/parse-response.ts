@@ -1,10 +1,7 @@
 import { LlmIoError } from "../../core/errors.js";
 import type { LlmFinishReason, LlmOutput, LlmUsage } from "../../core/output.js";
 import { createTextAssistantMessage } from "../../core/output.js";
-import {
-  geminiGenerateContentRawSchema,
-  type GeminiGenerateContentRaw,
-} from "./raw-schema.js";
+import { geminiGenerateContentRawSchema, type GeminiGenerateContentRaw } from "./raw-schema.js";
 
 export function parseGeminiGenerateContentResponse(
   responseJson: unknown,
@@ -44,8 +41,12 @@ function createUsage(usage: GeminiGenerateContentRaw["usageMetadata"]): LlmUsage
 
   return {
     ...(usage.promptTokenCount === undefined ? {} : { inputTokens: usage.promptTokenCount }),
-    ...(usage.candidatesTokenCount === undefined ? {} : { outputTokens: usage.candidatesTokenCount }),
-    ...(usage.thoughtsTokenCount === undefined ? {} : { reasoningTokens: usage.thoughtsTokenCount }),
+    ...(usage.candidatesTokenCount === undefined
+      ? {}
+      : { outputTokens: usage.candidatesTokenCount }),
+    ...(usage.thoughtsTokenCount === undefined
+      ? {}
+      : { reasoningTokens: usage.thoughtsTokenCount }),
     ...(usage.totalTokenCount === undefined ? {} : { totalTokens: usage.totalTokenCount }),
   };
 }
@@ -63,7 +64,12 @@ function normalizeFinishReason(reason: string | undefined): LlmFinishReason | un
     return "length";
   }
 
-  if (reason === "SAFETY" || reason === "RECITATION" || reason === "SPII" || reason === "BLOCKLIST") {
+  if (
+    reason === "SAFETY" ||
+    reason === "RECITATION" ||
+    reason === "SPII" ||
+    reason === "BLOCKLIST"
+  ) {
     return "content-filter";
   }
 
