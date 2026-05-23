@@ -1,7 +1,7 @@
-import { LlmIoError } from "../../core/errors.js";
-import type { LlmFinishReason, LlmOutput, LlmUsage } from "../../core/output.js";
-import { createTextAssistantMessage } from "../../core/output.js";
-import { geminiGenerateContentRawSchema, type GeminiGenerateContentRaw } from "./raw-schema.js";
+import { LlmIoError } from "../../core/errors";
+import type { LlmFinishReason, LlmOutput, LlmUsage } from "../../core/output";
+import { createTextAssistantMessage } from "../../core/output";
+import { geminiGenerateContentRawSchema, type GeminiGenerateContentRaw } from "./raw-schema";
 
 export function parseGeminiGenerateContentResponse(
   responseJson: unknown,

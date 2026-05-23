@@ -1,5 +1,5 @@
-import { GenericHttpProvider, type GenericHttpProviderOptions } from "./generic-http-provider.js";
-import { resolveOpenAICompatibleRequestPath } from "./utils/index.js";
+import { GenericHttpProvider, type GenericHttpProviderOptions } from "./generic-http-provider";
+import { resolveOpenAICompatibleRequestPath } from "./utils/index";
 
 export interface OpenAIProviderOptions extends Omit<
   GenericHttpProviderOptions,

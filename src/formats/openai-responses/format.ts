@@ -1,9 +1,9 @@
-import type { LlmFormat } from "../../core/format.js";
-import type { LlmRequest } from "../../core/message.js";
-import type { LlmOutput } from "../../core/output.js";
-import { createOpenAIResponsesRequestBody } from "./create-request-body.js";
-import type { OpenAIResponsesRaw } from "./raw-schema.js";
-import { parseOpenAIResponsesResponse, type OpenAIResponsesExtras } from "./parse-response.js";
+import type { LlmFormat } from "../../core/format";
+import type { LlmRequest } from "../../core/message";
+import type { LlmOutput } from "../../core/output";
+import { createOpenAIResponsesRequestBody } from "./create-request-body";
+import type { OpenAIResponsesRaw } from "./raw-schema";
+import { parseOpenAIResponsesResponse, type OpenAIResponsesExtras } from "./parse-response";
 
 export interface OpenAIResponsesFormatOptions {
   model: string;

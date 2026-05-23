@@ -3,12 +3,19 @@
   "version": "0.1.0",
   "description": "Typed LLM input/output adapters with provider-specific wire formats.",
   "type": "module",
-  "main": "./dist/index.js",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "exports": {
     ".": {
-      "types": "./dist/index.d.ts",
-      "import": "./dist/index.js"
+      "import": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      },
+      "require": {
+        "types": "./dist/index.d.cts",
+        "default": "./dist/index.cjs"
+      }
     }
   },
   "files": [
@@ -19,20 +26,20 @@
     "url": "git+https://github.com/rndka9-alt/llm-io.git"
   },
   "scripts": {
-    "build": "tsc -p tsconfig.json",
+    "build": "tsdown",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "prepare": "npm run build",
-    "prepack": "npm run build",
     "test": "vitest run",
     "typecheck": "tsc -p tsconfig.json --noEmit",
-    "verify": "npm run format:check && npm run typecheck && npm test"
+    "verify": "npm run format:check && npm run typecheck && npm test && npm run build"
   },
   "dependencies": {
     "zod": "^3.25.0"
   },
   "devDependencies": {
     "prettier": "^3.8.3",
+    "tsdown": "^0.22.0",
     "typescript": "^5.8.0",
     "vitest": "^3.2.0"
   }

@@ -1,5 +1,5 @@
-import type { LlmRequest } from "./message.js";
-import type { LlmOutput } from "./output.js";
+import type { LlmRequest } from "./message";
+import type { LlmOutput } from "./output";
 
 export interface LlmFormat<TRaw, TExtras = undefined> {
   readonly id: string;

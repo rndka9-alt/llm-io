@@ -1,5 +1,5 @@
-import type { LlmMessage, LlmRequest } from "../../core/message.js";
-import { getMessageText } from "../../core/message.js";
+import type { LlmMessage, LlmRequest } from "../../core/message";
+import { getMessageText } from "../../core/message";
 
 export interface CreateOpenAIChatCompletionsRequestBodyOptions {
   extraBody?: Record<string, unknown>;

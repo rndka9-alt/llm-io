@@ -1,9 +1,9 @@
-import type { LlmFormat } from "../../core/format.js";
-import type { LlmRequest } from "../../core/message.js";
-import type { LlmOutput } from "../../core/output.js";
-import { createOllamaChatRequestBody } from "./create-request-body.js";
-import type { OllamaChatRaw } from "./raw-schema.js";
-import { parseOllamaChatResponse, type OllamaChatExtras } from "./parse-response.js";
+import type { LlmFormat } from "../../core/format";
+import type { LlmRequest } from "../../core/message";
+import type { LlmOutput } from "../../core/output";
+import { createOllamaChatRequestBody } from "./create-request-body";
+import type { OllamaChatRaw } from "./raw-schema";
+import { parseOllamaChatResponse, type OllamaChatExtras } from "./parse-response";
 
 export interface OllamaChatFormatOptions {
   extraBody?: Record<string, unknown>;

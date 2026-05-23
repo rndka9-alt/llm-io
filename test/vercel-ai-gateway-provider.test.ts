@@ -4,8 +4,8 @@ import {
   OpenAIChatCompletionsFormat,
   OpenAIResponsesFormat,
   VercelAIGatewayProvider,
-} from "../src/index.js";
-import { createRecordingFetch, readRequestBody } from "./test-utils.js";
+} from "../src/index";
+import { createRecordingFetch, readRequestBody } from "./test-utils";
 
 describe("VercelAIGatewayProvider", () => {
   it("injects providerOptions into OpenAI-compatible bodies", async () => {

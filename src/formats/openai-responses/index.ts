@@ -1,5 +1,5 @@
-export { OpenAIResponsesFormat } from "./format.js";
+export { OpenAIResponsesFormat } from "./format";
 
-export type { OpenAIResponsesFormatOptions } from "./format.js";
-export type { OpenAIResponsesRaw } from "./raw-schema.js";
-export type { OpenAIResponsesExtras } from "./parse-response.js";
+export type { OpenAIResponsesFormatOptions } from "./format";
+export type { OpenAIResponsesRaw } from "./raw-schema";
+export type { OpenAIResponsesExtras } from "./parse-response";

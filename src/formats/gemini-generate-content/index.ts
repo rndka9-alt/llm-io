@@ -1,4 +1,4 @@
-export { GeminiGenerateContentFormat } from "./format.js";
+export { GeminiGenerateContentFormat } from "./format";
 
-export type { GeminiGenerateContentFormatOptions } from "./format.js";
-export type { GeminiGenerateContentRaw } from "./raw-schema.js";
+export type { GeminiGenerateContentFormatOptions } from "./format";
+export type { GeminiGenerateContentRaw } from "./raw-schema";

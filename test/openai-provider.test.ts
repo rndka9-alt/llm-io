@@ -6,8 +6,8 @@ import {
   OpenAIChatCompletionsFormat,
   OpenAIProvider,
   OpenAIResponsesFormat,
-} from "../src/index.js";
-import { createRecordingFetch } from "./test-utils.js";
+} from "../src/index";
+import { createRecordingFetch } from "./test-utils";
 
 describe("OpenAIProvider", () => {
   it("uses OpenAI provider defaults with OpenAI-compatible formats", async () => {

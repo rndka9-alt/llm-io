@@ -1,5 +1,5 @@
-import type { LlmFormat } from "../../core/format.js";
-import { readGeminiGenerateContentModel } from "./read-gemini-generate-content-model.js";
+import type { LlmFormat } from "../../core/format";
+import { readGeminiGenerateContentModel } from "./read-gemini-generate-content-model";
 
 export function createGeminiGenerateContentRequestPath(
   format: LlmFormat<unknown, unknown>,

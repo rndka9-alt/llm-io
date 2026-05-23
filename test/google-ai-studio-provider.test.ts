@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { GeminiGenerateContentFormat, GoogleAIStudioProvider, Llm } from "../src/index.js";
-import { createRecordingFetch } from "./test-utils.js";
+import { GeminiGenerateContentFormat, GoogleAIStudioProvider, Llm } from "../src/index";
+import { createRecordingFetch } from "./test-utils";
 
 describe("GoogleAIStudioProvider", () => {
   it("uses API key query auth with Gemini format", async () => {

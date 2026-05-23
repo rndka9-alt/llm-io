@@ -1,5 +1,5 @@
-import type { LlmProvider, LlmProviderRequest, LlmProviderRequestInput } from "../core/provider.js";
-import { createGeminiGenerateContentRequestPath, joinUrlPath } from "./utils/index.js";
+import type { LlmProvider, LlmProviderRequest, LlmProviderRequestInput } from "../core/provider";
+import { createGeminiGenerateContentRequestPath, joinUrlPath } from "./utils/index";
 
 export interface GoogleAIStudioProviderOptions {
   apiKey: string;

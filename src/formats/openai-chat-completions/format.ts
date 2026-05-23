@@ -1,9 +1,9 @@
-import type { LlmFormat } from "../../core/format.js";
-import type { LlmRequest } from "../../core/message.js";
-import type { LlmOutput } from "../../core/output.js";
-import { createOpenAIChatCompletionsRequestBody } from "./create-request-body.js";
-import type { OpenAIChatCompletionsRaw } from "./raw-schema.js";
-import { parseOpenAIChatCompletionsResponse } from "./parse-response.js";
+import type { LlmFormat } from "../../core/format";
+import type { LlmRequest } from "../../core/message";
+import type { LlmOutput } from "../../core/output";
+import { createOpenAIChatCompletionsRequestBody } from "./create-request-body";
+import type { OpenAIChatCompletionsRaw } from "./raw-schema";
+import { parseOpenAIChatCompletionsResponse } from "./parse-response";
 
 export interface OpenAIChatCompletionsFormatOptions {
   model: string;

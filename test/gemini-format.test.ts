@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { GeminiGenerateContentFormat, GenericHttpProvider, Llm, LlmIoError } from "../src/index.js";
-import { createJsonFetch } from "./test-utils.js";
+import { GeminiGenerateContentFormat, GenericHttpProvider, Llm, LlmIoError } from "../src/index";
+import { createJsonFetch } from "./test-utils";
 
 describe("Gemini generateContent format", () => {
   it("creates request bodies with system instructions, model roles, generation config, and extra body", () => {

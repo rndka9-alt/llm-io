@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { GeminiGenerateContentFormat, Llm, VertexAIProvider } from "../src/index.js";
-import { createRecordingFetch } from "./test-utils.js";
+import { GeminiGenerateContentFormat, Llm, VertexAIProvider } from "../src/index";
+import { createRecordingFetch } from "./test-utils";
 
 describe("VertexAIProvider", () => {
   it("maps Gemini format paths onto Vertex AI publisher model URLs", async () => {

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { GenericHttpProvider, Llm, OpenAIChatCompletionsFormat } from "../src/index.js";
-import { createRecordingFetch } from "./test-utils.js";
+import { GenericHttpProvider, Llm, OpenAIChatCompletionsFormat } from "../src/index";
+import { createRecordingFetch } from "./test-utils";
 
 describe("GenericHttpProvider", () => {
   it("uses custom request path resolver", async () => {

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { GenericHttpProvider, Llm, LlmIoError, OllamaChatFormat } from "../src/index.js";
-import { createJsonFetch } from "./test-utils.js";
+import { GenericHttpProvider, Llm, LlmIoError, OllamaChatFormat } from "../src/index";
+import { createJsonFetch } from "./test-utils";
 
 describe("Ollama chat format", () => {
   it("creates request bodies with options and extra body", () => {

@@ -1,10 +1,10 @@
-import { LlmHttpError } from "./core/errors.js";
-import type { LlmFormat } from "./core/format.js";
-import type { LlmRequest } from "./core/message.js";
-import type { LlmOutput } from "./core/output.js";
-import type { LlmProvider } from "./core/provider.js";
-import { GenericHttpProvider } from "./providers/generic-http-provider.js";
-import type { FetchLike } from "./transport/fetch-like.js";
+import { LlmHttpError } from "./core/errors";
+import type { LlmFormat } from "./core/format";
+import type { LlmRequest } from "./core/message";
+import type { LlmOutput } from "./core/output";
+import type { LlmProvider } from "./core/provider";
+import { GenericHttpProvider } from "./providers/generic-http-provider";
+import type { FetchLike } from "./transport/fetch-like";
 
 export type LlmOptions<TRaw, TExtras = undefined> =
   | LlmProviderOptions<TRaw, TExtras>

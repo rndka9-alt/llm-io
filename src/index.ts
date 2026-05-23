@@ -1,9 +1,9 @@
-export { Llm } from "./llm.js";
-export { LlmHttpError, LlmIoError } from "./core/errors.js";
-export { GeminiGenerateContentFormat } from "./formats/gemini-generate-content/index.js";
-export { OllamaChatFormat } from "./formats/ollama-chat/index.js";
-export { OpenAIChatCompletionsFormat } from "./formats/openai-chat-completions/index.js";
-export { OpenAIResponsesFormat } from "./formats/openai-responses/index.js";
+export { Llm } from "./llm";
+export { LlmHttpError, LlmIoError } from "./core/errors";
+export { GeminiGenerateContentFormat } from "./formats/gemini-generate-content/index";
+export { OllamaChatFormat } from "./formats/ollama-chat/index";
+export { OpenAIChatCompletionsFormat } from "./formats/openai-chat-completions/index";
+export { OpenAIResponsesFormat } from "./formats/openai-responses/index";
 export {
   GenericHttpProvider,
   GoogleAIStudioProvider,
@@ -11,15 +11,15 @@ export {
   OpenAIProvider,
   VercelAIGatewayProvider,
   VertexAIProvider,
-} from "./providers/index.js";
+} from "./providers/index";
 
-export type { LlmClient } from "./core/client.js";
+export type { LlmClient } from "./core/client";
 export type {
   InferFormatExtras,
   InferFormatOutput,
   InferFormatRaw,
   LlmFormat,
-} from "./core/format.js";
+} from "./core/format";
 export type {
   LlmContentPart,
   LlmMessage,
@@ -27,7 +27,7 @@ export type {
   LlmRequest,
   LlmRequestOptions,
   LlmTextPart,
-} from "./core/message.js";
+} from "./core/message";
 export type {
   LlmAssistantContentPart,
   LlmAssistantMessage,
@@ -36,27 +36,27 @@ export type {
   LlmOutput,
   LlmReasoning,
   LlmUsage,
-} from "./core/output.js";
-export type { LlmProvider, LlmProviderRequest, LlmProviderRequestInput } from "./core/provider.js";
-export type { LlmLegacyHttpOptions, LlmOptions, LlmProviderOptions } from "./llm.js";
+} from "./core/output";
+export type { LlmProvider, LlmProviderRequest, LlmProviderRequestInput } from "./core/provider";
+export type { LlmLegacyHttpOptions, LlmOptions, LlmProviderOptions } from "./llm";
 export type {
   GeminiGenerateContentFormatOptions,
   GeminiGenerateContentRaw,
-} from "./formats/gemini-generate-content/index.js";
+} from "./formats/gemini-generate-content/index";
 export type {
   OllamaChatExtras,
   OllamaChatFormatOptions,
   OllamaChatRaw,
-} from "./formats/ollama-chat/index.js";
+} from "./formats/ollama-chat/index";
 export type {
   OpenAIChatCompletionsFormatOptions,
   OpenAIChatCompletionsRaw,
-} from "./formats/openai-chat-completions/index.js";
+} from "./formats/openai-chat-completions/index";
 export type {
   OpenAIResponsesExtras,
   OpenAIResponsesFormatOptions,
   OpenAIResponsesRaw,
-} from "./formats/openai-responses/index.js";
+} from "./formats/openai-responses/index";
 export type {
   GenericHttpProviderOptions,
   GoogleAIStudioProviderOptions,
@@ -64,5 +64,5 @@ export type {
   OpenAIProviderOptions,
   VercelAIGatewayProviderOptions,
   VertexAIProviderOptions,
-} from "./providers/index.js";
-export type { FetchLike } from "./transport/fetch-like.js";
+} from "./providers/index";
+export type { FetchLike } from "./transport/fetch-like";

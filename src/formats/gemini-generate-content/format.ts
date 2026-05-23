@@ -1,9 +1,9 @@
-import type { LlmFormat } from "../../core/format.js";
-import type { LlmRequest } from "../../core/message.js";
-import type { LlmOutput } from "../../core/output.js";
-import { createGeminiGenerateContentRequestBody } from "./create-request-body.js";
-import type { GeminiGenerateContentRaw } from "./raw-schema.js";
-import { parseGeminiGenerateContentResponse } from "./parse-response.js";
+import type { LlmFormat } from "../../core/format";
+import type { LlmRequest } from "../../core/message";
+import type { LlmOutput } from "../../core/output";
+import { createGeminiGenerateContentRequestBody } from "./create-request-body";
+import type { GeminiGenerateContentRaw } from "./raw-schema";
+import { parseGeminiGenerateContentResponse } from "./parse-response";
 
 export interface GeminiGenerateContentFormatOptions {
   extraBody?: Record<string, unknown>;

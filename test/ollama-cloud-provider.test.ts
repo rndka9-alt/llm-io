@@ -5,8 +5,8 @@ import {
   OllamaChatFormat,
   OllamaCloudProvider,
   OpenAIChatCompletionsFormat,
-} from "../src/index.js";
-import { createRecordingFetch, readRequestBody } from "./test-utils.js";
+} from "../src/index";
+import { createRecordingFetch, readRequestBody } from "./test-utils";
 
 describe("OllamaCloudProvider", () => {
   it("uses Ollama Cloud base URL with Ollama chat format", async () => {

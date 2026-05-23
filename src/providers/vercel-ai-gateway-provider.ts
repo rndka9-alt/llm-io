@@ -1,9 +1,9 @@
-import type { LlmProvider, LlmProviderRequest, LlmProviderRequestInput } from "../core/provider.js";
+import type { LlmProvider, LlmProviderRequest, LlmProviderRequestInput } from "../core/provider";
 import {
   createBearerHeaders,
   joinUrlPath,
   resolveOpenAICompatibleRequestPath,
-} from "./utils/index.js";
+} from "./utils/index";
 
 export interface VercelAIGatewayProviderOptions {
   apiKey?: string;

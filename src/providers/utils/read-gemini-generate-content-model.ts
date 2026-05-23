@@ -1,6 +1,6 @@
-import type { LlmFormat } from "../../core/format.js";
-import { readRequiredFormatModel } from "./read-required-format-model.js";
-import { throwUnsupportedFormat } from "./throw-unsupported-format.js";
+import type { LlmFormat } from "../../core/format";
+import { readRequiredFormatModel } from "./read-required-format-model";
+import { throwUnsupportedFormat } from "./throw-unsupported-format";
 
 export function readGeminiGenerateContentModel(
   format: LlmFormat<unknown, unknown>,

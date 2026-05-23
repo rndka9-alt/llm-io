@@ -5,8 +5,8 @@ import {
   LlmIoError,
   OpenAIChatCompletionsFormat,
   OpenAIResponsesFormat,
-} from "../src/index.js";
-import { createJsonFetch } from "./test-utils.js";
+} from "../src/index";
+import { createJsonFetch } from "./test-utils";
 
 describe("OpenAI formats", () => {
   it("creates chat completions request bodies", () => {

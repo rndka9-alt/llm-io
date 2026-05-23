@@ -1,5 +1,5 @@
-import { LlmIoError } from "../../core/errors.js";
-import type { LlmFormat } from "../../core/format.js";
+import { LlmIoError } from "../../core/errors";
+import type { LlmFormat } from "../../core/format";
 
 export function throwUnsupportedFormat(
   providerId: string,

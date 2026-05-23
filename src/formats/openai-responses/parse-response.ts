@@ -1,8 +1,8 @@
-import { LlmIoError } from "../../core/errors.js";
-import type { LlmOutput, LlmUsage } from "../../core/output.js";
-import { createTextAssistantMessage } from "../../core/output.js";
-import { openAIResponsesRawSchema, type OpenAIResponsesRaw } from "./raw-schema.js";
-import { readOpenAIResponsesOutputText, readOpenAIResponsesReasoningText } from "./read-output.js";
+import { LlmIoError } from "../../core/errors";
+import type { LlmOutput, LlmUsage } from "../../core/output";
+import { createTextAssistantMessage } from "../../core/output";
+import { openAIResponsesRawSchema, type OpenAIResponsesRaw } from "./raw-schema";
+import { readOpenAIResponsesOutputText, readOpenAIResponsesReasoningText } from "./read-output";
 
 export interface OpenAIResponsesExtras {
   provider: "openai-responses";

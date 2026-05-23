@@ -1,4 +1,4 @@
-export { OpenAIChatCompletionsFormat } from "./format.js";
+export { OpenAIChatCompletionsFormat } from "./format";
 
-export type { OpenAIChatCompletionsFormatOptions } from "./format.js";
-export type { OpenAIChatCompletionsRaw } from "./raw-schema.js";
+export type { OpenAIChatCompletionsFormatOptions } from "./format";
+export type { OpenAIChatCompletionsRaw } from "./raw-schema";

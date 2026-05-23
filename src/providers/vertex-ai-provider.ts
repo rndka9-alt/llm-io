@@ -1,5 +1,5 @@
-import type { LlmProvider, LlmProviderRequest, LlmProviderRequestInput } from "../core/provider.js";
-import { readGeminiGenerateContentModel } from "./utils/index.js";
+import type { LlmProvider, LlmProviderRequest, LlmProviderRequestInput } from "../core/provider";
+import { readGeminiGenerateContentModel } from "./utils/index";
 
 export interface VertexAIProviderOptions {
   accessToken: string;

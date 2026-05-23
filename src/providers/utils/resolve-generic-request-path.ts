@@ -1,6 +1,6 @@
-import type { LlmFormat } from "../../core/format.js";
-import { createGeminiGenerateContentRequestPath } from "./create-gemini-generate-content-request-path.js";
-import { throwUnsupportedFormat } from "./throw-unsupported-format.js";
+import type { LlmFormat } from "../../core/format";
+import { createGeminiGenerateContentRequestPath } from "./create-gemini-generate-content-request-path";
+import { throwUnsupportedFormat } from "./throw-unsupported-format";
 
 export function resolveGenericRequestPath(format: LlmFormat<unknown, unknown>): string {
   if (format.id === "openai-chat-completions") {

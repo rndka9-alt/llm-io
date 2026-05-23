@@ -1,7 +1,7 @@
-import { LlmIoError } from "../../core/errors.js";
-import type { LlmFinishReason, LlmOutput, LlmUsage } from "../../core/output.js";
-import { createTextAssistantMessage } from "../../core/output.js";
-import { ollamaChatRawSchema, type OllamaChatRaw } from "./raw-schema.js";
+import { LlmIoError } from "../../core/errors";
+import type { LlmFinishReason, LlmOutput, LlmUsage } from "../../core/output";
+import { createTextAssistantMessage } from "../../core/output";
+import { ollamaChatRawSchema, type OllamaChatRaw } from "./raw-schema";
 
 export interface OllamaChatExtras {
   model?: string;

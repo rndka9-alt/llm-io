@@ -1,5 +1,5 @@
-import type { LlmFormat } from "./format.js";
-import type { LlmRequest } from "./message.js";
+import type { LlmFormat } from "./format";
+import type { LlmRequest } from "./message";
 
 export interface LlmProviderRequestInput {
   format: LlmFormat<unknown, unknown>;

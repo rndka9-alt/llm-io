@@ -1,5 +1,5 @@
-import type { LlmFormat } from "../../core/format.js";
-import { throwUnsupportedFormat } from "./throw-unsupported-format.js";
+import type { LlmFormat } from "../../core/format";
+import { throwUnsupportedFormat } from "./throw-unsupported-format";
 
 export function resolveOpenAICompatibleRequestPath(format: LlmFormat<unknown, unknown>): string {
   if (format.id === "openai-chat-completions") {
