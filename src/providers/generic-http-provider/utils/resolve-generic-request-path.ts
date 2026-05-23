@@ -2,6 +2,10 @@ import type { LlmFormat } from "../../../core/format";
 import { createGeminiGenerateContentRequestPath, throwUnsupportedFormat } from "../../utils/index";
 
 export function resolveGenericRequestPath(format: LlmFormat<unknown, unknown>): string {
+  if (format.id === "anthropic-messages") {
+    return "/messages";
+  }
+
   if (format.id === "openai-chat-completions") {
     return "/chat/completions";
   }

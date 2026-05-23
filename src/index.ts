@@ -1,10 +1,12 @@
 export { Llm } from "./llm";
 export { LlmHttpError, LlmIoError } from "./core/errors";
+export { AnthropicMessagesFormat } from "./formats/anthropic-messages/index";
 export { GeminiGenerateContentFormat } from "./formats/gemini-generate-content/index";
 export { OllamaChatFormat } from "./formats/ollama-chat/index";
 export { OpenAIChatCompletionsFormat } from "./formats/openai-chat-completions/index";
 export { OpenAIResponsesFormat } from "./formats/openai-responses/index";
 export {
+  AnthropicProvider,
   GenericHttpProvider,
   GoogleAIStudioProvider,
   OllamaCloudProvider,
@@ -41,6 +43,10 @@ export type {
 export type { LlmProvider, LlmProviderRequest, LlmProviderRequestInput } from "./core/provider";
 export type { LlmLegacyHttpOptions, LlmOptions, LlmProviderOptions } from "./llm";
 export type {
+  AnthropicMessagesFormatOptions,
+  AnthropicMessagesRaw,
+} from "./formats/anthropic-messages/index";
+export type {
   GeminiGenerateContentFormatOptions,
   GeminiGenerateContentRaw,
 } from "./formats/gemini-generate-content/index";
@@ -59,6 +65,7 @@ export type {
   OpenAIResponsesRaw,
 } from "./formats/openai-responses/index";
 export type {
+  AnthropicProviderOptions,
   GenericHttpProviderOptions,
   GoogleAIStudioProviderOptions,
   OllamaCloudProviderOptions,

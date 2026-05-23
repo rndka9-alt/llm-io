@@ -1,3 +1,4 @@
+export { createAnthropicResponse } from "./create-anthropic-response";
 export { createGeminiResponse } from "./create-gemini-response";
 export { createJsonFetch } from "./create-json-fetch";
 export { createRecordingFetch } from "./create-recording-fetch";
