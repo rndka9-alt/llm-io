@@ -1,6 +1,6 @@
 import type { LlmFormat } from "../core/format.js";
 import type { LlmProvider, LlmProviderRequest, LlmProviderRequestInput } from "../core/provider.js";
-import { createBearerHeaders, joinUrlPath, resolveGenericRequestPath } from "./utils.js";
+import { createBearerHeaders, joinUrlPath, resolveGenericRequestPath } from "./utils/index.js";
 
 export interface GenericHttpProviderOptions {
   apiKey?: string;

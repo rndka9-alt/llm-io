@@ -1,5 +1,5 @@
 import { GenericHttpProvider, type GenericHttpProviderOptions } from "./generic-http-provider.js";
-import { resolveOllamaRequestPath } from "./utils.js";
+import { resolveOllamaRequestPath } from "./utils/index.js";
 
 export interface OllamaCloudProviderOptions extends Omit<
   GenericHttpProviderOptions,
