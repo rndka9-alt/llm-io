@@ -1,5 +1,5 @@
 import type { LlmRequest } from "./message.js";
 
-export interface LlmContainer<TOutput> {
+export interface LlmClient<TOutput> {
   generate(request: LlmRequest): Promise<TOutput>;
 }

@@ -1,10 +1,10 @@
-import { LlmHttpError } from "../core/errors.js";
-import type { LlmFormat } from "../core/format.js";
-import type { LlmRequest } from "../core/message.js";
-import type { LlmOutput } from "../core/output.js";
-import type { FetchLike } from "../transport/fetch-like.js";
+import { LlmHttpError } from "./core/errors.js";
+import type { LlmFormat } from "./core/format.js";
+import type { LlmRequest } from "./core/message.js";
+import type { LlmOutput } from "./core/output.js";
+import type { FetchLike } from "./transport/fetch-like.js";
 
-export interface HttpLlmContainerOptions<TRaw, TExtras = undefined> {
+export interface LlmOptions<TRaw, TExtras = undefined> {
   apiKey?: string;
   baseUrl: string;
   fetch?: FetchLike;
@@ -12,14 +12,14 @@ export interface HttpLlmContainerOptions<TRaw, TExtras = undefined> {
   headers?: Record<string, string>;
 }
 
-export class HttpLlmContainer<TRaw, TExtras = undefined> {
+export class Llm<TRaw, TExtras = undefined> {
   private readonly apiKey: string | undefined;
   private readonly baseUrl: string;
   private readonly fetchImplementation: FetchLike;
   private readonly format: LlmFormat<TRaw, TExtras>;
   private readonly headers: Record<string, string>;
 
-  constructor(options: HttpLlmContainerOptions<TRaw, TExtras>) {
+  constructor(options: LlmOptions<TRaw, TExtras>) {
     this.apiKey = options.apiKey;
     this.baseUrl = options.baseUrl.replace(/\/$/, "");
     this.fetchImplementation = options.fetch ?? fetch;
@@ -62,3 +62,6 @@ export class HttpLlmContainer<TRaw, TExtras = undefined> {
     };
   }
 }
+
+export type HttpLlmContainerOptions<TRaw, TExtras = undefined> = LlmOptions<TRaw, TExtras>;
+export const HttpLlmContainer = Llm;

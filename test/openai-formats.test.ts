@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
-  HttpLlmContainer,
+  Llm,
   LlmIoError,
   OpenAIChatCompletionsFormat,
   OpenAIResponsesFormat,
@@ -34,7 +34,7 @@ describe("OpenAI formats", () => {
   });
 
   it("normalizes chat completions output", async () => {
-    const client = new HttpLlmContainer({
+    const client = new Llm({
       baseUrl: "https://example.test/v1",
       fetch: createJsonFetch({
         choices: [
@@ -113,7 +113,7 @@ describe("OpenAI formats", () => {
   });
 
   it("normalizes responses output and keeps typed extras", async () => {
-    const client = new HttpLlmContainer({
+    const client = new Llm({
       baseUrl: "https://example.test/v1",
       fetch: createJsonFetch({
         id: "response-1",

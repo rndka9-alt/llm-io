@@ -1,5 +1,5 @@
-export * from "./containers/http-llm-container.js";
-export * from "./core/container.js";
+export * from "./llm.js";
+export * from "./core/client.js";
 export * from "./core/errors.js";
 export * from "./core/format.js";
 export * from "./core/message.js";

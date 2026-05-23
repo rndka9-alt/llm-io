@@ -10,9 +10,9 @@ The package keeps application call sites stable while provider wire formats vary
 - outputs expose common `message`, `reasoning`, `usage`, and typed `raw`
 
 ```ts
-import { HttpLlmContainer, OpenAIResponsesFormat } from "llm-io";
+import { Llm, OpenAIResponsesFormat } from "llm-io";
 
-const client = new HttpLlmContainer({
+const client = new Llm({
   apiKey: process.env.OPENAI_API_KEY,
   baseUrl: "https://api.openai.com/v1",
   format: new OpenAIResponsesFormat({ model: "gpt-5.1" }),
