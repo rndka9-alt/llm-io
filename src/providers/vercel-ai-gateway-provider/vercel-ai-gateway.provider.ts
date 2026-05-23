@@ -1,10 +1,10 @@
-import type { JsonObject } from "../core/json";
-import type { LlmProvider, LlmProviderRequest, LlmProviderRequestInput } from "../core/provider";
+import type { JsonObject } from "../../core/json";
+import type { LlmProvider, LlmProviderRequest, LlmProviderRequestInput } from "../../core/provider";
 import {
   createBearerHeaders,
   joinUrlPath,
   resolveOpenAICompatibleRequestPath,
-} from "./utils/index";
+} from "../utils/index";
 
 export type VercelAIGatewayProviderId =
   | "alibaba"

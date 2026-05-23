@@ -1,6 +1,7 @@
-import type { LlmFormat } from "../core/format";
-import type { LlmProvider, LlmProviderRequest, LlmProviderRequestInput } from "../core/provider";
-import { createBearerHeaders, joinUrlPath, resolveGenericRequestPath } from "./utils/index";
+import type { LlmFormat } from "../../core/format";
+import type { LlmProvider, LlmProviderRequest, LlmProviderRequestInput } from "../../core/provider";
+import { createBearerHeaders, joinUrlPath } from "../utils/index";
+import { resolveGenericRequestPath } from "./utils/resolve-generic-request-path";
 
 export interface GenericHttpProviderOptions {
   apiKey?: string;

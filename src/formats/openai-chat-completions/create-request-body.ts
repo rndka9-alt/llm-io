@@ -1,6 +1,6 @@
 import type { JsonObject } from "../../core/json";
-import type { LlmMessage, LlmRequest } from "../../core/message";
-import { getMessageText } from "../../core/message";
+import type { LlmRequest } from "../../core/message";
+import { toOpenAIMessage } from "./utils/to-openai-message";
 
 export interface CreateOpenAIChatCompletionsRequestBodyOptions {
   extraBody?: JsonObject;
@@ -31,12 +31,5 @@ export function createOpenAIChatCompletionsRequestBody(
   return {
     ...requestBody,
     ...options.extraBody,
-  };
-}
-
-function toOpenAIMessage(message: LlmMessage): { content: string; role: LlmMessage["role"] } {
-  return {
-    role: message.role,
-    content: getMessageText(message),
   };
 }

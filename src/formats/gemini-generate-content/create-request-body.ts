@@ -1,6 +1,9 @@
 import type { JsonObject } from "../../core/json";
-import type { LlmMessage, LlmRequest } from "../../core/message";
-import { getMessageText } from "../../core/message";
+import type { LlmRequest } from "../../core/message";
+import { createGenerationConfig } from "./utils/create-generation-config";
+import { createSystemInstruction } from "./utils/create-system-instruction";
+import { isGeminiContentMessage } from "./utils/is-gemini-content-message";
+import { toGeminiContent } from "./utils/to-gemini-content";
 
 export interface CreateGeminiGenerateContentRequestBodyOptions {
   extraBody?: JsonObject;
@@ -29,59 +32,4 @@ export function createGeminiGenerateContentRequestBody(
     ...requestBody,
     ...options.extraBody,
   };
-}
-
-function createSystemInstruction(
-  messages: readonly LlmMessage[],
-): { parts: { text: string }[] } | undefined {
-  const text = messages
-    .filter((message) => message.role === "system")
-    .map(getMessageText)
-    .join("\n\n");
-
-  if (text.length === 0) {
-    return undefined;
-  }
-
-  return {
-    parts: [{ text }],
-  };
-}
-
-function toGeminiContent(message: LlmMessage): {
-  parts: { text: string }[];
-  role: "model" | "user";
-} {
-  return {
-    role: message.role === "assistant" ? "model" : "user",
-    parts: [{ text: getMessageText(message) }],
-  };
-}
-
-function isGeminiContentMessage(
-  message: LlmMessage,
-): message is LlmMessage & { role: "assistant" | "user" } {
-  return message.role === "assistant" || message.role === "user";
-}
-
-function createGenerationConfig(request: LlmRequest): JsonObject | undefined {
-  const generationConfig: JsonObject = {};
-
-  if (request.options?.maxTokens !== undefined) {
-    generationConfig.maxOutputTokens = request.options.maxTokens;
-  }
-
-  if (request.options?.temperature !== undefined) {
-    generationConfig.temperature = request.options.temperature;
-  }
-
-  if (request.options?.topP !== undefined) {
-    generationConfig.topP = request.options.topP;
-  }
-
-  if (Object.keys(generationConfig).length === 0) {
-    return undefined;
-  }
-
-  return generationConfig;
 }

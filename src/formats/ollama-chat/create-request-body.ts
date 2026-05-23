@@ -1,6 +1,7 @@
 import type { JsonObject } from "../../core/json";
-import type { LlmMessage, LlmRequest } from "../../core/message";
-import { getMessageText } from "../../core/message";
+import type { LlmRequest } from "../../core/message";
+import { createOllamaOptions } from "./utils/create-ollama-options";
+import { toOllamaMessage } from "./utils/to-ollama-message";
 
 export interface CreateOllamaChatRequestBodyOptions {
   extraBody?: JsonObject;
@@ -17,22 +18,5 @@ export function createOllamaChatRequestBody(
     messages: request.messages.map(toOllamaMessage),
     ...(request.options === undefined ? {} : { options: createOllamaOptions(request) }),
     ...options.extraBody,
-  };
-}
-
-function toOllamaMessage(message: LlmMessage): { content: string; role: LlmMessage["role"] } {
-  return {
-    role: message.role,
-    content: getMessageText(message),
-  };
-}
-
-function createOllamaOptions(request: LlmRequest): JsonObject {
-  return {
-    ...(request.options?.maxTokens === undefined ? {} : { num_predict: request.options.maxTokens }),
-    ...(request.options?.temperature === undefined
-      ? {}
-      : { temperature: request.options.temperature }),
-    ...(request.options?.topP === undefined ? {} : { top_p: request.options.topP }),
   };
 }

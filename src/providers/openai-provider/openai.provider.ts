@@ -1,8 +1,8 @@
-import { LlmIoError } from "../core/errors";
-import { isJsonObject, type JsonObject } from "../core/json";
-import type { LlmProviderRequest, LlmProviderRequestInput } from "../core/provider";
-import { GenericHttpProvider, type GenericHttpProviderOptions } from "./generic-http-provider";
-import { resolveOpenAICompatibleRequestPath } from "./utils/index";
+import { LlmIoError } from "../../core/errors";
+import { isJsonObject, type JsonObject } from "../../core/json";
+import type { LlmProviderRequest, LlmProviderRequestInput } from "../../core/provider";
+import { GenericHttpProvider, type GenericHttpProviderOptions } from "../generic-http-provider";
+import { resolveOpenAICompatibleRequestPath } from "../utils/index";
 
 export type OpenAIServiceTier = "auto" | "default" | "flex" | "priority";
 

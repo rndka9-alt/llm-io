@@ -1,7 +1,10 @@
 import { LlmIoError } from "../../core/errors";
-import type { LlmFinishReason, LlmOutput, LlmUsage } from "../../core/output";
+import type { LlmOutput } from "../../core/output";
 import { createTextAssistantMessage } from "../../core/output";
 import { openAIChatCompletionsRawSchema, type OpenAIChatCompletionsRaw } from "./raw-schema";
+import { createOpenAIChatCompletionsReasoning } from "./utils/create-openai-chat-completions-reasoning";
+import { createOpenAIChatCompletionsUsage } from "./utils/create-openai-chat-completions-usage";
+import { normalizeOpenAIChatCompletionsFinishReason } from "./utils/normalize-openai-chat-completions-finish-reason";
 
 export function parseOpenAIChatCompletionsResponse(
   responseJson: unknown,
@@ -21,11 +24,11 @@ export function parseOpenAIChatCompletionsResponse(
     );
   }
 
-  const reasoning = createReasoning(
+  const reasoning = createOpenAIChatCompletionsReasoning(
     firstChoice.message.reasoning_content ?? firstChoice.message.reasoning,
   );
-  const usage = createUsage(raw.usage);
-  const finishReason = normalizeFinishReason(firstChoice.finish_reason);
+  const usage = createOpenAIChatCompletionsUsage(raw.usage);
+  const finishReason = normalizeOpenAIChatCompletionsFinishReason(firstChoice.finish_reason);
 
   return {
     message: createTextAssistantMessage(text),
@@ -34,48 +37,4 @@ export function parseOpenAIChatCompletionsResponse(
     ...(finishReason === undefined ? {} : { finishReason }),
     raw,
   };
-}
-
-function createReasoning(text: string | undefined): { text: string } | undefined {
-  if (text === undefined || text.length === 0) {
-    return undefined;
-  }
-
-  return { text };
-}
-
-function createUsage(usage: OpenAIChatCompletionsRaw["usage"]): LlmUsage | undefined {
-  if (usage === undefined) {
-    return undefined;
-  }
-
-  return {
-    ...(usage.prompt_tokens === undefined ? {} : { inputTokens: usage.prompt_tokens }),
-    ...(usage.completion_tokens === undefined ? {} : { outputTokens: usage.completion_tokens }),
-    ...(usage.total_tokens === undefined ? {} : { totalTokens: usage.total_tokens }),
-  };
-}
-
-function normalizeFinishReason(reason: string | null | undefined): LlmFinishReason | undefined {
-  if (reason === undefined || reason === null) {
-    return undefined;
-  }
-
-  if (reason === "stop") {
-    return "stop";
-  }
-
-  if (reason === "length") {
-    return "length";
-  }
-
-  if (reason === "content_filter") {
-    return "content-filter";
-  }
-
-  if (reason === "tool_calls" || reason === "function_call") {
-    return "tool-call";
-  }
-
-  return "unknown";
 }

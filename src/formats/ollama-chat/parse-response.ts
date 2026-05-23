@@ -1,7 +1,9 @@
 import { LlmIoError } from "../../core/errors";
-import type { LlmFinishReason, LlmOutput, LlmUsage } from "../../core/output";
+import type { LlmOutput } from "../../core/output";
 import { createTextAssistantMessage } from "../../core/output";
 import { ollamaChatRawSchema, type OllamaChatRaw } from "./raw-schema";
+import { createOllamaUsage } from "./utils/create-ollama-usage";
+import { normalizeOllamaFinishReason } from "./utils/normalize-ollama-finish-reason";
 
 export interface OllamaChatExtras {
   model?: string;
@@ -18,8 +20,8 @@ export function parseOllamaChatResponse(
   }
 
   const reasoningText = raw.message?.thinking;
-  const usage = createUsage(raw);
-  const finishReason = normalizeFinishReason(raw.done_reason);
+  const usage = createOllamaUsage(raw);
+  const finishReason = normalizeOllamaFinishReason(raw.done_reason);
 
   return {
     message: createTextAssistantMessage(text),
@@ -33,37 +35,4 @@ export function parseOllamaChatResponse(
       ...(raw.model === undefined ? {} : { model: raw.model }),
     },
   };
-}
-
-function createUsage(raw: OllamaChatRaw): LlmUsage | undefined {
-  if (raw.prompt_eval_count === undefined && raw.eval_count === undefined) {
-    return undefined;
-  }
-
-  const totalTokens =
-    raw.prompt_eval_count === undefined || raw.eval_count === undefined
-      ? undefined
-      : raw.prompt_eval_count + raw.eval_count;
-
-  return {
-    ...(raw.prompt_eval_count === undefined ? {} : { inputTokens: raw.prompt_eval_count }),
-    ...(raw.eval_count === undefined ? {} : { outputTokens: raw.eval_count }),
-    ...(totalTokens === undefined ? {} : { totalTokens }),
-  };
-}
-
-function normalizeFinishReason(reason: string | undefined): LlmFinishReason | undefined {
-  if (reason === undefined) {
-    return undefined;
-  }
-
-  if (reason === "stop") {
-    return "stop";
-  }
-
-  if (reason === "length") {
-    return "length";
-  }
-
-  return "unknown";
 }

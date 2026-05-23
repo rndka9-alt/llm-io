@@ -1,5 +1,6 @@
-import type { LlmProvider, LlmProviderRequest, LlmProviderRequestInput } from "../core/provider";
-import { createGeminiGenerateContentRequestPath, joinUrlPath } from "./utils/index";
+import type { LlmProvider, LlmProviderRequest, LlmProviderRequestInput } from "../../core/provider";
+import { createGeminiGenerateContentRequestPath, joinUrlPath } from "../utils/index";
+import { appendApiKey } from "./utils/append-api-key";
 
 export interface GoogleAIStudioProviderOptions {
   apiKey: string;
@@ -34,10 +35,4 @@ export class GoogleAIStudioProvider implements LlmProvider {
       ),
     };
   }
-}
-
-function appendApiKey(url: string, apiKey: string): string {
-  const separator = url.includes("?") ? "&" : "?";
-
-  return `${url}${separator}key=${encodeURIComponent(apiKey)}`;
 }

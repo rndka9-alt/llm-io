@@ -1,7 +1,9 @@
 import { LlmIoError } from "../../core/errors";
-import type { LlmFinishReason, LlmOutput, LlmUsage } from "../../core/output";
+import type { LlmOutput } from "../../core/output";
 import { createTextAssistantMessage } from "../../core/output";
 import { geminiGenerateContentRawSchema, type GeminiGenerateContentRaw } from "./raw-schema";
+import { createGeminiUsage } from "./utils/create-gemini-usage";
+import { normalizeGeminiFinishReason } from "./utils/normalize-gemini-finish-reason";
 
 export function parseGeminiGenerateContentResponse(
   responseJson: unknown,
@@ -22,8 +24,8 @@ export function parseGeminiGenerateContentResponse(
     .filter((part) => part.thought === true)
     .map((part) => part.text ?? "")
     .join("");
-  const usage = createUsage(raw.usageMetadata);
-  const finishReason = normalizeFinishReason(firstCandidate?.finishReason);
+  const usage = createGeminiUsage(raw.usageMetadata);
+  const finishReason = normalizeGeminiFinishReason(firstCandidate?.finishReason);
 
   return {
     message: createTextAssistantMessage(text),
@@ -32,46 +34,4 @@ export function parseGeminiGenerateContentResponse(
     ...(finishReason === undefined ? {} : { finishReason }),
     raw,
   };
-}
-
-function createUsage(usage: GeminiGenerateContentRaw["usageMetadata"]): LlmUsage | undefined {
-  if (usage === undefined) {
-    return undefined;
-  }
-
-  return {
-    ...(usage.promptTokenCount === undefined ? {} : { inputTokens: usage.promptTokenCount }),
-    ...(usage.candidatesTokenCount === undefined
-      ? {}
-      : { outputTokens: usage.candidatesTokenCount }),
-    ...(usage.thoughtsTokenCount === undefined
-      ? {}
-      : { reasoningTokens: usage.thoughtsTokenCount }),
-    ...(usage.totalTokenCount === undefined ? {} : { totalTokens: usage.totalTokenCount }),
-  };
-}
-
-function normalizeFinishReason(reason: string | undefined): LlmFinishReason | undefined {
-  if (reason === undefined) {
-    return undefined;
-  }
-
-  if (reason === "STOP") {
-    return "stop";
-  }
-
-  if (reason === "MAX_TOKENS") {
-    return "length";
-  }
-
-  if (
-    reason === "SAFETY" ||
-    reason === "RECITATION" ||
-    reason === "SPII" ||
-    reason === "BLOCKLIST"
-  ) {
-    return "content-filter";
-  }
-
-  return "unknown";
 }

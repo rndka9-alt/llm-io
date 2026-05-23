@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { GeminiGenerateContentFormat, GoogleAIStudioProvider, Llm } from "../src/index";
-import { createRecordingFetch } from "./test-utils";
+import { createGeminiResponse, createRecordingFetch } from "./test-utils";
 
 describe("GoogleAIStudioProvider", () => {
   it("uses API key query auth with Gemini format", async () => {
@@ -43,15 +43,3 @@ describe("GoogleAIStudioProvider", () => {
     });
   });
 });
-
-function createGeminiResponse(): unknown {
-  return {
-    candidates: [
-      {
-        content: {
-          parts: [{ text: "ok" }],
-        },
-      },
-    ],
-  };
-}
