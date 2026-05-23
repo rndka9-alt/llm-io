@@ -63,6 +63,7 @@ export type {
   GoogleAIStudioProviderOptions,
   OllamaCloudProviderOptions,
   OpenAIProviderOptions,
+  OpenAIServiceTier,
   VercelAIGatewayProviderOptions,
   VercelAIGatewayProviderOptionsMap,
   VercelAIGatewayByokCredentials,

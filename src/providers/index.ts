@@ -8,7 +8,7 @@ export { VertexAIProvider } from "./vertex-ai-provider";
 export type { GenericHttpProviderOptions } from "./generic-http-provider";
 export type { GoogleAIStudioProviderOptions } from "./google-ai-studio-provider";
 export type { OllamaCloudProviderOptions } from "./ollama-cloud-provider";
-export type { OpenAIProviderOptions } from "./openai-provider";
+export type { OpenAIProviderOptions, OpenAIServiceTier } from "./openai-provider";
 export type {
   VercelAIGatewayByokCredentials,
   VercelAIGatewayOptions,

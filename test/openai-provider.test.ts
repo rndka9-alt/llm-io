@@ -7,7 +7,7 @@ import {
   OpenAIProvider,
   OpenAIResponsesFormat,
 } from "../src/index";
-import { createRecordingFetch } from "./test-utils";
+import { createRecordingFetch, readRequestBody } from "./test-utils";
 
 describe("OpenAIProvider", () => {
   it("uses OpenAI provider defaults with OpenAI-compatible formats", async () => {
@@ -26,6 +26,59 @@ describe("OpenAIProvider", () => {
 
     expect(fetchRecorder.calls[0]?.input).toBe("https://api.openai.com/v1/chat/completions");
     expect(fetchRecorder.calls[0]?.init?.headers?.authorization).toBe("Bearer openai-key");
+  });
+
+  it("injects service tier into OpenAI-compatible bodies", async () => {
+    const fetchRecorder = createRecordingFetch({
+      choices: [{ message: { content: "ok" } }],
+    });
+    const client = new Llm({
+      fetch: fetchRecorder.fetch,
+      format: new OpenAIChatCompletionsFormat({ model: "gpt-example" }),
+      provider: new OpenAIProvider({
+        apiKey: "openai-key",
+        serviceTier: "priority",
+      }),
+    });
+
+    await client.generate({
+      messages: [{ role: "user", content: [{ type: "text", text: "hi" }] }],
+    });
+
+    expect(readRequestBody(fetchRecorder.calls[0]).service_tier).toBe("priority");
+  });
+
+  it("rejects unsupported service tiers at compile time", () => {
+    const providerOptions = {
+      // @ts-expect-error serviceTier follows OpenAI service_tier values.
+      serviceTier: "turbo",
+    } satisfies ConstructorParameters<typeof OpenAIProvider>[0];
+
+    expect(providerOptions.serviceTier).toBe("turbo");
+  });
+
+  it("throws when service tier is configured in provider and body", async () => {
+    const fetchRecorder = createRecordingFetch({
+      choices: [{ message: { content: "ok" } }],
+    });
+    const client = new Llm({
+      fetch: fetchRecorder.fetch,
+      format: new OpenAIChatCompletionsFormat({
+        extraBody: { service_tier: "flex" },
+        model: "gpt-example",
+      }),
+      provider: new OpenAIProvider({
+        apiKey: "openai-key",
+        serviceTier: "priority",
+      }),
+    });
+
+    await expect(
+      client.generate({
+        messages: [{ role: "user", content: [{ type: "text", text: "hi" }] }],
+      }),
+    ).rejects.toThrow(LlmIoError);
+    expect(fetchRecorder.calls).toEqual([]);
   });
 
   it("uses responses endpoint with custom base URL and headers", async () => {
