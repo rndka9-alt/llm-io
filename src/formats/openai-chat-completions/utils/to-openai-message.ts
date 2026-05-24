@@ -1,5 +1,5 @@
 import { LlmIoError } from "../../../core/errors";
-import type { LlmMessage } from "../../../core/message";
+import type { LlmMessage, LlmToolCallPart, LlmToolResultPart } from "../../../core/message";
 import { getMessageText } from "../../../core/message";
 import type { JsonValue } from "../../../core/json";
 
@@ -27,33 +27,30 @@ export type OpenAIMessage =
     };
 
 export function toOpenAIMessage(message: LlmMessage): OpenAIMessage {
+  const toolCalls = message.content.filter(isToolCallPart);
+  const toolResults = message.content.filter(isToolResultPart);
+
+  if (toolCalls.length > 0 && toolResults.length > 0) {
+    throw new LlmIoError("OpenAI messages cannot mix tool-call and tool-result content parts.");
+  }
+
+  if (toolCalls.length > 0) {
+    return toOpenAIAssistantToolCallMessage(message, toolCalls);
+  }
+
+  if (toolResults.length > 0) {
+    return toOpenAIToolResultMessage(message, toolResults);
+  }
+
   if (message.role === "tool") {
-    return toOpenAIToolMessage(message);
+    throw new LlmIoError("OpenAI tool messages require a tool-result content part.");
   }
 
   if (message.role === "assistant") {
-    const toolCalls = message.content.filter((contentPart) => contentPart.type === "tool-call");
-
-    if (toolCalls.length > 0) {
-      return {
-        role: "assistant",
-        content: getMessageText(message).length === 0 ? null : getMessageText(message),
-        tool_calls: toolCalls.map((toolCall) => {
-          if (toolCall.id === undefined) {
-            throw new LlmIoError("OpenAI assistant tool calls require an id.");
-          }
-
-          return {
-            id: toolCall.id,
-            type: "function",
-            function: {
-              name: toolCall.name,
-              arguments: JSON.stringify(toolCall.arguments),
-            },
-          };
-        }),
-      };
-    }
+    return {
+      role: "assistant",
+      content: getMessageText(message),
+    };
   }
 
   return {
@@ -62,9 +59,53 @@ export function toOpenAIMessage(message: LlmMessage): OpenAIMessage {
   };
 }
 
-function toOpenAIToolMessage(message: LlmMessage): OpenAIMessage {
-  const toolResults = message.content.filter((contentPart) => contentPart.type === "tool-result");
+function toOpenAIAssistantToolCallMessage(
+  message: LlmMessage,
+  toolCalls: readonly LlmToolCallPart[],
+): OpenAIMessage {
+  if (message.role !== "assistant") {
+    throw new LlmIoError("OpenAI tool-call content parts require assistant messages.");
+  }
+
+  const text = getMessageText(message);
+
+  return {
+    role: "assistant",
+    content: text.length === 0 ? null : text,
+    tool_calls: toolCalls.map((toolCall) => {
+      if (toolCall.id === undefined) {
+        throw new LlmIoError("OpenAI assistant tool calls require an id.");
+      }
+
+      return {
+        id: toolCall.id,
+        type: "function",
+        function: {
+          name: toolCall.name,
+          arguments: JSON.stringify(toolCall.arguments),
+        },
+      };
+    }),
+  };
+}
+
+function toOpenAIToolResultMessage(
+  message: LlmMessage,
+  toolResults: readonly LlmToolResultPart[],
+): OpenAIMessage {
   const firstToolResult = toolResults[0];
+
+  if (message.role !== "tool") {
+    throw new LlmIoError("OpenAI tool-result content parts require tool messages.");
+  }
+
+  if (message.content.length !== toolResults.length) {
+    throw new LlmIoError("OpenAI tool messages support only tool-result content parts.");
+  }
+
+  if (toolResults.length > 1) {
+    throw new LlmIoError("OpenAI tool messages support exactly one tool-result content part.");
+  }
 
   if (firstToolResult === undefined) {
     throw new LlmIoError("OpenAI tool messages require a tool-result content part.");
@@ -72,10 +113,6 @@ function toOpenAIToolMessage(message: LlmMessage): OpenAIMessage {
 
   if (firstToolResult.id === undefined) {
     throw new LlmIoError("OpenAI tool result messages require an id.");
-  }
-
-  if (toolResults.length > 1) {
-    throw new LlmIoError("OpenAI tool messages support exactly one tool-result content part.");
   }
 
   return {
@@ -91,4 +128,16 @@ function stringifyToolResult(result: JsonValue): string {
   }
 
   return JSON.stringify(result);
+}
+
+function isToolCallPart(
+  contentPart: LlmMessage["content"][number],
+): contentPart is LlmToolCallPart {
+  return contentPart.type === "tool-call";
+}
+
+function isToolResultPart(
+  contentPart: LlmMessage["content"][number],
+): contentPart is LlmToolResultPart {
+  return contentPart.type === "tool-result";
 }

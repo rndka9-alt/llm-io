@@ -213,6 +213,21 @@ describe("Gemini generateContent format", () => {
     });
   });
 
+  it("throws when function-call content is not an assistant message", () => {
+    const format = new GeminiGenerateContentFormat({ model: "gemini-example" });
+
+    expect(() =>
+      format.createRequestBody({
+        messages: [
+          {
+            role: "user",
+            content: [{ type: "tool-call", name: "lookup", arguments: {} }],
+          },
+        ],
+      }),
+    ).toThrow(LlmIoError);
+  });
+
   it("throws when response only contains thinking content", () => {
     const format = new GeminiGenerateContentFormat({ model: "gemini-example" });
 

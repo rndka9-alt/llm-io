@@ -245,6 +245,24 @@ describe("AnthropicMessagesFormat", () => {
     });
   });
 
+  it("throws when tool_use content is not an assistant message", () => {
+    const format = new AnthropicMessagesFormat({
+      maxTokens: 1024,
+      model: "claude-example",
+    });
+
+    expect(() =>
+      format.createRequestBody({
+        messages: [
+          {
+            role: "user",
+            content: [{ type: "tool-call", id: "toolu-1", name: "lookup", arguments: {} }],
+          },
+        ],
+      }),
+    ).toThrow(LlmIoError);
+  });
+
   it("throws when Anthropic response has no text content", async () => {
     const fetchRecorder = createRecordingFetch({
       content: [{ type: "thinking", thinking: "No visible answer." }],

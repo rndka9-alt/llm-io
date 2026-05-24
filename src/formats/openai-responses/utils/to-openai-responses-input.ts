@@ -1,5 +1,5 @@
 import { LlmIoError } from "../../../core/errors";
-import type { LlmMessage } from "../../../core/message";
+import type { LlmMessage, LlmToolCallPart, LlmToolResultPart } from "../../../core/message";
 import { getMessageText } from "../../../core/message";
 
 type OpenAIResponsesInputItem =
@@ -20,8 +20,36 @@ type OpenAIResponsesInputItem =
     };
 
 export function toOpenAIResponsesInput(message: LlmMessage): OpenAIResponsesInputItem[] {
+  const toolCalls = message.content.filter(isToolCallPart);
+  const toolResults = message.content.filter(isToolResultPart);
+
+  if (toolCalls.length > 0 && toolResults.length > 0) {
+    throw new LlmIoError(
+      "OpenAI responses messages cannot mix tool-call and tool-result content parts.",
+    );
+  }
+
+  if (toolCalls.length > 0) {
+    return createOpenAIResponsesToolCallInputItems(message, toolCalls);
+  }
+
+  if (toolResults.length > 0) {
+    return createOpenAIResponsesToolResultInputItems(message, toolResults);
+  }
+
   if (message.role === "tool") {
-    return createOpenAIResponsesToolResultInputItems(message);
+    throw new LlmIoError("OpenAI responses tool messages require a tool-result content part.");
+  }
+
+  return [createOpenAIResponsesTextInputItem(message)];
+}
+
+function createOpenAIResponsesToolCallInputItems(
+  message: LlmMessage,
+  toolCalls: readonly LlmToolCallPart[],
+): OpenAIResponsesInputItem[] {
+  if (message.role !== "assistant") {
+    throw new LlmIoError("OpenAI responses tool-call content parts require assistant messages.");
   }
 
   const inputItems: OpenAIResponsesInputItem[] = [];
@@ -34,38 +62,17 @@ export function toOpenAIResponsesInput(message: LlmMessage): OpenAIResponsesInpu
     });
   }
 
-  for (const contentPart of message.content) {
-    if (contentPart.type === "tool-result") {
-      throw new LlmIoError("OpenAI responses tool results require tool messages.");
-    }
-
-    if (contentPart.type !== "tool-call") {
-      continue;
-    }
-
-    if (message.role !== "assistant") {
-      throw new LlmIoError("OpenAI responses tool calls require assistant messages.");
-    }
-
-    if (contentPart.id === undefined) {
+  for (const toolCall of toolCalls) {
+    if (toolCall.id === undefined) {
       throw new LlmIoError("OpenAI responses tool calls require an id.");
     }
 
     inputItems.push({
       type: "function_call",
-      call_id: contentPart.id,
-      name: contentPart.name,
-      arguments: JSON.stringify(contentPart.arguments),
+      call_id: toolCall.id,
+      name: toolCall.name,
+      arguments: JSON.stringify(toolCall.arguments),
     });
-  }
-
-  if (inputItems.length === 0) {
-    return [
-      {
-        role: message.role,
-        content: text,
-      },
-    ];
   }
 
   return inputItems;
@@ -73,22 +80,27 @@ export function toOpenAIResponsesInput(message: LlmMessage): OpenAIResponsesInpu
 
 function createOpenAIResponsesToolResultInputItems(
   message: LlmMessage,
+  toolResults: readonly LlmToolResultPart[],
 ): OpenAIResponsesInputItem[] {
+  if (message.role !== "tool") {
+    throw new LlmIoError("OpenAI responses tool-result content parts require tool messages.");
+  }
+
+  if (message.content.length !== toolResults.length) {
+    throw new LlmIoError("OpenAI responses tool messages support only tool-result content parts.");
+  }
+
   const inputItems: OpenAIResponsesInputItem[] = [];
 
-  for (const contentPart of message.content) {
-    if (contentPart.type !== "tool-result") {
-      throw new LlmIoError("OpenAI responses tool messages require tool-result content parts.");
-    }
-
-    if (contentPart.id === undefined) {
+  for (const toolResult of toolResults) {
+    if (toolResult.id === undefined) {
       throw new LlmIoError("OpenAI responses tool results require an id.");
     }
 
     inputItems.push({
       type: "function_call_output",
-      call_id: contentPart.id,
-      output: JSON.stringify(contentPart.result),
+      call_id: toolResult.id,
+      output: JSON.stringify(toolResult.result),
     });
   }
 
@@ -97,4 +109,27 @@ function createOpenAIResponsesToolResultInputItems(
   }
 
   return inputItems;
+}
+
+function createOpenAIResponsesTextInputItem(message: LlmMessage): OpenAIResponsesInputItem {
+  if (message.role === "tool") {
+    throw new LlmIoError("OpenAI responses tool messages require a tool-result content part.");
+  }
+
+  return {
+    role: message.role,
+    content: getMessageText(message),
+  };
+}
+
+function isToolCallPart(
+  contentPart: LlmMessage["content"][number],
+): contentPart is LlmToolCallPart {
+  return contentPart.type === "tool-call";
+}
+
+function isToolResultPart(
+  contentPart: LlmMessage["content"][number],
+): contentPart is LlmToolResultPart {
+  return contentPart.type === "tool-result";
 }

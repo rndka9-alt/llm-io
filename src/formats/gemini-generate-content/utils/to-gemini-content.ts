@@ -1,6 +1,7 @@
+import { LlmIoError } from "../../../core/errors";
 import { isJsonObject } from "../../../core/json";
 import type { JsonValue } from "../../../core/json";
-import type { LlmMessage } from "../../../core/message";
+import type { LlmMessage, LlmToolCallPart, LlmToolResultPart } from "../../../core/message";
 import { getMessageText } from "../../../core/message";
 
 export function toGeminiContent(message: LlmMessage): {
@@ -11,6 +12,8 @@ export function toGeminiContent(message: LlmMessage): {
   )[];
   role: "model" | "user";
 } {
+  validateGeminiToolContent(message);
+
   const parts = message.content.map((contentPart) => {
     if (contentPart.type === "text") {
       return { text: contentPart.text };
@@ -45,4 +48,41 @@ function normalizeGeminiFunctionResponse(result: JsonValue): JsonValue {
   }
 
   return { result };
+}
+
+function validateGeminiToolContent(message: LlmMessage): void {
+  const toolCalls = message.content.filter(isToolCallPart);
+  const toolResults = message.content.filter(isToolResultPart);
+
+  if (toolCalls.length > 0 && toolResults.length > 0) {
+    throw new LlmIoError("Gemini messages cannot mix tool-call and tool-result content parts.");
+  }
+
+  if (toolCalls.length > 0 && message.role !== "assistant") {
+    throw new LlmIoError("Gemini tool-call content parts require assistant messages.");
+  }
+
+  if (toolResults.length > 0 && message.role !== "tool") {
+    throw new LlmIoError("Gemini tool-result content parts require tool messages.");
+  }
+
+  if (message.role === "tool" && toolResults.length === 0) {
+    throw new LlmIoError("Gemini tool messages require a tool-result content part.");
+  }
+
+  if (toolResults.length > 0 && message.content.length !== toolResults.length) {
+    throw new LlmIoError("Gemini tool messages support only tool-result content parts.");
+  }
+}
+
+function isToolCallPart(
+  contentPart: LlmMessage["content"][number],
+): contentPart is LlmToolCallPart {
+  return contentPart.type === "tool-call";
+}
+
+function isToolResultPart(
+  contentPart: LlmMessage["content"][number],
+): contentPart is LlmToolResultPart {
+  return contentPart.type === "tool-result";
 }

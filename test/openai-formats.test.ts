@@ -213,6 +213,21 @@ describe("OpenAI formats", () => {
     });
   });
 
+  it("throws when chat completions tool-call content is not an assistant message", () => {
+    const format = new OpenAIChatCompletionsFormat({ model: "example-model" });
+
+    expect(() =>
+      format.createRequestBody({
+        messages: [
+          {
+            role: "user",
+            content: [{ type: "tool-call", id: "call-1", name: "lookup", arguments: {} }],
+          },
+        ],
+      }),
+    ).toThrow(LlmIoError);
+  });
+
   it("throws when chat completions output text is missing", () => {
     const format = new OpenAIChatCompletionsFormat({ model: "example-model" });
 
@@ -300,6 +315,21 @@ describe("OpenAI formats", () => {
         },
       ],
     });
+  });
+
+  it("throws when responses tool-call content is not an assistant message", () => {
+    const format = new OpenAIResponsesFormat({ model: "example-model" });
+
+    expect(() =>
+      format.createRequestBody({
+        messages: [
+          {
+            role: "user",
+            content: [{ type: "tool-call", id: "call-1", name: "lookup", arguments: {} }],
+          },
+        ],
+      }),
+    ).toThrow(LlmIoError);
   });
 
   it("rejects unsupported responses extraBody values at compile time", () => {

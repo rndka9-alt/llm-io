@@ -1,6 +1,6 @@
 import { LlmIoError } from "../../../core/errors";
 import type { JsonValue } from "../../../core/json";
-import type { LlmMessage } from "../../../core/message";
+import type { LlmMessage, LlmToolCallPart, LlmToolResultPart } from "../../../core/message";
 import { getMessageText } from "../../../core/message";
 
 export type OllamaMessage =
@@ -25,25 +25,30 @@ export type OllamaMessage =
     };
 
 export function toOllamaMessage(message: LlmMessage): OllamaMessage {
+  const toolCalls = message.content.filter(isToolCallPart);
+  const toolResults = message.content.filter(isToolResultPart);
+
+  if (toolCalls.length > 0 && toolResults.length > 0) {
+    throw new LlmIoError("Ollama messages cannot mix tool-call and tool-result content parts.");
+  }
+
+  if (toolCalls.length > 0) {
+    return toOllamaAssistantToolCallMessage(message, toolCalls);
+  }
+
+  if (toolResults.length > 0) {
+    return toOllamaToolResultMessage(message, toolResults);
+  }
+
   if (message.role === "tool") {
-    return toOllamaToolMessage(message);
+    throw new LlmIoError("Ollama tool messages require a tool-result content part.");
   }
 
   if (message.role === "assistant") {
-    const toolCalls = message.content.filter((contentPart) => contentPart.type === "tool-call");
-
-    if (toolCalls.length > 0) {
-      return {
-        role: "assistant",
-        content: getMessageText(message),
-        tool_calls: toolCalls.map((toolCall) => ({
-          function: {
-            name: toolCall.name,
-            arguments: toolCall.arguments,
-          },
-        })),
-      };
-    }
+    return {
+      role: "assistant",
+      content: getMessageText(message),
+    };
   }
 
   return {
@@ -52,16 +57,46 @@ export function toOllamaMessage(message: LlmMessage): OllamaMessage {
   };
 }
 
-function toOllamaToolMessage(message: LlmMessage): OllamaMessage {
-  const toolResults = message.content.filter((contentPart) => contentPart.type === "tool-result");
+function toOllamaAssistantToolCallMessage(
+  message: LlmMessage,
+  toolCalls: readonly LlmToolCallPart[],
+): OllamaMessage {
+  if (message.role !== "assistant") {
+    throw new LlmIoError("Ollama tool-call content parts require assistant messages.");
+  }
+
+  return {
+    role: "assistant",
+    content: getMessageText(message),
+    tool_calls: toolCalls.map((toolCall) => ({
+      function: {
+        name: toolCall.name,
+        arguments: toolCall.arguments,
+      },
+    })),
+  };
+}
+
+function toOllamaToolResultMessage(
+  message: LlmMessage,
+  toolResults: readonly LlmToolResultPart[],
+): OllamaMessage {
   const firstToolResult = toolResults[0];
 
-  if (firstToolResult === undefined) {
-    throw new LlmIoError("Ollama tool messages require a tool-result content part.");
+  if (message.role !== "tool") {
+    throw new LlmIoError("Ollama tool-result content parts require tool messages.");
+  }
+
+  if (message.content.length !== toolResults.length) {
+    throw new LlmIoError("Ollama tool messages support only tool-result content parts.");
   }
 
   if (toolResults.length > 1) {
     throw new LlmIoError("Ollama tool messages support exactly one tool-result content part.");
+  }
+
+  if (firstToolResult === undefined) {
+    throw new LlmIoError("Ollama tool messages require a tool-result content part.");
   }
 
   return {
@@ -77,4 +112,16 @@ function stringifyToolResult(result: JsonValue): string {
   }
 
   return JSON.stringify(result);
+}
+
+function isToolCallPart(
+  contentPart: LlmMessage["content"][number],
+): contentPart is LlmToolCallPart {
+  return contentPart.type === "tool-call";
+}
+
+function isToolResultPart(
+  contentPart: LlmMessage["content"][number],
+): contentPart is LlmToolResultPart {
+  return contentPart.type === "tool-result";
 }

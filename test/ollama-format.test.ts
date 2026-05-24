@@ -201,6 +201,21 @@ describe("Ollama chat format", () => {
     });
   });
 
+  it("throws when tool-call content is not an assistant message", () => {
+    const format = new OllamaChatFormat({ model: "example-model" });
+
+    expect(() =>
+      format.createRequestBody({
+        messages: [
+          {
+            role: "user",
+            content: [{ type: "tool-call", name: "lookup", arguments: {} }],
+          },
+        ],
+      }),
+    ).toThrow(LlmIoError);
+  });
+
   it("throws when message content is missing", () => {
     const format = new OllamaChatFormat({ model: "example-model" });
 
