@@ -17,6 +17,7 @@ export const geminiGenerateContentRawSchema = z
                         functionCall: z
                           .object({
                             args: jsonObjectSchema.optional(),
+                            id: z.string().optional(),
                             name: z.string(),
                           })
                           .passthrough()

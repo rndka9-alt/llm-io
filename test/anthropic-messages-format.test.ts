@@ -12,7 +12,7 @@ describe("AnthropicMessagesFormat", () => {
         extraBody: {
           service_tier: "auto",
           stop_sequences: ["END"],
-          thinking: { budget_tokens: 1024, type: "enabled" },
+          thinking: { budget_tokens: 1024, display: "summarized", type: "enabled" },
           tool_choice: { type: "auto" },
           tools: [
             {
@@ -64,7 +64,7 @@ describe("AnthropicMessagesFormat", () => {
       system: "Act carefully.",
       stop_sequences: ["END"],
       temperature: 0.3,
-      thinking: { budget_tokens: 1024, type: "enabled" },
+      thinking: { budget_tokens: 1024, display: "summarized", type: "enabled" },
       tool_choice: { type: "auto" },
       tools: [
         {
@@ -88,8 +88,9 @@ describe("AnthropicMessagesFormat", () => {
       extraBody: {
         // @ts-expect-error service_tier follows documented Anthropic values.
         service_tier: "priority",
-        // @ts-expect-error thinking type follows documented Anthropic values.
-        thinking: { type: "maybe" },
+        thinking: { display: "omitted", type: "adaptive" },
+        // @ts-expect-error thinking display follows documented Anthropic values.
+        thinking_display: { display: "hidden", type: "adaptive" },
         tools: [
           {
             name: "lookup",
@@ -177,6 +178,20 @@ describe("AnthropicMessagesFormat", () => {
     expect(output.finishReason).toBe("length");
   });
 
+  it("normalizes model context window stop reason as length", () => {
+    const format = new AnthropicMessagesFormat({
+      maxTokens: 1024,
+      model: "claude-example",
+    });
+
+    const output = format.parseResponse({
+      content: [{ type: "text", text: "Done." }],
+      stop_reason: "model_context_window_exceeded",
+    });
+
+    expect(output.finishReason).toBe("length");
+  });
+
   it("parses tool_use blocks without text", async () => {
     const fetchRecorder = createRecordingFetch({
       content: [
@@ -258,6 +273,50 @@ describe("AnthropicMessagesFormat", () => {
         },
       ],
     });
+  });
+
+  it("preserves Anthropic tool result content blocks", () => {
+    const format = new AnthropicMessagesFormat({
+      maxTokens: 1024,
+      model: "claude-example",
+    });
+    const toolCall = { id: "toolu-1", name: "lookup", arguments: { query: "weather" } };
+
+    expect(
+      format.createRequestBody({
+        messages: [
+          { role: "user", content: [{ type: "text", text: "weather?" }] },
+          {
+            role: "assistant",
+            content: [{ type: "tool-call", ...toolCall }],
+          },
+          createToolResultMessage(toolCall, [{ type: "text", text: "sunny" }]),
+        ],
+      }).messages,
+    ).toEqual([
+      { role: "user", content: [{ type: "text", text: "weather?" }] },
+      {
+        role: "assistant",
+        content: [
+          {
+            type: "tool_use",
+            id: "toolu-1",
+            name: "lookup",
+            input: { query: "weather" },
+          },
+        ],
+      },
+      {
+        role: "user",
+        content: [
+          {
+            type: "tool_result",
+            tool_use_id: "toolu-1",
+            content: [{ type: "text", text: "sunny" }],
+          },
+        ],
+      },
+    ]);
   });
 
   it("creates image, document, search result, and thinking continuation bodies", () => {
@@ -353,6 +412,30 @@ describe("AnthropicMessagesFormat", () => {
           {
             role: "user",
             content: [{ type: "tool-call", id: "toolu-1", name: "lookup", arguments: {} }],
+          },
+        ],
+      }),
+    ).toThrow(LlmIoError);
+  });
+
+  it("throws when Anthropic search_result title is missing", () => {
+    const format = new AnthropicMessagesFormat({
+      maxTokens: 1024,
+      model: "claude-example",
+    });
+
+    expect(() =>
+      format.createRequestBody({
+        messages: [
+          {
+            role: "user",
+            content: [
+              {
+                type: "search-result",
+                source: "https://example.test/doc",
+                content: [{ type: "text", text: "Search result text" }],
+              },
+            ],
           },
         ],
       }),

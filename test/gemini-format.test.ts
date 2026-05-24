@@ -16,13 +16,13 @@ describe("Gemini generateContent format", () => {
         generationConfig: {
           responseMimeType: "application/json",
           responseSchema: { type: "OBJECT", properties: { ok: { type: "BOOLEAN" } } },
-          mediaResolution: "MEDIA_RESOLUTION_LOW",
+          mediaResolution: "MEDIA_RESOLUTION_ULTRA_HIGH",
           thinkingConfig: { thinkingBudget: 0, thinkingLevel: "LOW" },
         },
         labels: { team: "llm-io" },
         modelArmorConfig: { templateName: "projects/p/locations/l/templates/t" },
         safetySettings: [{ category: "HARM_CATEGORY_DANGEROUS_CONTENT", threshold: "BLOCK_NONE" }],
-        serviceTier: "FLEX",
+        serviceTier: "flex",
         store: true,
         toolConfig: { functionCallingConfig: { mode: "AUTO" } },
         tools: [
@@ -67,7 +67,7 @@ describe("Gemini generateContent format", () => {
         maxOutputTokens: 100,
         responseMimeType: "application/json",
         responseSchema: { type: "OBJECT", properties: { ok: { type: "BOOLEAN" } } },
-        mediaResolution: "MEDIA_RESOLUTION_LOW",
+        mediaResolution: "MEDIA_RESOLUTION_ULTRA_HIGH",
         temperature: 0,
         thinkingConfig: { thinkingBudget: 0, thinkingLevel: "LOW" },
         topP: 0.8,
@@ -76,7 +76,7 @@ describe("Gemini generateContent format", () => {
       labels: { team: "llm-io" },
       modelArmorConfig: { templateName: "projects/p/locations/l/templates/t" },
       safetySettings: [{ category: "HARM_CATEGORY_DANGEROUS_CONTENT", threshold: "BLOCK_NONE" }],
-      serviceTier: "FLEX",
+      serviceTier: "flex",
       store: true,
       systemInstruction: {
         parts: [{ text: "rules" }],
@@ -188,7 +188,9 @@ describe("Gemini generateContent format", () => {
         candidates: [
           {
             content: {
-              parts: [{ functionCall: { name: "lookup", args: { query: "weather" } } }],
+              parts: [
+                { functionCall: { id: "call-1", name: "lookup", args: { query: "weather" } } },
+              ],
             },
             finishReason: "STOP",
           },
@@ -203,15 +205,17 @@ describe("Gemini generateContent format", () => {
     });
 
     expect(output.message.text).toBe("");
-    expect(output.toolCalls).toEqual([{ name: "lookup", arguments: { query: "weather" } }]);
+    expect(output.toolCalls).toEqual([
+      { id: "call-1", name: "lookup", arguments: { query: "weather" } },
+    ]);
     expect(output.message.content).toEqual([
-      { type: "tool-call", name: "lookup", arguments: { query: "weather" } },
+      { type: "tool-call", id: "call-1", name: "lookup", arguments: { query: "weather" } },
     ]);
   });
 
   it("creates function response continuation bodies", () => {
     const format = new GeminiGenerateContentFormat({ model: "gemini-example" });
-    const toolCall = { name: "lookup", arguments: { query: "weather" } };
+    const toolCall = { id: "call-1", name: "lookup", arguments: { query: "weather" } };
 
     expect(
       format.createRequestBody({
@@ -229,11 +233,13 @@ describe("Gemini generateContent format", () => {
         { role: "user", parts: [{ text: "weather?" }] },
         {
           role: "model",
-          parts: [{ functionCall: { name: "lookup", args: { query: "weather" } } }],
+          parts: [{ functionCall: { id: "call-1", name: "lookup", args: { query: "weather" } } }],
         },
         {
           role: "user",
-          parts: [{ functionResponse: { name: "lookup", response: { temperature: 18 } } }],
+          parts: [
+            { functionResponse: { id: "call-1", name: "lookup", response: { temperature: 18 } } },
+          ],
         },
       ],
     });

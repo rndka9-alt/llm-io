@@ -6,6 +6,7 @@ import {
   joinUrlPath,
   resolveOpenAICompatibleRequestPath,
 } from "../utils/index";
+import { throwUnsupportedFormat } from "../utils/throw-unsupported-format";
 
 export type VercelAIGatewayProviderId =
   | "alibaba"
@@ -177,7 +178,7 @@ export class VercelAIGatewayProvider<
       ),
       method: "POST",
       signal: input.request.signal,
-      url: joinUrlPath(this.baseUrl, resolveOpenAICompatibleRequestPath(input.format)),
+      url: joinUrlPath(this.baseUrl, this.resolveRequestPath(input.format)),
     });
   }
 
@@ -190,5 +191,17 @@ export class VercelAIGatewayProvider<
       ...body,
       providerOptions: this.providerOptions,
     };
+  }
+
+  private resolveRequestPath(format: LlmProviderRequestInput["format"]): string {
+    if (format.id === "anthropic-messages") {
+      return "/messages";
+    }
+
+    if (format.id === "openai-chat-completions" || format.id === "openai-responses") {
+      return resolveOpenAICompatibleRequestPath(format);
+    }
+
+    throwUnsupportedFormat(this.id, format);
   }
 }

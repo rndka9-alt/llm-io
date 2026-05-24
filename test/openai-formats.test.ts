@@ -143,6 +143,9 @@ describe("OpenAI formats", () => {
         usage: {
           prompt_tokens: 3,
           completion_tokens: 4,
+          completion_tokens_details: {
+            reasoning_tokens: 2,
+          },
           total_tokens: 7,
         },
       }),
@@ -156,6 +159,7 @@ describe("OpenAI formats", () => {
 
     expect(output.message.text).toBe("hello");
     expect(output.reasoning?.text).toBe("because");
+    expect(output.usage?.reasoningTokens).toBe(2);
     expect(output.usage?.totalTokens).toBe(7);
     expect(output.raw.choices[0]?.message.content).toBe("hello");
   });
@@ -277,7 +281,7 @@ describe("OpenAI formats", () => {
     const format = new OpenAIResponsesFormat({
       extraBody: {
         prompt_cache_key: "shared-prefix",
-        prompt_cache_retention: "in_memory",
+        prompt_cache_retention: "in-memory",
         reasoning: { effort: "medium", summary: "auto" },
         service_tier: "scale",
         store: false,
@@ -300,7 +304,7 @@ describe("OpenAI formats", () => {
               properties: { query: { type: "string" } },
             },
           },
-          { type: "web_search_preview", search_context_size: "low" },
+          { type: "web_search", search_context_size: "low" },
         ],
       },
       model: "example-model",
@@ -328,7 +332,7 @@ describe("OpenAI formats", () => {
       temperature: 0,
       top_p: 0.8,
       prompt_cache_key: "shared-prefix",
-      prompt_cache_retention: "in_memory",
+      prompt_cache_retention: "in-memory",
       reasoning: { effort: "medium", summary: "auto" },
       service_tier: "scale",
       store: false,
@@ -351,7 +355,7 @@ describe("OpenAI formats", () => {
             properties: { query: { type: "string" } },
           },
         },
-        { type: "web_search_preview", search_context_size: "low" },
+        { type: "web_search", search_context_size: "low" },
       ],
     });
   });
@@ -388,6 +392,37 @@ describe("OpenAI formats", () => {
         },
       ],
     });
+  });
+
+  it("preserves string responses tool results without JSON double encoding", () => {
+    const format = new OpenAIResponsesFormat({ model: "example-model" });
+    const toolCall = { id: "call-1", name: "lookup", arguments: { query: "weather" } };
+
+    expect(
+      format.createRequestBody({
+        messages: [
+          { role: "user", content: [{ type: "text", text: "weather?" }] },
+          {
+            role: "assistant",
+            content: [{ type: "tool-call", ...toolCall }],
+          },
+          createToolResultMessage(toolCall, "sunny"),
+        ],
+      }).input,
+    ).toEqual([
+      { role: "user", content: "weather?" },
+      {
+        type: "function_call",
+        call_id: "call-1",
+        name: "lookup",
+        arguments: '{"query":"weather"}',
+      },
+      {
+        type: "function_call_output",
+        call_id: "call-1",
+        output: "sunny",
+      },
+    ]);
   });
 
   it("throws when responses tool-call content is not an assistant message", () => {
@@ -442,7 +477,8 @@ describe("OpenAI formats", () => {
         output: [
           {
             type: "reasoning",
-            summary: [{ text: "thought" }],
+            content: [{ type: "reasoning_text", text: "private thought" }],
+            summary: [{ type: "summary_text", text: "summary thought" }],
           },
           {
             type: "message",
@@ -467,7 +503,7 @@ describe("OpenAI formats", () => {
     });
 
     expect(output.message.text).toBe("done");
-    expect(output.reasoning?.text).toBe("thought");
+    expect(output.reasoning?.text).toBe("private thought\nsummary thought");
     expect(output.usage?.reasoningTokens).toBe(2);
     expect(output.raw.output).toHaveLength(2);
     expect(output.extras?.responseId).toBe("response-1");
@@ -512,7 +548,7 @@ describe("OpenAI formats", () => {
         output: [
           {
             type: "reasoning",
-            summary: [{ text: "thought" }],
+            summary: [{ type: "summary_text", text: "thought" }],
           },
         ],
       }),

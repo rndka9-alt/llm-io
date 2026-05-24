@@ -1,4 +1,5 @@
 import type { LlmToolCall } from "../../../core/message";
+import { omitUndefined } from "../../../utils/object";
 import type { GeminiGenerateContentRaw } from "../raw-schema";
 
 type GeminiPart = NonNullable<
@@ -13,10 +14,13 @@ export function createGeminiToolCalls(parts: readonly GeminiPart[]): LlmToolCall
       continue;
     }
 
-    toolCalls.push({
-      name: part.functionCall.name,
-      arguments: part.functionCall.args ?? {},
-    });
+    toolCalls.push(
+      omitUndefined({
+        id: part.functionCall.id,
+        name: part.functionCall.name,
+        arguments: part.functionCall.args ?? {},
+      }),
+    );
   }
 
   return toolCalls;

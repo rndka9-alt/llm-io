@@ -6,6 +6,10 @@ export function resolveNanoGPTRequestPath(format: LlmFormat<unknown, unknown>): 
     return "/chat/completions";
   }
 
+  if (format.id === "openai-responses") {
+    return "/responses";
+  }
+
   if (format.id === "anthropic-messages") {
     return "/messages";
   }

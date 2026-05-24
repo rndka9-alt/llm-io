@@ -15,7 +15,7 @@ export type OpenAIResponsesInclude =
   | "reasoning.encrypted_content";
 
 /** 프롬프트 캐시를 유지할 기간이다. */
-export type OpenAIResponsesPromptCacheRetention = "in_memory" | "24h";
+export type OpenAIResponsesPromptCacheRetention = "in-memory" | "24h";
 
 export type OpenAIResponsesReasoningEffort =
   /** 추론 토큰을 쓰지 않도록 요청한다. */
@@ -37,9 +37,7 @@ export type OpenAIResponsesReasoningSummary =
   /** 짧은 reasoning summary를 요청한다. */
   | "concise"
   /** 더 자세한 reasoning summary를 요청한다. */
-  | "detailed"
-  /** reasoning summary를 요청하지 않는다. */
-  | null;
+  | "detailed";
 
 export type OpenAIResponsesServiceTier =
   /** 프로젝트 기본 설정에 따라 처리 계층을 자동 선택한다. */
@@ -60,8 +58,19 @@ export type OpenAIResponsesToolChoice =
   | "auto"
   /** 모델이 하나 이상의 도구를 호출하도록 강제한다. */
   | "required"
-  /** 특정 hosted tool 또는 function tool을 지정한다. */
+  /** 허용된 tool 집합 안에서 선택하도록 제한한다. */
+  | OpenAIResponsesAllowedToolsChoice
+  /** 특정 hosted tool, function tool, MCP tool 등을 지정한다. */
   | OpenAIResponsesNamedToolChoice;
+
+export interface OpenAIResponsesAllowedToolsChoice extends JsonObject {
+  /** 허용 tool 중 자동 선택할지, tool 호출을 필수로 할지 정한다. */
+  mode: "auto" | "required";
+  /** 모델이 사용할 수 있는 tool 정의 목록이다. */
+  tools: readonly JsonObject[];
+  /** allowed tools tool_choice 식별자다. */
+  type: "allowed_tools";
+}
 
 export interface OpenAIResponsesFunctionToolChoice extends JsonObject {
   /** 호출할 함수 도구 이름이다. */
@@ -72,12 +81,48 @@ export interface OpenAIResponsesFunctionToolChoice extends JsonObject {
 
 export interface OpenAIResponsesHostedToolChoice extends JsonObject {
   /** 호출할 hosted tool type이다. */
-  type: Exclude<OpenAIResponsesTool["type"], "function">;
+  type:
+    | "file_search"
+    | "web_search_preview"
+    | "web_search_preview_2025_03_11"
+    | "computer_use_preview"
+    | "code_interpreter"
+    | "image_generation";
+}
+
+export interface OpenAIResponsesMcpToolChoice extends JsonObject {
+  /** 호출할 MCP tool 이름이다. */
+  name?: string;
+  /** 호출할 MCP server label이다. */
+  server_label: string;
+  /** MCP tool_choice 식별자다. */
+  type: "mcp";
+}
+
+export interface OpenAIResponsesCustomToolChoice extends JsonObject {
+  /** 호출할 custom tool 이름이다. */
+  name: string;
+  /** custom tool_choice 식별자다. */
+  type: "custom";
+}
+
+export interface OpenAIResponsesApplyPatchToolChoice extends JsonObject {
+  /** apply_patch tool_choice 식별자다. */
+  type: "apply_patch";
+}
+
+export interface OpenAIResponsesShellToolChoice extends JsonObject {
+  /** shell tool_choice 식별자다. */
+  type: "shell";
 }
 
 export type OpenAIResponsesNamedToolChoice =
   | OpenAIResponsesFunctionToolChoice
-  | OpenAIResponsesHostedToolChoice;
+  | OpenAIResponsesHostedToolChoice
+  | OpenAIResponsesMcpToolChoice
+  | OpenAIResponsesCustomToolChoice
+  | OpenAIResponsesApplyPatchToolChoice
+  | OpenAIResponsesShellToolChoice;
 
 export interface OpenAIResponsesFunctionTool extends JsonObject {
   /** 모델이 tool 사용 시 참고할 설명이다. */
@@ -101,15 +146,16 @@ export interface OpenAIResponsesFileSearchTool extends JsonObject {
 }
 
 export interface OpenAIResponsesWebSearchTool extends JsonObject {
+  filters?: JsonObject;
   search_context_size?: "low" | "medium" | "high";
-  type: "web_search_preview" | "web_search_preview_2025_03_11";
+  type: "web_search" | "web_search_2025_08_26";
   user_location?: JsonObject;
 }
 
 export interface OpenAIResponsesComputerUseTool extends JsonObject {
-  display_height?: number;
-  display_width?: number;
-  environment?: string;
+  display_height: number;
+  display_width: number;
+  environment: "windows" | "mac" | "linux" | "ubuntu" | "browser";
   type: "computer_use_preview";
 }
 

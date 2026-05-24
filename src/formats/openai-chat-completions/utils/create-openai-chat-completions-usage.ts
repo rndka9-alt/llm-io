@@ -12,6 +12,7 @@ export function createOpenAIChatCompletionsUsage(
   return omitUndefined({
     inputTokens: usage.prompt_tokens,
     outputTokens: usage.completion_tokens,
+    reasoningTokens: usage.completion_tokens_details?.reasoning_tokens,
     totalTokens: usage.total_tokens,
   });
 }

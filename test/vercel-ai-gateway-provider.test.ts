@@ -1,12 +1,13 @@
 import { describe, expect, it } from "vitest";
 import {
+  AnthropicMessagesFormat,
   Llm,
   OpenAIChatCompletionsFormat,
   OpenAIResponsesFormat,
   VercelAIGatewayProvider,
   type VercelAIGatewayProviderOptionsMap,
 } from "../src/index";
-import { createRecordingFetch, readRequestBody } from "./test-utils";
+import { createAnthropicResponse, createRecordingFetch, readRequestBody } from "./test-utils";
 
 describe("VercelAIGatewayProvider", () => {
   it("injects providerOptions into OpenAI-compatible bodies", async () => {
@@ -125,5 +126,23 @@ describe("VercelAIGatewayProvider", () => {
     });
 
     expect(fetchRecorder.calls[0]?.input).toBe("https://ai-gateway.vercel.sh/v1/responses");
+  });
+
+  it("uses Anthropic messages endpoint", async () => {
+    const fetchRecorder = createRecordingFetch(createAnthropicResponse());
+    const client = new Llm({
+      fetch: fetchRecorder.fetch,
+      format: new AnthropicMessagesFormat({
+        maxTokens: 1024,
+        model: "anthropic/claude-opus-4.6",
+      }),
+      provider: new VercelAIGatewayProvider({ apiKey: "gateway-key" }),
+    });
+
+    await client.generate({
+      messages: [{ role: "user", content: [{ type: "text", text: "hi" }] }],
+    });
+
+    expect(fetchRecorder.calls[0]?.input).toBe("https://ai-gateway.vercel.sh/v1/messages");
   });
 });

@@ -11,7 +11,7 @@ export function normalizeAnthropicFinishReason(
     return "stop";
   }
 
-  if (reason === "max_tokens") {
+  if (reason === "max_tokens" || reason === "model_context_window_exceeded") {
     return "length";
   }
 

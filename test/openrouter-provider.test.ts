@@ -1,12 +1,14 @@
 import { describe, expect, it } from "vitest";
 import {
   AnthropicMessagesFormat,
+  GeminiGenerateContentFormat,
   Llm,
   LlmIoError,
   OpenAIChatCompletionsFormat,
+  OpenAIResponsesFormat,
   OpenRouterProvider,
 } from "../src/index";
-import { createRecordingFetch } from "./test-utils";
+import { createAnthropicResponse, createRecordingFetch } from "./test-utils";
 
 describe("OpenRouterProvider", () => {
   it("uses OpenRouter chat completions endpoint and ranking headers", async () => {
@@ -36,13 +38,45 @@ describe("OpenRouterProvider", () => {
     });
   });
 
-  it("throws before fetch when format is unsupported", async () => {
+  it("uses OpenRouter responses endpoint", async () => {
     const fetchRecorder = createRecordingFetch({
-      content: [{ type: "text", text: "ok" }],
+      output: [{ type: "message", content: [{ type: "output_text", text: "ok" }] }],
     });
     const client = new Llm({
       fetch: fetchRecorder.fetch,
+      format: new OpenAIResponsesFormat({ model: "openai/gpt-5.2" }),
+      provider: new OpenRouterProvider({ apiKey: "openrouter-key" }),
+    });
+
+    await client.generate({
+      messages: [{ role: "user", content: [{ type: "text", text: "hi" }] }],
+    });
+
+    expect(fetchRecorder.calls[0]?.input).toBe("https://openrouter.ai/api/v1/responses");
+  });
+
+  it("uses OpenRouter Anthropic-compatible messages endpoint", async () => {
+    const fetchRecorder = createRecordingFetch(createAnthropicResponse());
+    const client = new Llm({
+      fetch: fetchRecorder.fetch,
       format: new AnthropicMessagesFormat({ maxTokens: 1024, model: "claude-example" }),
+      provider: new OpenRouterProvider({ apiKey: "openrouter-key" }),
+    });
+
+    await client.generate({
+      messages: [{ role: "user", content: [{ type: "text", text: "hi" }] }],
+    });
+
+    expect(fetchRecorder.calls[0]?.input).toBe("https://openrouter.ai/api/v1/messages");
+  });
+
+  it("throws before fetch when format is unsupported", async () => {
+    const fetchRecorder = createRecordingFetch({
+      candidates: [{ content: { parts: [{ text: "ok" }] } }],
+    });
+    const client = new Llm({
+      fetch: fetchRecorder.fetch,
+      format: new GeminiGenerateContentFormat({ model: "gemini-2.5-flash" }),
       provider: new OpenRouterProvider({ apiKey: "openrouter-key" }),
     });
 

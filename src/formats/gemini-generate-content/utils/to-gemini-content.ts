@@ -1,13 +1,14 @@
 import { LlmIoError } from "../../../core/errors";
 import type { JsonValue } from "../../../types/json";
 import { isJsonObject } from "../../../utils/json";
+import { omitUndefined } from "../../../utils/object";
 import type { LlmMessage, LlmToolCallPart, LlmToolResultPart } from "../../../core/message";
 import { getMessageText } from "../../../core/message";
 
 export function toGeminiContent(message: LlmMessage): {
   parts: (
-    | { functionCall: { args: JsonValue; name: string } }
-    | { functionResponse: { name: string; response: JsonValue } }
+    | { functionCall: { args: JsonValue; id?: string; name: string } }
+    | { functionResponse: { id?: string; name: string; response: JsonValue } }
     | { text: string }
   )[];
   role: "model" | "user";
@@ -21,19 +22,21 @@ export function toGeminiContent(message: LlmMessage): {
 
     if (contentPart.type === "tool-call") {
       return {
-        functionCall: {
+        functionCall: omitUndefined({
+          id: contentPart.id,
           name: contentPart.name,
           args: contentPart.arguments,
-        },
+        }),
       };
     }
 
     if (contentPart.type === "tool-result") {
       return {
-        functionResponse: {
+        functionResponse: omitUndefined({
+          id: contentPart.id,
           name: contentPart.name,
           response: normalizeGeminiFunctionResponse(contentPart.result),
-        },
+        }),
       };
     }
 

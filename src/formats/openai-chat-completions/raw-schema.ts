@@ -36,6 +36,12 @@ export const openAIChatCompletionsRawSchema = z
       .min(1),
     usage: z
       .object({
+        completion_tokens_details: z
+          .object({
+            reasoning_tokens: z.number().optional(),
+          })
+          .passthrough()
+          .optional(),
         completion_tokens: z.number().optional(),
         prompt_tokens: z.number().optional(),
         total_tokens: z.number().optional(),

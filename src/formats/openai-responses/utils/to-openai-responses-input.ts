@@ -112,7 +112,7 @@ function createOpenAIResponsesToolResultInputItems(
     inputItems.push({
       type: "function_call_output",
       call_id: toolResult.id,
-      output: JSON.stringify(toolResult.result),
+      output: stringifyToolResult(toolResult.result),
     });
   }
 
@@ -121,6 +121,14 @@ function createOpenAIResponsesToolResultInputItems(
   }
 
   return inputItems;
+}
+
+function stringifyToolResult(result: LlmToolResultPart["result"]): string {
+  if (typeof result === "string") {
+    return result;
+  }
+
+  return JSON.stringify(result);
 }
 
 function createOpenAIResponsesTextInputItem(message: LlmMessage): OpenAIResponsesInputItem {

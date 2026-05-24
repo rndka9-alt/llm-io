@@ -1,5 +1,6 @@
 import { LlmIoError } from "../../../core/errors";
 import type { JsonValue } from "../../../types/json";
+import { isJsonObject } from "../../../utils/json";
 import { omitUndefined } from "../../../utils/object";
 import type {
   LlmMessage,
@@ -8,6 +9,7 @@ import type {
   LlmToolResultPart,
 } from "../../../core/message";
 import type { AnthropicContentBlock } from "../types";
+import type { AnthropicToolResultContentBlock } from "../types";
 
 export function toAnthropicContent(message: LlmMessage): AnthropicContentBlock[] {
   validateAnthropicToolContent(message);
@@ -94,7 +96,7 @@ export function toAnthropicContent(message: LlmMessage): AnthropicContentBlock[]
       omitUndefined({
         type: "tool_result",
         tool_use_id: contentPart.id,
-        content: stringifyToolResult(contentPart.result),
+        content: toAnthropicToolResultContent(contentPart.result),
         is_error: contentPart.isError,
       }),
     );
@@ -104,9 +106,14 @@ export function toAnthropicContent(message: LlmMessage): AnthropicContentBlock[]
 }
 
 function toAnthropicSearchResultBlock(contentPart: LlmSearchResultPart): AnthropicContentBlock {
+  if (contentPart.title === undefined || contentPart.title === null) {
+    throw new LlmIoError("Anthropic search_result content blocks require a title.");
+  }
+
   return {
     ...contentPart,
     type: "search_result",
+    title: contentPart.title,
     content: contentPart.content.map((textPart) => ({ type: "text", text: textPart.text })),
   };
 }
@@ -136,12 +143,28 @@ function validateAnthropicToolContent(message: LlmMessage): void {
   }
 }
 
-function stringifyToolResult(result: JsonValue): string {
+function toAnthropicToolResultContent(
+  result: JsonValue,
+): string | readonly AnthropicToolResultContentBlock[] {
   if (typeof result === "string") {
     return result;
   }
 
+  if (Array.isArray(result) && result.every(isAnthropicToolResultContentBlock)) {
+    return result;
+  }
+
   return JSON.stringify(result);
+}
+
+function isAnthropicToolResultContentBlock(
+  value: JsonValue,
+): value is AnthropicToolResultContentBlock {
+  if (!isJsonObject(value)) {
+    return false;
+  }
+
+  return value.type === "text" || value.type === "image" || value.type === "document";
 }
 
 function isToolCallPart(

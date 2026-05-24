@@ -64,7 +64,9 @@ export interface GeminiGenerationConfig extends JsonObject {
   mediaResolution?:
     | "MEDIA_RESOLUTION_UNSPECIFIED"
     | "MEDIA_RESOLUTION_LOW"
-    | "MEDIA_RESOLUTION_HIGH";
+    | "MEDIA_RESOLUTION_MEDIUM"
+    | "MEDIA_RESOLUTION_HIGH"
+    | "MEDIA_RESOLUTION_ULTRA_HIGH";
   /** 가능한 경우 deterministic sampling을 위한 seed다. */
   seed?: number;
   /** 생성 중단 문자열 목록이다. */
@@ -159,7 +161,7 @@ export interface GeminiGenerateContentExtraBody {
   /** Vertex AI Model Armor 설정이다. */
   modelArmorConfig?: JsonObject;
   /** 요청 처리 계층이다. */
-  serviceTier?: "SERVICE_TIER_UNSPECIFIED" | "STANDARD" | "FLEX";
+  serviceTier?: "unspecified" | "standard" | "flex" | "priority";
   /** 응답 저장 여부다. */
   store?: boolean;
   /** 요청에 붙일 사용자 정의 label이다. */

@@ -2,6 +2,7 @@ import { z } from "zod";
 
 const openAIResponsesKnownOutputItemTypes = ["function_call", "message", "reasoning"] as const;
 const openAIResponsesKnownMessageContentPartTypes = ["output_text"] as const;
+const openAIResponsesKnownReasoningContentPartTypes = ["reasoning_text", "summary_text"] as const;
 
 export const openAIResponsesFunctionCallOutputItemSchema = z
   .object({
@@ -46,11 +47,37 @@ export const openAIResponsesMessageOutputItemSchema = z
 export const openAIResponsesReasoningSummaryPartSchema = z
   .object({
     text: z.string(),
+    type: z.literal("summary_text"),
   })
   .passthrough();
 
+export const openAIResponsesReasoningTextPartSchema = z
+  .object({
+    text: z.string(),
+    type: z.literal("reasoning_text"),
+  })
+  .passthrough();
+
+export const openAIResponsesUnknownReasoningContentPartSchema = z
+  .object({
+    type: z
+      .string()
+      .refine(
+        (type) =>
+          !openAIResponsesKnownReasoningContentPartTypes.some((knownType) => knownType === type),
+        "Known OpenAI Responses reasoning content part types must match their documented schema.",
+      ),
+  })
+  .passthrough();
+
+export const openAIResponsesReasoningContentPartSchema = z.union([
+  openAIResponsesReasoningTextPartSchema,
+  openAIResponsesUnknownReasoningContentPartSchema,
+]);
+
 export const openAIResponsesReasoningOutputItemSchema = z
   .object({
+    content: z.array(openAIResponsesReasoningContentPartSchema).optional(),
     summary: z.array(openAIResponsesReasoningSummaryPartSchema).optional(),
     type: z.literal("reasoning"),
   })

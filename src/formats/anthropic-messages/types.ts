@@ -8,7 +8,8 @@ export type AnthropicMessagesServiceTier =
 
 export type AnthropicMessagesThinking =
   | AnthropicMessagesEnabledThinking
-  | AnthropicMessagesDisabledThinking;
+  | AnthropicMessagesDisabledThinking
+  | AnthropicMessagesAdaptiveThinking;
 
 export type AnthropicMessagesToolChoice =
   | AnthropicMessagesAutoToolChoice
@@ -55,7 +56,7 @@ export interface AnthropicSearchResultBlock extends JsonObject {
   citations?: JsonObject;
   content: readonly AnthropicTextBlock[];
   source: string;
-  title?: string | null;
+  title: string;
   type: "search_result";
 }
 
@@ -85,12 +86,17 @@ export interface AnthropicToolResultBlock extends JsonObject {
   /** tool 실행 실패 여부다. */
   is_error?: boolean;
   /** tool 실행 결과다. */
-  content: string;
+  content?: string | readonly AnthropicToolResultContentBlock[];
   /** 대응하는 tool_use id다. */
   tool_use_id: string;
   /** Anthropic tool result content block 식별자다. */
   type: "tool_result";
 }
+
+export type AnthropicToolResultContentBlock =
+  | AnthropicTextBlock
+  | AnthropicImageBlock
+  | AnthropicDocumentBlock;
 
 export type AnthropicContentBlock =
   | AnthropicTextBlock
@@ -117,6 +123,8 @@ export interface AnthropicMessagesMetadata extends JsonObject {
 export interface AnthropicMessagesEnabledThinking extends JsonObject {
   /** extended thinking에 배정할 token 예산이다. */
   budget_tokens: number;
+  /** reasoning 표시 방식을 제어한다. */
+  display?: "summarized" | "omitted";
   /** extended thinking을 켠다. */
   type: "enabled";
 }
@@ -124,6 +132,13 @@ export interface AnthropicMessagesEnabledThinking extends JsonObject {
 export interface AnthropicMessagesDisabledThinking extends JsonObject {
   /** extended thinking을 끈다. */
   type: "disabled";
+}
+
+export interface AnthropicMessagesAdaptiveThinking extends JsonObject {
+  /** reasoning 표시 방식을 제어한다. */
+  display?: "summarized" | "omitted";
+  /** 모델이 adaptive thinking 예산을 선택하게 한다. */
+  type: "adaptive";
 }
 
 export interface AnthropicTool extends JsonObject {
