@@ -47,58 +47,31 @@ export type {
 export type { LlmProvider, LlmProviderRequest, LlmProviderRequestInput } from "./core/provider";
 export type { LlmLegacyHttpOptions, LlmOptions, LlmProviderOptions } from "./llm";
 export type {
-  AnthropicCacheControl,
-  AnthropicCacheControlTimeToLive,
-  AnthropicMessagesFormatOptions,
   AnthropicMessagesExtraBody,
-  AnthropicMessagesServiceTier,
-  AnthropicMessagesThinking,
-  AnthropicMessagesToolChoice,
+  AnthropicMessagesFormatOptions,
   AnthropicMessagesRaw,
-  AnthropicTool,
 } from "./formats/anthropic-messages/index";
 export type {
   GeminiGenerateContentExtraBody,
   GeminiGenerateContentFormatOptions,
   GeminiGenerateContentRaw,
-  GeminiGenerationConfig,
-  GeminiHarmBlockThreshold,
-  GeminiHarmCategory,
-  GeminiResponseMimeType,
-  GeminiSafetySetting,
-  GeminiThinkingConfig,
 } from "./formats/gemini-generate-content/index";
 export type {
   OllamaChatExtraBody,
   OllamaChatExtras,
   OllamaChatFormatOptions,
-  OllamaChatModelOptions,
-  OllamaFormat,
-  OllamaKeepAlive,
   OllamaChatRaw,
-  OllamaThink,
 } from "./formats/ollama-chat/index";
 export type {
-  NanoGPTPromptCachingOptions,
-  NanoGPTReasoningOptions,
   OpenAIChatCompletionsExtraBody,
   OpenAIChatCompletionsFormatOptions,
-  OpenAIChatCompletionsReasoningEffort,
   OpenAIChatCompletionsRaw,
-  OpenAIChatCompletionsResponseFormat,
-  OpenAIChatCompletionsServiceTier,
-  OpenRouterProviderRouting,
 } from "./formats/openai-chat-completions/index";
 export type {
   OpenAIResponsesExtraBody,
   OpenAIResponsesExtras,
   OpenAIResponsesFormatOptions,
-  OpenAIResponsesReasoningEffort,
-  OpenAIResponsesReasoningOptions,
   OpenAIResponsesRaw,
-  OpenAIResponsesServiceTier,
-  OpenAIResponsesTextFormat,
-  OpenAIResponsesTextOptions,
 } from "./formats/openai-responses/index";
 export type {
   AnthropicProviderOptions,
@@ -119,15 +92,8 @@ export type {
   OpenRouterProviderOptions,
   VercelAIGatewayProviderOptions,
   VercelAIGatewayProviderOptionsMap,
-  VercelAIGatewayAnthropicProviderOptions,
-  VercelAIGatewayByokCredentials,
-  VercelAIGatewayGoogleProviderOptions,
-  VercelAIGatewayKnownProviderOptions,
-  VercelAIGatewayOpenAIProviderOptions,
   VercelAIGatewayOptions,
   VercelAIGatewayProviderId,
-  VercelAIGatewayReasoningEffort,
-  VercelAIGatewayProviderTimeouts,
   VertexAIProviderOptions,
 } from "./providers/index";
 export type { FetchLike } from "./transport/fetch-like";

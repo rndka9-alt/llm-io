@@ -27,16 +27,9 @@ export type { OllamaCloudProviderOptions } from "./ollama-cloud-provider";
 export type { OpenAIProviderOptions, OpenAIServiceTier } from "./openai-provider";
 export type { OpenRouterProviderOptions } from "./openrouter-provider";
 export type {
-  VercelAIGatewayAnthropicProviderOptions,
-  VercelAIGatewayByokCredentials,
-  VercelAIGatewayGoogleProviderOptions,
-  VercelAIGatewayKnownProviderOptions,
-  VercelAIGatewayOpenAIProviderOptions,
   VercelAIGatewayOptions,
   VercelAIGatewayProviderId,
   VercelAIGatewayProviderOptions,
   VercelAIGatewayProviderOptionsMap,
-  VercelAIGatewayReasoningEffort,
-  VercelAIGatewayProviderTimeouts,
 } from "./vercel-ai-gateway-provider";
 export type { VertexAIProviderOptions } from "./vertex-ai-provider";
