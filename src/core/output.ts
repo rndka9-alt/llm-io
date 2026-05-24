@@ -2,13 +2,15 @@ import type { JsonObject } from "../types/json";
 import { undefinedIfEmptyArray } from "../utils/array";
 import { omitUndefined } from "../utils/object";
 import type {
+  LlmMessage,
   LlmRedactedThinkingPart,
+  LlmTextPart,
   LlmThinkingPart,
   LlmToolCall,
   LlmToolCallPart,
 } from "./message";
 
-export interface LlmAssistantMessage {
+export interface LlmAssistantMessage extends LlmMessage {
   role: "assistant";
   content: readonly LlmAssistantContentPart[];
   text: string;
@@ -21,10 +23,7 @@ export type LlmAssistantContentPart =
   | LlmAssistantThinkingPart
   | LlmAssistantRedactedThinkingPart;
 
-export interface LlmAssistantTextPart {
-  type: "text";
-  text: string;
-}
+export type LlmAssistantTextPart = LlmTextPart;
 
 export type LlmAssistantToolCallPart = LlmToolCallPart;
 
