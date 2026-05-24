@@ -35,8 +35,11 @@ describe("Gemini generateContent format", () => {
         { role: "model", parts: [{ text: "hello" }] },
       ],
       generationConfig: {
+        maxOutputTokens: 100,
         responseMimeType: "application/json",
+        temperature: 0,
         thinkingConfig: { thinkingBudget: 0 },
+        topP: 0.8,
       },
       cachedContent: "cachedContents/example",
       safetySettings: [{ category: "HARM_CATEGORY_DANGEROUS_CONTENT", threshold: "BLOCK_NONE" }],

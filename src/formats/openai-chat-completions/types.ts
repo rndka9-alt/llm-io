@@ -120,8 +120,6 @@ export interface OpenAIChatCompletionsAudioOptions extends JsonObject {
 export interface OpenAIChatCompletionsFunctionToolChoice extends JsonObject {
   /** 호출할 함수 도구 이름이다. */
   name: string;
-  /** OpenAI tool_choice의 함수 도구 타입 식별자다. */
-  type: "function";
 }
 
 export interface OpenAIChatCompletionsNamedToolChoice extends JsonObject {

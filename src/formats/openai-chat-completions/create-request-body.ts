@@ -18,7 +18,7 @@ export function createOpenAIChatCompletionsRequestBody(
   };
 
   if (request.options?.maxTokens !== undefined) {
-    requestBody.max_tokens = request.options.maxTokens;
+    requestBody.max_completion_tokens = request.options.maxTokens;
   }
 
   if (request.options?.temperature !== undefined) {

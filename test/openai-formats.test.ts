@@ -16,6 +16,7 @@ describe("OpenAI formats", () => {
         reasoning_effort: "high",
         response_format: { type: "json_object" },
         stream_options: { include_usage: true },
+        tool_choice: { type: "function", function: { name: "lookup" } },
       },
       model: "example-model",
     });
@@ -32,13 +33,14 @@ describe("OpenAI formats", () => {
     ).toEqual({
       model: "example-model",
       messages: [{ role: "user", content: "hi" }],
-      max_tokens: 100,
+      max_completion_tokens: 100,
       temperature: 0,
       top_p: 0.8,
       prompt_cache_retention: "24h",
       reasoning_effort: "high",
       response_format: { type: "json_object" },
       stream_options: { include_usage: true },
+      tool_choice: { type: "function", function: { name: "lookup" } },
     });
   });
 
