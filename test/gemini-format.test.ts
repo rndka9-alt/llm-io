@@ -6,6 +6,11 @@ describe("Gemini generateContent format", () => {
   it("creates request bodies with system instructions, model roles, generation config, and extra body", () => {
     const format = new GeminiGenerateContentFormat({
       extraBody: {
+        cachedContent: "cachedContents/example",
+        generationConfig: {
+          responseMimeType: "application/json",
+          thinkingConfig: { thinkingBudget: 0 },
+        },
         safetySettings: [{ category: "HARM_CATEGORY_DANGEROUS_CONTENT", threshold: "BLOCK_NONE" }],
       },
       model: "gemini-example",
@@ -30,15 +35,36 @@ describe("Gemini generateContent format", () => {
         { role: "model", parts: [{ text: "hello" }] },
       ],
       generationConfig: {
-        maxOutputTokens: 100,
-        temperature: 0,
-        topP: 0.8,
+        responseMimeType: "application/json",
+        thinkingConfig: { thinkingBudget: 0 },
       },
+      cachedContent: "cachedContents/example",
       safetySettings: [{ category: "HARM_CATEGORY_DANGEROUS_CONTENT", threshold: "BLOCK_NONE" }],
       systemInstruction: {
         parts: [{ text: "rules" }],
       },
     });
+  });
+
+  it("rejects unsupported Gemini extraBody values at compile time", () => {
+    const formatOptions = {
+      extraBody: {
+        generationConfig: {
+          // @ts-expect-error responseMimeType follows documented Gemini values.
+          responseMimeType: "application/xml",
+        },
+        safetySettings: [
+          {
+            category: "HARM_CATEGORY_DANGEROUS_CONTENT",
+            // @ts-expect-error threshold follows documented Gemini values.
+            threshold: "BLOCK_EVERYTHING",
+          },
+        ],
+      },
+      model: "gemini-example",
+    } satisfies ConstructorParameters<typeof GeminiGenerateContentFormat>[0];
+
+    expect(formatOptions.model).toBe("gemini-example");
   });
 
   it("normalizes text, reasoning, usage, and finish reason", async () => {

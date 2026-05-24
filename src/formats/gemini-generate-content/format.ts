@@ -5,16 +5,17 @@ import type { LlmOutput } from "../../core/output";
 import { createGeminiGenerateContentRequestBody } from "./create-request-body";
 import type { GeminiGenerateContentRaw } from "./raw-schema";
 import { parseGeminiGenerateContentResponse } from "./parse-response";
+import type { GeminiGenerateContentExtraBody } from "./types";
 
 export interface GeminiGenerateContentFormatOptions {
-  extraBody?: JsonObject;
+  extraBody?: GeminiGenerateContentExtraBody;
   model: string;
 }
 
 export class GeminiGenerateContentFormat implements LlmFormat<GeminiGenerateContentRaw> {
   readonly id = "gemini-generate-content";
   readonly model: string;
-  private readonly extraBody: JsonObject | undefined;
+  private readonly extraBody: GeminiGenerateContentExtraBody | undefined;
 
   constructor(options: GeminiGenerateContentFormatOptions) {
     this.extraBody = options.extraBody;

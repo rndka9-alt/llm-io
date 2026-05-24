@@ -11,7 +11,12 @@ import { createJsonFetch } from "./test-utils";
 describe("OpenAI formats", () => {
   it("creates chat completions request bodies", () => {
     const format = new OpenAIChatCompletionsFormat({
-      extraBody: { response_format: { type: "json_object" } },
+      extraBody: {
+        prompt_cache_retention: "24h",
+        reasoning_effort: "high",
+        response_format: { type: "json_object" },
+        stream_options: { include_usage: true },
+      },
       model: "example-model",
     });
 
@@ -30,15 +35,20 @@ describe("OpenAI formats", () => {
       max_tokens: 100,
       temperature: 0,
       top_p: 0.8,
+      prompt_cache_retention: "24h",
+      reasoning_effort: "high",
       response_format: { type: "json_object" },
+      stream_options: { include_usage: true },
     });
   });
 
-  it("rejects non-JSON extraBody at compile time", () => {
+  it("rejects unsupported chat completions extraBody values at compile time", () => {
     const formatOptions = {
       extraBody: {
-        // @ts-expect-error extraBody is serialized into the JSON request body.
-        transform: () => "not-json",
+        // @ts-expect-error reasoning_effort follows documented OpenAI values.
+        reasoning_effort: "maximum",
+        // @ts-expect-error prompt_cache_retention only supports documented retention values.
+        prompt_cache_retention: "7d",
       },
       model: "example-model",
     } satisfies ConstructorParameters<typeof OpenAIChatCompletionsFormat>[0];
@@ -96,7 +106,12 @@ describe("OpenAI formats", () => {
 
   it("creates responses request bodies", () => {
     const format = new OpenAIResponsesFormat({
-      extraBody: { store: false },
+      extraBody: {
+        prompt_cache_key: "shared-prefix",
+        reasoning: { effort: "medium", summary: "auto" },
+        store: false,
+        text: { format: { type: "text" }, verbosity: "low" },
+      },
       model: "example-model",
     });
 
@@ -121,8 +136,25 @@ describe("OpenAI formats", () => {
       max_output_tokens: 100,
       temperature: 0,
       top_p: 0.8,
+      prompt_cache_key: "shared-prefix",
+      reasoning: { effort: "medium", summary: "auto" },
       store: false,
+      text: { format: { type: "text" }, verbosity: "low" },
     });
+  });
+
+  it("rejects unsupported responses extraBody values at compile time", () => {
+    const formatOptions = {
+      extraBody: {
+        // @ts-expect-error reasoning effort follows documented Responses API values.
+        reasoning: { effort: "maximum" },
+        // @ts-expect-error truncation supports only documented values.
+        truncation: "truncate",
+      },
+      model: "example-model",
+    } satisfies ConstructorParameters<typeof OpenAIResponsesFormat>[0];
+
+    expect(formatOptions.model).toBe("example-model");
   });
 
   it("normalizes responses output and keeps typed extras", async () => {

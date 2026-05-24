@@ -1,13 +1,10 @@
 import type { JsonObject } from "../../core/json";
 import type { LlmRequest } from "../../core/message";
+import type { CreateGeminiGenerateContentRequestBodyOptions } from "./types";
 import { createGenerationConfig } from "./utils/create-generation-config";
 import { createSystemInstruction } from "./utils/create-system-instruction";
 import { isGeminiContentMessage } from "./utils/is-gemini-content-message";
 import { toGeminiContent } from "./utils/to-gemini-content";
-
-export interface CreateGeminiGenerateContentRequestBodyOptions {
-  extraBody?: JsonObject;
-}
 
 export function createGeminiGenerateContentRequestBody(
   request: LlmRequest,

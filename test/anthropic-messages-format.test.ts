@@ -9,6 +9,19 @@ describe("AnthropicMessagesFormat", () => {
       baseUrl: "https://api.anthropic.com/v1",
       fetch: fetchRecorder.fetch,
       format: new AnthropicMessagesFormat({
+        extraBody: {
+          service_tier: "auto",
+          stop_sequences: ["END"],
+          thinking: { budget_tokens: 1024, type: "enabled" },
+          tool_choice: { type: "auto" },
+          tools: [
+            {
+              cache_control: { ttl: "5m", type: "ephemeral" },
+              input_schema: { type: "object" },
+              name: "lookup",
+            },
+          ],
+        },
         maxTokens: 1024,
         model: "claude-example",
       }),
@@ -41,10 +54,36 @@ describe("AnthropicMessagesFormat", () => {
         },
       ],
       model: "claude-example",
+      service_tier: "auto",
       system: "Act carefully.",
+      stop_sequences: ["END"],
       temperature: 0.3,
+      thinking: { budget_tokens: 1024, type: "enabled" },
+      tool_choice: { type: "auto" },
+      tools: [
+        {
+          cache_control: { ttl: "5m", type: "ephemeral" },
+          input_schema: { type: "object" },
+          name: "lookup",
+        },
+      ],
       top_p: 0.9,
     });
+  });
+
+  it("rejects unsupported Anthropic extraBody values at compile time", () => {
+    const formatOptions = {
+      extraBody: {
+        // @ts-expect-error service_tier follows documented Anthropic values.
+        service_tier: "priority",
+        // @ts-expect-error thinking type follows documented Anthropic values.
+        thinking: { type: "maybe" },
+      },
+      maxTokens: 1024,
+      model: "claude-example",
+    } satisfies ConstructorParameters<typeof AnthropicMessagesFormat>[0];
+
+    expect(formatOptions.model).toBe("claude-example");
   });
 
   it("adds a starter user message when Anthropic would otherwise receive no user turn", async () => {

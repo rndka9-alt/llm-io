@@ -5,15 +5,16 @@ import type { LlmOutput } from "../../core/output";
 import { createOllamaChatRequestBody } from "./create-request-body";
 import type { OllamaChatRaw } from "./raw-schema";
 import { parseOllamaChatResponse, type OllamaChatExtras } from "./parse-response";
+import type { OllamaChatExtraBody } from "./types";
 
 export interface OllamaChatFormatOptions {
-  extraBody?: JsonObject;
+  extraBody?: OllamaChatExtraBody;
   model: string;
 }
 
 export class OllamaChatFormat implements LlmFormat<OllamaChatRaw, OllamaChatExtras> {
   readonly id = "ollama-chat";
-  private readonly extraBody: JsonObject | undefined;
+  private readonly extraBody: OllamaChatExtraBody | undefined;
   readonly model: string;
 
   constructor(options: OllamaChatFormatOptions) {

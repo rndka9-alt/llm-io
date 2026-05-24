@@ -5,7 +5,11 @@ import { createJsonFetch } from "./test-utils";
 describe("Ollama chat format", () => {
   it("creates request bodies with options and extra body", () => {
     const format = new OllamaChatFormat({
-      extraBody: { keep_alive: "5m" },
+      extraBody: {
+        format: "json",
+        keep_alive: "5m",
+        think: "low",
+      },
       model: "example-model",
     });
 
@@ -22,6 +26,7 @@ describe("Ollama chat format", () => {
         },
       }),
     ).toEqual({
+      format: "json",
       keep_alive: "5m",
       messages: [
         { role: "system", content: "rules" },
@@ -34,7 +39,20 @@ describe("Ollama chat format", () => {
         top_p: 0.8,
       },
       stream: false,
+      think: "low",
     });
+  });
+
+  it("rejects unsupported Ollama extraBody values at compile time", () => {
+    const formatOptions = {
+      extraBody: {
+        // @ts-expect-error think follows documented Ollama values.
+        think: "maximum",
+      },
+      model: "example-model",
+    } satisfies ConstructorParameters<typeof OllamaChatFormat>[0];
+
+    expect(formatOptions.model).toBe("example-model");
   });
 
   it("normalizes message, thinking, usage, finish reason, and extras", async () => {

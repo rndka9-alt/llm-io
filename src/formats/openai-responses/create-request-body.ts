@@ -1,9 +1,10 @@
 import type { JsonObject } from "../../core/json";
 import type { LlmRequest } from "../../core/message";
+import type { OpenAIResponsesExtraBody } from "./types";
 import { toOpenAIResponsesInput } from "./utils/to-openai-responses-input";
 
 export interface CreateOpenAIResponsesRequestBodyOptions {
-  extraBody?: JsonObject;
+  extraBody?: OpenAIResponsesExtraBody;
   model: string;
 }
 

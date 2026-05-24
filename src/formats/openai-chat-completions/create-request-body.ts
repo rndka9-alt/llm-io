@@ -1,9 +1,10 @@
 import type { JsonObject } from "../../core/json";
 import type { LlmRequest } from "../../core/message";
+import type { OpenAIChatCompletionsExtraBody } from "./types";
 import { toOpenAIMessage } from "./utils/to-openai-message";
 
 export interface CreateOpenAIChatCompletionsRequestBodyOptions {
-  extraBody?: JsonObject;
+  extraBody?: OpenAIChatCompletionsExtraBody;
   model: string;
 }
 

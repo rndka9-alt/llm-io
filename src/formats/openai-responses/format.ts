@@ -5,15 +5,16 @@ import type { LlmOutput } from "../../core/output";
 import { createOpenAIResponsesRequestBody } from "./create-request-body";
 import type { OpenAIResponsesRaw } from "./raw-schema";
 import { parseOpenAIResponsesResponse, type OpenAIResponsesExtras } from "./parse-response";
+import type { OpenAIResponsesExtraBody } from "./types";
 
 export interface OpenAIResponsesFormatOptions {
   model: string;
-  extraBody?: JsonObject;
+  extraBody?: OpenAIResponsesExtraBody;
 }
 
 export class OpenAIResponsesFormat implements LlmFormat<OpenAIResponsesRaw, OpenAIResponsesExtras> {
   readonly id = "openai-responses";
-  private readonly extraBody: JsonObject | undefined;
+  private readonly extraBody: OpenAIResponsesExtraBody | undefined;
   readonly model: string;
 
   constructor(options: OpenAIResponsesFormatOptions) {

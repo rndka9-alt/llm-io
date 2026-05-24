@@ -5,9 +5,10 @@ import type { LlmOutput } from "../../core/output";
 import { createAnthropicMessagesRequestBody } from "./create-request-body";
 import { parseAnthropicMessagesResponse } from "./parse-response";
 import type { AnthropicMessagesRaw } from "./raw-schema";
+import type { AnthropicMessagesExtraBody } from "./types";
 
 export interface AnthropicMessagesFormatOptions {
-  extraBody?: JsonObject;
+  extraBody?: AnthropicMessagesExtraBody;
   maxTokens: number;
   model: string;
 }
@@ -15,7 +16,7 @@ export interface AnthropicMessagesFormatOptions {
 export class AnthropicMessagesFormat implements LlmFormat<AnthropicMessagesRaw> {
   readonly id = "anthropic-messages";
   readonly model: string;
-  private readonly extraBody: JsonObject | undefined;
+  private readonly extraBody: AnthropicMessagesExtraBody | undefined;
   private readonly maxTokens: number;
 
   constructor(options: AnthropicMessagesFormatOptions) {

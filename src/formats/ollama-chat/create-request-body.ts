@@ -1,10 +1,11 @@
 import type { JsonObject } from "../../core/json";
 import type { LlmRequest } from "../../core/message";
+import type { OllamaChatExtraBody } from "./types";
 import { createOllamaOptions } from "./utils/create-ollama-options";
 import { toOllamaMessage } from "./utils/to-ollama-message";
 
 export interface CreateOllamaChatRequestBodyOptions {
-  extraBody?: JsonObject;
+  extraBody?: OllamaChatExtraBody;
   model: string;
 }
 

@@ -80,12 +80,29 @@ describe("VercelAIGatewayProvider", () => {
   it("rejects non-JSON providerOptions at compile time", () => {
     const providerOptions = {
       openai: {
-        // @ts-expect-error provider options are serialized into the JSON request body.
-        transform: () => "not-json",
+        // @ts-expect-error reasoningEffort follows documented provider option values.
+        reasoningEffort: "maximum",
       },
     } satisfies VercelAIGatewayProviderOptionsMap;
 
     expect(providerOptions.openai).toBeDefined();
+  });
+
+  it("allows custom provider option maps when explicitly requested", () => {
+    const providerOptions = {
+      customProvider: {
+        customFlag: true,
+      },
+      gateway: {
+        caching: "auto",
+      },
+    } satisfies VercelAIGatewayProviderOptionsMap<{
+      customProvider: {
+        customFlag: boolean;
+      };
+    }>;
+
+    expect(providerOptions.customProvider.customFlag).toBe(true);
   });
 
   it("uses responses endpoint", async () => {
