@@ -1,5 +1,6 @@
 import { LlmIoError } from "../../../core/errors";
 import type { LlmAssistantContentPart } from "../../../core/output";
+import { omitUndefined } from "../../../utils/object";
 import {
   anthropicMessagesContentBlockSchema,
   anthropicMessagesKnownContentBlockSchema,
@@ -45,19 +46,23 @@ export function createAnthropicAssistantContent(
     }
 
     if (contentBlock.type === "thinking") {
-      content.push({
-        type: "thinking",
-        thinking: contentBlock.thinking,
-        ...(contentBlock.signature === undefined ? {} : { signature: contentBlock.signature }),
-      });
+      content.push(
+        omitUndefined({
+          type: "thinking",
+          thinking: contentBlock.thinking,
+          signature: contentBlock.signature,
+        }),
+      );
       continue;
     }
 
     if (contentBlock.type === "redacted_thinking") {
-      content.push({
-        type: "redacted-thinking",
-        ...(contentBlock.data === undefined ? {} : { data: contentBlock.data }),
-      });
+      content.push(
+        omitUndefined({
+          type: "redacted-thinking",
+          data: contentBlock.data,
+        }),
+      );
     }
   }
 

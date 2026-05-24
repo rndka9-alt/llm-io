@@ -2,6 +2,7 @@ import type { LlmFormat } from "../../core/format";
 import type { JsonObject } from "../../types/json";
 import type { LlmRequest } from "../../core/message";
 import type { LlmOutput } from "../../core/output";
+import { omitUndefined } from "../../utils/object";
 import { createAnthropicMessagesRequestBody } from "./create-request-body";
 import { parseAnthropicMessagesResponse } from "./parse-response";
 import type { AnthropicMessagesRaw } from "./raw-schema";
@@ -26,11 +27,14 @@ export class AnthropicMessagesFormat implements LlmFormat<AnthropicMessagesRaw> 
   }
 
   createRequestBody(request: LlmRequest): JsonObject {
-    return createAnthropicMessagesRequestBody(request, {
-      ...(this.extraBody === undefined ? {} : { extraBody: this.extraBody }),
-      maxTokens: this.maxTokens,
-      model: this.model,
-    });
+    return createAnthropicMessagesRequestBody(
+      request,
+      omitUndefined({
+        extraBody: this.extraBody,
+        maxTokens: this.maxTokens,
+        model: this.model,
+      }),
+    );
   }
 
   parseResponse(responseJson: unknown): LlmOutput<AnthropicMessagesRaw> {

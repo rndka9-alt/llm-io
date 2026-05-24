@@ -1,4 +1,6 @@
 import type { JsonObject } from "../types/json";
+import { undefinedIfEmptyArray } from "../utils/array";
+import { omitUndefined } from "../utils/object";
 import type {
   LlmRedactedThinkingPart,
   LlmThinkingPart,
@@ -66,6 +68,14 @@ export function createTextAssistantMessage(text: string): LlmAssistantMessage {
   return createAssistantMessage(text, []);
 }
 
+export function createReasoning(text: string | undefined): LlmReasoning | undefined {
+  if (text === undefined || text.length === 0) {
+    return undefined;
+  }
+
+  return { text };
+}
+
 export function createAssistantMessageFromContent(
   content: readonly LlmAssistantContentPart[],
 ): LlmAssistantMessage {
@@ -79,20 +89,20 @@ export function createAssistantMessageFromContent(
     }
 
     return [
-      {
-        ...(contentPart.id === undefined ? {} : { id: contentPart.id }),
+      omitUndefined({
+        id: contentPart.id,
         name: contentPart.name,
         arguments: contentPart.arguments,
-      },
+      }),
     ];
   });
 
-  return {
+  return omitUndefined({
     role: "assistant",
     content,
     text,
-    ...(toolCalls.length === 0 ? {} : { toolCalls }),
-  };
+    toolCalls: undefinedIfEmptyArray(toolCalls),
+  });
 }
 
 export function createAssistantMessage(
@@ -109,10 +119,10 @@ export function createAssistantMessage(
     content.push({ type: "tool-call", ...toolCall });
   }
 
-  return {
+  return omitUndefined({
     role: "assistant",
     content,
     text,
-    ...(toolCalls.length === 0 ? {} : { toolCalls }),
-  };
+    toolCalls: undefinedIfEmptyArray(toolCalls),
+  });
 }

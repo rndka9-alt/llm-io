@@ -2,6 +2,7 @@ import type { LlmFormat } from "../../core/format";
 import type { JsonObject } from "../../types/json";
 import type { LlmRequest } from "../../core/message";
 import type { LlmOutput } from "../../core/output";
+import { omitUndefined } from "../../utils/object";
 import { createGeminiGenerateContentRequestBody } from "./create-request-body";
 import type { GeminiGenerateContentRaw } from "./raw-schema";
 import { parseGeminiGenerateContentResponse } from "./parse-response";
@@ -23,9 +24,12 @@ export class GeminiGenerateContentFormat implements LlmFormat<GeminiGenerateCont
   }
 
   createRequestBody(request: LlmRequest): JsonObject {
-    return createGeminiGenerateContentRequestBody(request, {
-      ...(this.extraBody === undefined ? {} : { extraBody: this.extraBody }),
-    });
+    return createGeminiGenerateContentRequestBody(
+      request,
+      omitUndefined({
+        extraBody: this.extraBody,
+      }),
+    );
   }
 
   parseResponse(responseJson: unknown): LlmOutput<GeminiGenerateContentRaw> {

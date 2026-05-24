@@ -4,6 +4,7 @@ import type { LlmRequest } from "../core/message";
 import type { LlmOutput } from "../core/output";
 import type { LlmProvider } from "../core/provider";
 import type { FetchLike } from "../transport/fetch-like";
+import { omitUndefined } from "../utils/object";
 import { createProvider } from "./create-provider";
 import type { LlmOptions } from "./types";
 
@@ -24,12 +25,15 @@ export class Llm<TRaw, TExtras = undefined> {
       request,
     });
 
-    const response = await this.fetchImplementation(providerRequest.url, {
-      body: JSON.stringify(providerRequest.body),
-      headers: providerRequest.headers,
-      method: providerRequest.method,
-      ...(providerRequest.signal === undefined ? {} : { signal: providerRequest.signal }),
-    });
+    const response = await this.fetchImplementation(
+      providerRequest.url,
+      omitUndefined({
+        body: JSON.stringify(providerRequest.body),
+        headers: providerRequest.headers,
+        method: providerRequest.method,
+        signal: providerRequest.signal,
+      }),
+    );
 
     const responseText = await response.text();
 

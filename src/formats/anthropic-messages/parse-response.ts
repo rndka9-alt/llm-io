@@ -1,6 +1,12 @@
 import { LlmIoError } from "../../core/errors";
 import type { LlmOutput } from "../../core/output";
-import { createAssistantMessageFromContent, type LlmAssistantContentPart } from "../../core/output";
+import {
+  createAssistantMessageFromContent,
+  createReasoning,
+  type LlmAssistantContentPart,
+} from "../../core/output";
+import { undefinedIfEmptyArray } from "../../utils/array";
+import { omitUndefined } from "../../utils/object";
 import { anthropicMessagesRawSchema, type AnthropicMessagesRaw } from "./raw-schema";
 import { createAnthropicAssistantContent } from "./utils/create-anthropic-assistant-content";
 import { createAnthropicUsage } from "./utils/create-anthropic-usage";
@@ -22,14 +28,14 @@ export function parseAnthropicMessagesResponse(
   const usage = createAnthropicUsage(raw.usage);
   const finishReason = normalizeAnthropicFinishReason(raw.stop_reason);
 
-  return {
+  return omitUndefined({
     message,
-    ...(reasoningText.length === 0 ? {} : { reasoning: { text: reasoningText } }),
-    ...(toolCalls.length === 0 ? {} : { toolCalls }),
-    ...(usage === undefined ? {} : { usage }),
-    ...(finishReason === undefined ? {} : { finishReason }),
+    reasoning: createReasoning(reasoningText),
+    toolCalls: undefinedIfEmptyArray(toolCalls),
+    usage,
+    finishReason,
     raw,
-  };
+  });
 }
 
 function createAnthropicReasoningText(content: readonly LlmAssistantContentPart[]): string {

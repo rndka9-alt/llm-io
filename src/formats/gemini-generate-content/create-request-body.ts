@@ -1,5 +1,6 @@
 import type { JsonObject } from "../../types/json";
 import type { LlmRequest } from "../../core/message";
+import { omitUndefined } from "../../utils/object";
 import type {
   CreateGeminiGenerateContentRequestBodyOptions,
   GeminiGenerationConfig,
@@ -18,22 +19,15 @@ export function createGeminiGenerateContentRequestBody(
     createGenerationConfig(request),
     options.extraBody?.generationConfig,
   );
-  const requestBody: JsonObject = {
+  const requestBody = omitUndefined({
     contents: request.messages.filter(isGeminiContentMessage).map(toGeminiContent),
-  };
-
-  if (systemInstruction !== undefined) {
-    requestBody.systemInstruction = systemInstruction;
-  }
-
-  if (generationConfig !== undefined) {
-    requestBody.generationConfig = generationConfig;
-  }
+    systemInstruction,
+  });
 
   return {
     ...requestBody,
     ...options.extraBody,
-    ...(generationConfig === undefined ? {} : { generationConfig }),
+    ...omitUndefined({ generationConfig }),
   };
 }
 

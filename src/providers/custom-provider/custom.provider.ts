@@ -1,6 +1,7 @@
 import { LlmIoError } from "../../core/errors";
 import type { JsonObject, JsonValue } from "../../types/json";
 import type { LlmProvider, LlmProviderRequest, LlmProviderRequestInput } from "../../core/provider";
+import { omitUndefined } from "../../utils/object";
 import { createBearerHeaders, joinUrlPath } from "../utils/index";
 import { resolveCustomRequestPath } from "./utils/resolve-custom-request-path";
 
@@ -63,13 +64,13 @@ export class CustomProvider implements LlmProvider {
     const baseBody = input.format.createRequestBody(input.request);
     const body = this.createBody(baseBody, input);
 
-    return {
+    return omitUndefined({
       body,
       headers: this.createHeaders(body, input),
       method: "POST",
-      ...(input.request.signal === undefined ? {} : { signal: input.request.signal }),
+      signal: input.request.signal,
       url: joinUrlPath(this.baseUrl, this.resolveRequestPath(input)),
-    };
+    });
   }
 
   private createBody(body: JsonObject, input: LlmProviderRequestInput): JsonValue {
@@ -81,10 +82,12 @@ export class CustomProvider implements LlmProvider {
   }
 
   private createHeaders(body: JsonValue, input: LlmProviderRequestInput): Record<string, string> {
-    const headers = createBearerHeaders({
-      ...(this.apiKey === undefined ? {} : { apiKey: this.apiKey }),
-      ...(this.headers === undefined ? {} : { headers: this.headers }),
-    });
+    const headers = createBearerHeaders(
+      omitUndefined({
+        apiKey: this.apiKey,
+        headers: this.headers,
+      }),
+    );
 
     if (this.createHeadersOverride === undefined) {
       return headers;

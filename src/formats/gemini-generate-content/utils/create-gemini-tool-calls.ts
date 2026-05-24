@@ -13,12 +13,9 @@ export function createGeminiToolCalls(parts: readonly GeminiPart[]): LlmToolCall
       continue;
     }
 
-    const functionCallArguments = part.functionCall.args;
-    const toolArguments = functionCallArguments === undefined ? {} : functionCallArguments;
-
     toolCalls.push({
       name: part.functionCall.name,
-      arguments: toolArguments,
+      arguments: part.functionCall.args ?? {},
     });
   }
 

@@ -1,5 +1,5 @@
 import type { LlmUsage } from "../../../core/output";
-import { omitUndefined } from "../../../utils/object";
+import { omitUndefined, undefinedIfEmptyObject } from "../../../utils/object";
 import type { GeminiGenerateContentRaw } from "../raw-schema";
 
 export function createGeminiUsage(
@@ -22,7 +22,7 @@ export function createGeminiUsage(
     inputTokens: usage.promptTokenCount,
     outputTokens: usage.candidatesTokenCount,
     reasoningTokens: usage.thoughtsTokenCount,
-    details: Object.keys(details).length === 0 ? undefined : details,
+    details: undefinedIfEmptyObject(details),
     totalTokens: usage.totalTokenCount,
   });
 }

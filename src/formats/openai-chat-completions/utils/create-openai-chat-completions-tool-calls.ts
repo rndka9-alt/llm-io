@@ -1,6 +1,7 @@
 import { LlmIoError } from "../../../core/errors";
 import { jsonObjectSchema } from "../../../utils/json";
 import type { LlmToolCall } from "../../../core/message";
+import { omitUndefined } from "../../../utils/object";
 import type { OpenAIChatCompletionsRaw } from "../raw-schema";
 
 type OpenAIChatCompletionsMessage = OpenAIChatCompletionsRaw["choices"][number]["message"];
@@ -13,11 +14,13 @@ export function createOpenAIChatCompletionsToolCalls(
   for (const toolCall of message.tool_calls ?? []) {
     const toolArguments = parseOpenAIToolCallArguments(toolCall.function.arguments);
 
-    toolCalls.push({
-      ...(toolCall.id === undefined ? {} : { id: toolCall.id }),
-      name: toolCall.function.name,
-      arguments: toolArguments,
-    });
+    toolCalls.push(
+      omitUndefined({
+        id: toolCall.id,
+        name: toolCall.function.name,
+        arguments: toolArguments,
+      }),
+    );
   }
 
   return toolCalls;

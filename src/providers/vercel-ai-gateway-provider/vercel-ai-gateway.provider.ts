@@ -1,5 +1,6 @@
 import type { JsonObject } from "../../types/json";
 import type { LlmProvider, LlmProviderRequest, LlmProviderRequestInput } from "../../core/provider";
+import { omitUndefined } from "../../utils/object";
 import {
   createBearerHeaders,
   joinUrlPath,
@@ -166,16 +167,18 @@ export class VercelAIGatewayProvider<
   }
 
   createRequest(input: LlmProviderRequestInput): LlmProviderRequest {
-    return {
+    return omitUndefined({
       body: this.createBody(input.format.createRequestBody(input.request)),
-      headers: createBearerHeaders({
-        ...(this.apiKey === undefined ? {} : { apiKey: this.apiKey }),
-        ...(this.headers === undefined ? {} : { headers: this.headers }),
-      }),
+      headers: createBearerHeaders(
+        omitUndefined({
+          apiKey: this.apiKey,
+          headers: this.headers,
+        }),
+      ),
       method: "POST",
-      ...(input.request.signal === undefined ? {} : { signal: input.request.signal }),
+      signal: input.request.signal,
       url: joinUrlPath(this.baseUrl, resolveOpenAICompatibleRequestPath(input.format)),
-    };
+    });
   }
 
   private createBody(body: JsonObject): JsonObject {

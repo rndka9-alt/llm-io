@@ -1,4 +1,5 @@
 import type { LlmProvider, LlmProviderRequest, LlmProviderRequestInput } from "../../core/provider";
+import { omitUndefined } from "../../utils/object";
 import { joinUrlPath } from "../utils/index";
 import { resolveAnthropicRequestPath } from "./utils/resolve-anthropic-request-path";
 
@@ -24,17 +25,17 @@ export class AnthropicProvider implements LlmProvider {
   }
 
   createRequest(input: LlmProviderRequestInput): LlmProviderRequest {
-    return {
+    return omitUndefined({
       body: input.format.createRequestBody(input.request),
       headers: {
         "content-type": "application/json",
         ...this.headers,
-        ...(this.apiKey === undefined ? {} : { "x-api-key": this.apiKey }),
+        ...omitUndefined({ "x-api-key": this.apiKey }),
         "anthropic-version": this.anthropicVersion,
       },
       method: "POST",
-      ...(input.request.signal === undefined ? {} : { signal: input.request.signal }),
+      signal: input.request.signal,
       url: joinUrlPath(this.baseUrl, resolveAnthropicRequestPath(input.format)),
-    };
+    });
   }
 }

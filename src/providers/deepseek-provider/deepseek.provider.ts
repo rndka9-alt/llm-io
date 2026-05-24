@@ -1,4 +1,5 @@
 import type { LlmProvider, LlmProviderRequest, LlmProviderRequestInput } from "../../core/provider";
+import { omitUndefined } from "../../utils/object";
 import { createBearerHeaders, joinUrlPath } from "../utils/index";
 import { resolveDeepSeekRequestPath } from "./utils/resolve-deepseek-request-path";
 
@@ -24,13 +25,13 @@ export class DeepSeekProvider implements LlmProvider {
   }
 
   createRequest(input: LlmProviderRequestInput): LlmProviderRequest {
-    return {
+    return omitUndefined({
       body: input.format.createRequestBody(input.request),
       headers: this.createHeaders(input),
       method: "POST",
-      ...(input.request.signal === undefined ? {} : { signal: input.request.signal }),
+      signal: input.request.signal,
       url: joinUrlPath(this.baseUrl, resolveDeepSeekRequestPath(input.format)),
-    };
+    });
   }
 
   private createHeaders(input: LlmProviderRequestInput): Record<string, string> {
@@ -38,14 +39,16 @@ export class DeepSeekProvider implements LlmProvider {
       return {
         "content-type": "application/json",
         ...this.headers,
-        ...(this.apiKey === undefined ? {} : { "x-api-key": this.apiKey }),
+        ...omitUndefined({ "x-api-key": this.apiKey }),
         "anthropic-version": this.anthropicVersion,
       };
     }
 
-    return createBearerHeaders({
-      ...(this.apiKey === undefined ? {} : { apiKey: this.apiKey }),
-      ...(this.headers === undefined ? {} : { headers: this.headers }),
-    });
+    return createBearerHeaders(
+      omitUndefined({
+        apiKey: this.apiKey,
+        headers: this.headers,
+      }),
+    );
   }
 }

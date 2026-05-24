@@ -1,4 +1,5 @@
 import type { LlmProvider, LlmProviderRequest, LlmProviderRequestInput } from "../../core/provider";
+import { omitUndefined } from "../../utils/object";
 import { readGeminiGenerateContentModel } from "../utils/index";
 
 export interface VertexAIProviderOptions {
@@ -26,7 +27,7 @@ export class VertexAIProvider implements LlmProvider {
   }
 
   createRequest(input: LlmProviderRequestInput): LlmProviderRequest {
-    return {
+    return omitUndefined({
       body: input.format.createRequestBody(input.request),
       headers: {
         "content-type": "application/json",
@@ -34,9 +35,9 @@ export class VertexAIProvider implements LlmProvider {
         authorization: `Bearer ${this.accessToken}`,
       },
       method: "POST",
-      ...(input.request.signal === undefined ? {} : { signal: input.request.signal }),
+      signal: input.request.signal,
       url: this.createUrl(input.format),
-    };
+    });
   }
 
   private createUrl(format: LlmProviderRequestInput["format"]): string {

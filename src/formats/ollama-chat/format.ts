@@ -2,6 +2,7 @@ import type { LlmFormat } from "../../core/format";
 import type { JsonObject } from "../../types/json";
 import type { LlmRequest } from "../../core/message";
 import type { LlmOutput } from "../../core/output";
+import { omitUndefined } from "../../utils/object";
 import { createOllamaChatRequestBody } from "./create-request-body";
 import type { OllamaChatRaw } from "./raw-schema";
 import { parseOllamaChatResponse, type OllamaChatExtras } from "./parse-response";
@@ -23,10 +24,13 @@ export class OllamaChatFormat implements LlmFormat<OllamaChatRaw, OllamaChatExtr
   }
 
   createRequestBody(request: LlmRequest): JsonObject {
-    return createOllamaChatRequestBody(request, {
-      model: this.model,
-      ...(this.extraBody === undefined ? {} : { extraBody: this.extraBody }),
-    });
+    return createOllamaChatRequestBody(
+      request,
+      omitUndefined({
+        model: this.model,
+        extraBody: this.extraBody,
+      }),
+    );
   }
 
   parseResponse(responseJson: unknown): LlmOutput<OllamaChatRaw, OllamaChatExtras> {

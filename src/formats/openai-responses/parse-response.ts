@@ -1,6 +1,9 @@
 import { LlmIoError } from "../../core/errors";
 import type { LlmOutput } from "../../core/output";
-import { createAssistantMessage } from "../../core/output";
+import { createAssistantMessage, createReasoning } from "../../core/output";
+import type { LlmToolCall } from "../../core/message";
+import { undefinedIfEmptyArray } from "../../utils/array";
+import { omitUndefined } from "../../utils/object";
 import { openAIResponsesRawSchema, type OpenAIResponsesRaw } from "./raw-schema";
 import { createOpenAIResponsesExtras } from "./utils/create-openai-responses-extras";
 import { createOpenAIResponsesToolCalls } from "./utils/create-openai-responses-tool-calls";
@@ -28,15 +31,23 @@ export function parseOpenAIResponsesResponse(
   }
 
   const reasoningText = readOpenAIResponsesReasoningText(outputItems);
-  const reasoning = reasoningText.length === 0 ? undefined : { text: reasoningText };
   const usage = createOpenAIResponsesUsage(raw.usage);
 
-  return {
+  return omitUndefined({
     message: createAssistantMessage(text, toolCalls),
-    ...(reasoning === undefined ? {} : { reasoning }),
-    ...(toolCalls.length === 0 ? {} : { toolCalls, finishReason: "tool-call" }),
-    ...(usage === undefined ? {} : { usage }),
+    reasoning: createReasoning(reasoningText),
+    toolCalls: undefinedIfEmptyArray(toolCalls),
+    finishReason: createToolCallFinishReason(toolCalls),
+    usage,
     raw,
     extras: createOpenAIResponsesExtras(raw),
-  };
+  });
+}
+
+function createToolCallFinishReason(toolCalls: readonly LlmToolCall[]): "tool-call" | undefined {
+  if (toolCalls.length === 0) {
+    return undefined;
+  }
+
+  return "tool-call";
 }

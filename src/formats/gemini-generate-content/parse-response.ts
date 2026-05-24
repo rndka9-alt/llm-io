@@ -1,6 +1,8 @@
 import { LlmIoError } from "../../core/errors";
 import type { LlmOutput } from "../../core/output";
-import { createAssistantMessage } from "../../core/output";
+import { createAssistantMessage, createReasoning } from "../../core/output";
+import { undefinedIfEmptyArray } from "../../utils/array";
+import { omitUndefined } from "../../utils/object";
 import { geminiGenerateContentRawSchema, type GeminiGenerateContentRaw } from "./raw-schema";
 import { createGeminiToolCalls } from "./utils/create-gemini-tool-calls";
 import { createGeminiUsage } from "./utils/create-gemini-usage";
@@ -31,12 +33,12 @@ export function parseGeminiGenerateContentResponse(
   const usage = createGeminiUsage(raw.usageMetadata);
   const finishReason = normalizeGeminiFinishReason(firstCandidate?.finishReason);
 
-  return {
+  return omitUndefined({
     message: createAssistantMessage(text, toolCalls),
-    ...(reasoningText.length === 0 ? {} : { reasoning: { text: reasoningText } }),
-    ...(toolCalls.length === 0 ? {} : { toolCalls }),
-    ...(usage === undefined ? {} : { usage }),
-    ...(finishReason === undefined ? {} : { finishReason }),
+    reasoning: createReasoning(reasoningText),
+    toolCalls: undefinedIfEmptyArray(toolCalls),
+    usage,
+    finishReason,
     raw,
-  };
+  });
 }

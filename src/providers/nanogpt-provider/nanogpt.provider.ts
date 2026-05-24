@@ -1,4 +1,5 @@
 import type { LlmProvider, LlmProviderRequest, LlmProviderRequestInput } from "../../core/provider";
+import { omitUndefined } from "../../utils/object";
 import { createBearerHeaders, joinUrlPath } from "../utils/index";
 import { resolveNanoGPTRequestPath } from "./utils/resolve-nanogpt-request-path";
 
@@ -26,13 +27,13 @@ export class NanoGPTProvider implements LlmProvider {
   }
 
   createRequest(input: LlmProviderRequestInput): LlmProviderRequest {
-    return {
+    return omitUndefined({
       body: input.format.createRequestBody(input.request),
       headers: this.createHeaders(),
       method: "POST",
-      ...(input.request.signal === undefined ? {} : { signal: input.request.signal }),
+      signal: input.request.signal,
       url: joinUrlPath(this.baseUrl, resolveNanoGPTRequestPath(input.format)),
-    };
+    });
   }
 
   private createHeaders(): Record<string, string> {
@@ -40,13 +41,15 @@ export class NanoGPTProvider implements LlmProvider {
       return {
         "content-type": "application/json",
         ...this.headers,
-        ...(this.apiKey === undefined ? {} : { "x-api-key": this.apiKey }),
+        ...omitUndefined({ "x-api-key": this.apiKey }),
       };
     }
 
-    return createBearerHeaders({
-      ...(this.apiKey === undefined ? {} : { apiKey: this.apiKey }),
-      ...(this.headers === undefined ? {} : { headers: this.headers }),
-    });
+    return createBearerHeaders(
+      omitUndefined({
+        apiKey: this.apiKey,
+        headers: this.headers,
+      }),
+    );
   }
 }

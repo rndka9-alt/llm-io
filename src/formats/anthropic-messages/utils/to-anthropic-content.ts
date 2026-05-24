@@ -1,5 +1,6 @@
 import { LlmIoError } from "../../../core/errors";
 import type { JsonValue } from "../../../types/json";
+import { omitUndefined } from "../../../utils/object";
 import type {
   LlmMessage,
   LlmSearchResultPart,
@@ -59,11 +60,13 @@ export function toAnthropicContent(message: LlmMessage): AnthropicContentBlock[]
         throw new LlmIoError("Anthropic thinking content parts require assistant messages.");
       }
 
-      content.push({
-        type: "thinking",
-        thinking: contentPart.thinking,
-        ...(contentPart.signature === undefined ? {} : { signature: contentPart.signature }),
-      });
+      content.push(
+        omitUndefined({
+          type: "thinking",
+          thinking: contentPart.thinking,
+          signature: contentPart.signature,
+        }),
+      );
       continue;
     }
 
@@ -74,10 +77,12 @@ export function toAnthropicContent(message: LlmMessage): AnthropicContentBlock[]
         );
       }
 
-      content.push({
-        type: "redacted_thinking",
-        ...(contentPart.data === undefined ? {} : { data: contentPart.data }),
-      });
+      content.push(
+        omitUndefined({
+          type: "redacted_thinking",
+          data: contentPart.data,
+        }),
+      );
       continue;
     }
 
@@ -85,12 +90,14 @@ export function toAnthropicContent(message: LlmMessage): AnthropicContentBlock[]
       throw new LlmIoError("Anthropic tool result messages require an id.");
     }
 
-    content.push({
-      type: "tool_result",
-      tool_use_id: contentPart.id,
-      content: stringifyToolResult(contentPart.result),
-      ...(contentPart.isError === undefined ? {} : { is_error: contentPart.isError }),
-    });
+    content.push(
+      omitUndefined({
+        type: "tool_result",
+        tool_use_id: contentPart.id,
+        content: stringifyToolResult(contentPart.result),
+        is_error: contentPart.isError,
+      }),
+    );
   }
 
   return content;

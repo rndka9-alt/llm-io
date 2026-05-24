@@ -1,5 +1,6 @@
 import type { JsonObject } from "../../types/json";
 import type { LlmRequest } from "../../core/message";
+import { omitUndefined } from "../../utils/object";
 import type { OllamaChatExtraBody } from "./types";
 import { createOllamaOptions } from "./utils/create-ollama-options";
 import { toOllamaMessage } from "./utils/to-ollama-message";
@@ -14,10 +15,12 @@ export function createOllamaChatRequestBody(
   options: CreateOllamaChatRequestBodyOptions,
 ): JsonObject {
   return {
-    model: options.model,
-    stream: false,
-    messages: request.messages.map(toOllamaMessage),
-    ...(request.options === undefined ? {} : { options: createOllamaOptions(request) }),
+    ...omitUndefined({
+      model: options.model,
+      stream: false,
+      messages: request.messages.map(toOllamaMessage),
+      options: createOllamaOptions(request),
+    }),
     ...options.extraBody,
   };
 }

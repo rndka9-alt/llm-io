@@ -1,4 +1,5 @@
 import type { JsonObject, JsonValue } from "../types/json";
+import { omitUndefined } from "../utils/object";
 
 export type LlmMessageRole = "system" | "user" | "assistant" | "tool";
 
@@ -98,13 +99,13 @@ export function createToolResultMessage(
   return {
     role: "tool",
     content: [
-      {
+      omitUndefined({
         type: "tool-result",
-        ...(toolCall.id === undefined ? {} : { id: toolCall.id }),
-        ...(options.isError === undefined ? {} : { isError: options.isError }),
+        id: toolCall.id,
+        isError: options.isError,
         name: toolCall.name,
         result,
-      },
+      }),
     ],
   };
 }

@@ -2,6 +2,7 @@ import type { LlmFormat } from "../../core/format";
 import type { JsonObject } from "../../types/json";
 import type { LlmRequest } from "../../core/message";
 import type { LlmOutput } from "../../core/output";
+import { omitUndefined } from "../../utils/object";
 import { createOpenAIResponsesRequestBody } from "./create-request-body";
 import type { OpenAIResponsesRaw } from "./raw-schema";
 import { parseOpenAIResponsesResponse, type OpenAIResponsesExtras } from "./parse-response";
@@ -23,10 +24,13 @@ export class OpenAIResponsesFormat implements LlmFormat<OpenAIResponsesRaw, Open
   }
 
   createRequestBody(request: LlmRequest): JsonObject {
-    return createOpenAIResponsesRequestBody(request, {
-      model: this.model,
-      ...(this.extraBody === undefined ? {} : { extraBody: this.extraBody }),
-    });
+    return createOpenAIResponsesRequestBody(
+      request,
+      omitUndefined({
+        model: this.model,
+        extraBody: this.extraBody,
+      }),
+    );
   }
 
   parseResponse(responseJson: unknown): LlmOutput<OpenAIResponsesRaw, OpenAIResponsesExtras> {

@@ -1,6 +1,8 @@
 import { LlmIoError } from "../../core/errors";
 import type { LlmOutput } from "../../core/output";
-import { createAssistantMessage } from "../../core/output";
+import { createAssistantMessage, createReasoning } from "../../core/output";
+import { undefinedIfEmptyArray } from "../../utils/array";
+import { omitUndefined } from "../../utils/object";
 import { ollamaChatRawSchema, type OllamaChatRaw } from "./raw-schema";
 import { createOllamaToolCalls } from "./utils/create-ollama-tool-calls";
 import { createOllamaUsage } from "./utils/create-ollama-usage";
@@ -25,17 +27,13 @@ export function parseOllamaChatResponse(
   const usage = createOllamaUsage(raw);
   const finishReason = normalizeOllamaFinishReason(raw.done_reason);
 
-  return {
+  return omitUndefined({
     message: createAssistantMessage(text ?? "", toolCalls),
-    ...(reasoningText === undefined || reasoningText.length === 0
-      ? {}
-      : { reasoning: { text: reasoningText } }),
-    ...(toolCalls.length === 0 ? {} : { toolCalls }),
-    ...(usage === undefined ? {} : { usage }),
-    ...(finishReason === undefined ? {} : { finishReason }),
+    reasoning: createReasoning(reasoningText),
+    toolCalls: undefinedIfEmptyArray(toolCalls),
+    usage,
+    finishReason,
     raw,
-    extras: {
-      ...(raw.model === undefined ? {} : { model: raw.model }),
-    },
-  };
+    extras: omitUndefined({ model: raw.model }),
+  });
 }

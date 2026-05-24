@@ -1,4 +1,5 @@
 import type { LlmProvider, LlmProviderRequest, LlmProviderRequestInput } from "../../core/provider";
+import { omitUndefined } from "../../utils/object";
 import { createBearerHeaders, joinUrlPath } from "../utils/index";
 import { resolveOpenRouterRequestPath } from "./utils/resolve-openrouter-request-path";
 
@@ -27,19 +28,23 @@ export class OpenRouterProvider implements LlmProvider {
   }
 
   createRequest(input: LlmProviderRequestInput): LlmProviderRequest {
-    return {
+    return omitUndefined({
       body: input.format.createRequestBody(input.request),
-      headers: createBearerHeaders({
-        ...(this.apiKey === undefined ? {} : { apiKey: this.apiKey }),
-        headers: {
-          ...this.headers,
-          ...(this.siteUrl === undefined ? {} : { "HTTP-Referer": this.siteUrl }),
-          ...(this.appName === undefined ? {} : { "X-OpenRouter-Title": this.appName }),
-        },
-      }),
+      headers: createBearerHeaders(
+        omitUndefined({
+          apiKey: this.apiKey,
+          headers: {
+            ...this.headers,
+            ...omitUndefined({
+              "HTTP-Referer": this.siteUrl,
+              "X-OpenRouter-Title": this.appName,
+            }),
+          },
+        }),
+      ),
       method: "POST",
-      ...(input.request.signal === undefined ? {} : { signal: input.request.signal }),
+      signal: input.request.signal,
       url: joinUrlPath(this.baseUrl, resolveOpenRouterRequestPath(input.format)),
-    };
+    });
   }
 }

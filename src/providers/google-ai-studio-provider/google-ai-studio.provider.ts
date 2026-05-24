@@ -1,4 +1,5 @@
 import type { LlmProvider, LlmProviderRequest, LlmProviderRequestInput } from "../../core/provider";
+import { omitUndefined } from "../../utils/object";
 import { createGeminiGenerateContentRequestPath, joinUrlPath } from "../utils/index";
 import { appendApiKey } from "./utils/append-api-key";
 
@@ -21,18 +22,18 @@ export class GoogleAIStudioProvider implements LlmProvider {
   }
 
   createRequest(input: LlmProviderRequestInput): LlmProviderRequest {
-    return {
+    return omitUndefined({
       body: input.format.createRequestBody(input.request),
       headers: {
         "content-type": "application/json",
         ...this.headers,
       },
       method: "POST",
-      ...(input.request.signal === undefined ? {} : { signal: input.request.signal }),
+      signal: input.request.signal,
       url: appendApiKey(
         joinUrlPath(this.baseUrl, createGeminiGenerateContentRequestPath(input.format, this.id)),
         this.apiKey,
       ),
-    };
+    });
   }
 }

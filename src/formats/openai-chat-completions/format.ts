@@ -2,6 +2,7 @@ import type { LlmFormat } from "../../core/format";
 import type { JsonObject } from "../../types/json";
 import type { LlmRequest } from "../../core/message";
 import type { LlmOutput } from "../../core/output";
+import { omitUndefined } from "../../utils/object";
 import { createOpenAIChatCompletionsRequestBody } from "./create-request-body";
 import type { OpenAIChatCompletionsRaw } from "./raw-schema";
 import { parseOpenAIChatCompletionsResponse } from "./parse-response";
@@ -23,10 +24,13 @@ export class OpenAIChatCompletionsFormat implements LlmFormat<OpenAIChatCompleti
   }
 
   createRequestBody(request: LlmRequest): JsonObject {
-    return createOpenAIChatCompletionsRequestBody(request, {
-      model: this.model,
-      ...(this.extraBody === undefined ? {} : { extraBody: this.extraBody }),
-    });
+    return createOpenAIChatCompletionsRequestBody(
+      request,
+      omitUndefined({
+        model: this.model,
+        extraBody: this.extraBody,
+      }),
+    );
   }
 
   parseResponse(responseJson: unknown): LlmOutput<OpenAIChatCompletionsRaw> {

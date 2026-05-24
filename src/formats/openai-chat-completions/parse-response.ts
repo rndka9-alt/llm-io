@@ -1,6 +1,8 @@
 import { LlmIoError } from "../../core/errors";
 import type { LlmOutput } from "../../core/output";
 import { createAssistantMessage } from "../../core/output";
+import { undefinedIfEmptyArray } from "../../utils/array";
+import { omitUndefined } from "../../utils/object";
 import { openAIChatCompletionsRawSchema, type OpenAIChatCompletionsRaw } from "./raw-schema";
 import { createOpenAIChatCompletionsReasoning } from "./utils/create-openai-chat-completions-reasoning";
 import { createOpenAIChatCompletionsToolCalls } from "./utils/create-openai-chat-completions-tool-calls";
@@ -33,12 +35,12 @@ export function parseOpenAIChatCompletionsResponse(
   const finishReason = normalizeOpenAIChatCompletionsFinishReason(firstChoice.finish_reason);
   const messageText = text ?? "";
 
-  return {
+  return omitUndefined({
     message: createAssistantMessage(messageText, toolCalls),
-    ...(reasoning === undefined ? {} : { reasoning }),
-    ...(toolCalls.length === 0 ? {} : { toolCalls }),
-    ...(usage === undefined ? {} : { usage }),
-    ...(finishReason === undefined ? {} : { finishReason }),
+    reasoning,
+    toolCalls: undefinedIfEmptyArray(toolCalls),
+    usage,
+    finishReason,
     raw,
-  };
+  });
 }

@@ -1,5 +1,6 @@
 import type { LlmFormat } from "../../core/format";
 import type { LlmProvider, LlmProviderRequest, LlmProviderRequestInput } from "../../core/provider";
+import { omitUndefined } from "../../utils/object";
 import { createBearerHeaders, joinUrlPath } from "../utils/index";
 import { resolveGenericRequestPath } from "./utils/resolve-generic-request-path";
 
@@ -25,15 +26,17 @@ export class GenericHttpProvider implements LlmProvider {
   }
 
   createRequest(input: LlmProviderRequestInput): LlmProviderRequest {
-    return {
+    return omitUndefined({
       body: input.format.createRequestBody(input.request),
-      headers: createBearerHeaders({
-        ...(this.apiKey === undefined ? {} : { apiKey: this.apiKey }),
-        ...(this.headers === undefined ? {} : { headers: this.headers }),
-      }),
+      headers: createBearerHeaders(
+        omitUndefined({
+          apiKey: this.apiKey,
+          headers: this.headers,
+        }),
+      ),
       method: "POST",
-      ...(input.request.signal === undefined ? {} : { signal: input.request.signal }),
+      signal: input.request.signal,
       url: joinUrlPath(this.baseUrl, this.resolveRequestPath(input.format)),
-    };
+    });
   }
 }
