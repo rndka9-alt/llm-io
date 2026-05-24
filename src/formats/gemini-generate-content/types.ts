@@ -41,9 +41,13 @@ export interface GeminiThinkingConfig extends JsonObject {
   includeThoughts?: boolean;
   /** 모델 thinking에 사용할 token 예산이다. */
   thinkingBudget?: number;
+  /** 모델 thinking 수준이다. */
+  thinkingLevel?: "THINKING_LEVEL_UNSPECIFIED" | "LOW" | "HIGH";
 }
 
 export interface GeminiGenerationConfig extends JsonObject {
+  /** audio timestamp 출력을 요청한다. */
+  audioTimestamp?: boolean;
   /** 생성할 후보 응답 개수다. */
   candidateCount?: number;
   /** 같은 token 반복을 줄이기 위한 빈도 기반 penalty다. */
@@ -55,7 +59,12 @@ export interface GeminiGenerationConfig extends JsonObject {
   /** 응답 MIME type이다. */
   responseMimeType?: GeminiResponseMimeType;
   /** JSON 응답이 따라야 하는 schema다. */
-  responseSchema?: JsonObject;
+  responseSchema?: GeminiSchema | JsonSchemaObject;
+  /** 입력 media 처리 해상도다. */
+  mediaResolution?:
+    | "MEDIA_RESOLUTION_UNSPECIFIED"
+    | "MEDIA_RESOLUTION_LOW"
+    | "MEDIA_RESOLUTION_HIGH";
   /** 가능한 경우 deterministic sampling을 위한 seed다. */
   seed?: number;
   /** 생성 중단 문자열 목록이다. */
@@ -147,6 +156,12 @@ export interface GeminiGenerateContentExtraBody {
   cachedContent?: string;
   /** Gemini generationConfig에 전달할 생성 옵션이다. */
   generationConfig?: GeminiGenerationConfig;
+  /** Vertex AI Model Armor 설정이다. */
+  modelArmorConfig?: JsonObject;
+  /** 요청 처리 계층이다. */
+  serviceTier?: "SERVICE_TIER_UNSPECIFIED" | "STANDARD" | "FLEX";
+  /** 응답 저장 여부다. */
+  store?: boolean;
   /** 요청에 붙일 사용자 정의 label이다. */
   labels?: JsonObject;
   /** safety category별 차단 설정이다. */

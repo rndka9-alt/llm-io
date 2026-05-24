@@ -1,5 +1,7 @@
 import { z } from "zod";
 
+import { jsonObjectSchema, jsonValueSchema } from "../../core/json";
+
 export const geminiGenerateContentRawSchema = z
   .object({
     candidates: z
@@ -14,7 +16,7 @@ export const geminiGenerateContentRawSchema = z
                       .object({
                         functionCall: z
                           .object({
-                            args: z.record(z.unknown()).optional(),
+                            args: jsonObjectSchema.optional(),
                             name: z.string(),
                           })
                           .passthrough()
@@ -35,9 +37,15 @@ export const geminiGenerateContentRawSchema = z
       .optional(),
     usageMetadata: z
       .object({
+        cachedContentTokenCount: z.number().optional(),
         candidatesTokenCount: z.number().optional(),
         promptTokenCount: z.number().optional(),
+        promptTokensDetails: z.array(jsonValueSchema).optional(),
+        candidatesTokensDetails: z.array(jsonValueSchema).optional(),
+        cacheTokensDetails: z.array(jsonValueSchema).optional(),
+        toolUsePromptTokenCount: z.number().optional(),
         thoughtsTokenCount: z.number().optional(),
+        trafficType: z.string().optional(),
         totalTokenCount: z.number().optional(),
       })
       .passthrough()

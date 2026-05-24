@@ -28,12 +28,16 @@ export function toGeminiContent(message: LlmMessage): {
       };
     }
 
-    return {
-      functionResponse: {
-        name: contentPart.name,
-        response: normalizeGeminiFunctionResponse(contentPart.result),
-      },
-    };
+    if (contentPart.type === "tool-result") {
+      return {
+        functionResponse: {
+          name: contentPart.name,
+          response: normalizeGeminiFunctionResponse(contentPart.result),
+        },
+      };
+    }
+
+    throw new LlmIoError(`Gemini messages do not support ${contentPart.type} content parts.`);
   });
 
   return {

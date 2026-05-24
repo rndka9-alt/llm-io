@@ -19,6 +19,10 @@ export function normalizeAnthropicFinishReason(
     return "tool-call";
   }
 
+  if (reason === "pause_turn") {
+    return "pause";
+  }
+
   if (reason === "refusal") {
     return "content-filter";
   }

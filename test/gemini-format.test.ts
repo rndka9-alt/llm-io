@@ -15,9 +15,15 @@ describe("Gemini generateContent format", () => {
         cachedContent: "cachedContents/example",
         generationConfig: {
           responseMimeType: "application/json",
-          thinkingConfig: { thinkingBudget: 0 },
+          responseSchema: { type: "OBJECT", properties: { ok: { type: "BOOLEAN" } } },
+          mediaResolution: "MEDIA_RESOLUTION_LOW",
+          thinkingConfig: { thinkingBudget: 0, thinkingLevel: "LOW" },
         },
+        labels: { team: "llm-io" },
+        modelArmorConfig: { templateName: "projects/p/locations/l/templates/t" },
         safetySettings: [{ category: "HARM_CATEGORY_DANGEROUS_CONTENT", threshold: "BLOCK_NONE" }],
+        serviceTier: "FLEX",
+        store: true,
         toolConfig: { functionCallingConfig: { mode: "AUTO" } },
         tools: [
           {
@@ -60,12 +66,18 @@ describe("Gemini generateContent format", () => {
       generationConfig: {
         maxOutputTokens: 100,
         responseMimeType: "application/json",
+        responseSchema: { type: "OBJECT", properties: { ok: { type: "BOOLEAN" } } },
+        mediaResolution: "MEDIA_RESOLUTION_LOW",
         temperature: 0,
-        thinkingConfig: { thinkingBudget: 0 },
+        thinkingConfig: { thinkingBudget: 0, thinkingLevel: "LOW" },
         topP: 0.8,
       },
       cachedContent: "cachedContents/example",
+      labels: { team: "llm-io" },
+      modelArmorConfig: { templateName: "projects/p/locations/l/templates/t" },
       safetySettings: [{ category: "HARM_CATEGORY_DANGEROUS_CONTENT", threshold: "BLOCK_NONE" }],
+      serviceTier: "FLEX",
+      store: true,
       systemInstruction: {
         parts: [{ text: "rules" }],
       },
@@ -95,6 +107,8 @@ describe("Gemini generateContent format", () => {
         generationConfig: {
           // @ts-expect-error responseMimeType follows documented Gemini values.
           responseMimeType: "application/xml",
+          // @ts-expect-error responseSchema must include a Gemini schema or JSON Schema root object.
+          responseSchema: { properties: { ok: { type: "BOOLEAN" } } },
         },
         tools: [
           {
@@ -129,13 +143,18 @@ describe("Gemini generateContent format", () => {
             content: {
               parts: [{ text: "thought", thought: true }, { text: "done" }],
             },
-            finishReason: "SAFETY",
+            finishReason: "FINISH_REASON_PROHIBITED_CONTENT",
           },
         ],
         usageMetadata: {
+          cachedContentTokenCount: 4,
           candidatesTokenCount: 6,
+          candidatesTokensDetails: [{ modality: "TEXT", tokenCount: 6 }],
+          promptTokensDetails: [{ modality: "TEXT", tokenCount: 5 }],
           promptTokenCount: 5,
           thoughtsTokenCount: 2,
+          toolUsePromptTokenCount: 1,
+          trafficType: "ON_DEMAND",
           totalTokenCount: 13,
         },
       }),
@@ -149,10 +168,17 @@ describe("Gemini generateContent format", () => {
 
     expect(output.message.text).toBe("done");
     expect(output.reasoning?.text).toBe("thought");
+    expect(output.usage?.cacheReadInputTokens).toBe(4);
     expect(output.usage?.inputTokens).toBe(5);
     expect(output.usage?.outputTokens).toBe(6);
     expect(output.usage?.reasoningTokens).toBe(2);
     expect(output.usage?.totalTokens).toBe(13);
+    expect(output.usage?.details).toEqual({
+      candidatesTokensDetails: [{ modality: "TEXT", tokenCount: 6 }],
+      promptTokensDetails: [{ modality: "TEXT", tokenCount: 5 }],
+      toolUsePromptTokenCount: 1,
+      trafficType: "ON_DEMAND",
+    });
     expect(output.finishReason).toBe("content-filter");
   });
 

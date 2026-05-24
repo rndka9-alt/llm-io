@@ -15,7 +15,7 @@ export type OpenAIChatCompletionsReasoningEffort =
   | "xhigh";
 
 /** 프롬프트 캐시를 유지할 기간이다. */
-export type OpenAIChatCompletionsPromptCacheRetention = "24h";
+export type OpenAIChatCompletionsPromptCacheRetention = "in_memory" | "24h";
 
 export type OpenAIChatCompletionsServiceTier =
   /** 프로젝트 기본 설정에 따라 처리 계층을 자동 선택한다. */
@@ -25,7 +25,9 @@ export type OpenAIChatCompletionsServiceTier =
   /** 지연 시간보다 비용 효율을 우선하는 flex 계층을 사용한다. */
   | "flex"
   /** 낮은 지연 시간을 우선하는 priority 계층을 사용한다. */
-  | "priority";
+  | "priority"
+  /** Scale Tier 크레딧을 사용하도록 요청한다. */
+  | "scale";
 
 export type OpenAIChatCompletionsVerbosity =
   /** 더 짧고 간결한 답변을 유도한다. */
@@ -75,7 +77,11 @@ export type OpenAIChatCompletionsAudioVoice =
   /** 밝고 가벼운 톤의 음성이다. */
   | "shimmer"
   /** 자연스럽고 표현적인 톤의 음성이다. */
-  | "verse";
+  | "verse"
+  /** 고품질 음성 출력에 권장되는 음성이다. */
+  | "marin"
+  /** 고품질 음성 출력에 권장되는 음성이다. */
+  | "cedar";
 
 export type OpenAIChatCompletionsToolChoice =
   /** 도구 호출을 금지한다. */
@@ -114,7 +120,7 @@ export interface OpenAIChatCompletionsAudioOptions extends JsonObject {
   /** 반환할 오디오 파일 형식이다. */
   format: OpenAIChatCompletionsAudioFormat;
   /** 오디오 응답에 사용할 음성이다. */
-  voice: OpenAIChatCompletionsAudioVoice;
+  voice: OpenAIChatCompletionsAudioVoice | { id: string };
 }
 
 export interface OpenAIChatCompletionsFunctionToolChoice extends JsonObject {
@@ -150,6 +156,8 @@ export interface OpenAIChatCompletionsFunctionTool extends JsonObject {
 export type OpenAIChatCompletionsTool = OpenAIChatCompletionsFunctionTool;
 
 export interface OpenAIChatCompletionsStreamOptions extends JsonObject {
+  /** streaming delta에 obfuscation 필드를 포함할지 결정한다. */
+  include_obfuscation?: boolean;
   /** 스트림 마지막 chunk에 token usage 정보를 포함할지 결정한다. */
   include_usage?: boolean;
 }
@@ -170,7 +178,7 @@ export interface OpenAIChatCompletionsJsonSchemaDefinition extends JsonObject {
   /** 응답 schema 이름이다. */
   name: string;
   /** 모델이 맞춰야 하는 JSON Schema다. */
-  schema: JsonObject;
+  schema: JsonSchemaObject;
   /** 지원 모델에서 schema 엄격 준수를 요청한다. */
   strict?: boolean;
 }
@@ -200,10 +208,49 @@ export interface OpenRouterProviderRouting extends JsonObject {
   quantizations?: readonly string[];
   /** 요청 파라미터를 모두 지원하는 provider만 사용하도록 제한한다. */
   require_parameters?: boolean;
-  /** provider 선택 시 우선할 정렬 기준이다. */
-  sort?: "price" | "throughput" | "latency";
   /** zero data retention provider만 사용하도록 제한한다. */
   zdr?: boolean;
+  /** distillable text가 허용되는 모델로 제한한다. */
+  enforce_distillable_text?: boolean;
+  /** 라우팅 후보로 허용할 provider id 목록이다. */
+  only?: readonly string[];
+  /** provider 선택 시 우선할 정렬 기준이다. */
+  sort?: OpenRouterProviderSort;
+  /** 선호하는 최소 처리량 조건이다. */
+  preferred_min_throughput?: OpenRouterProviderPerformancePreference;
+  /** 선호하는 최대 지연 시간 조건이다. */
+  preferred_max_latency?: OpenRouterProviderPerformancePreference;
+  /** 요청에 허용할 최대 가격 조건이다. */
+  max_price?: OpenRouterProviderMaxPrice;
+}
+
+export type OpenRouterProviderSortKey = "price" | "throughput" | "latency";
+
+export interface OpenRouterProviderSortOptions extends JsonObject {
+  /** provider 정렬 기준이다. */
+  by: OpenRouterProviderSortKey;
+  /** 여러 모델 fallback 시 정렬 그룹 기준이다. */
+  partition?: "model" | "none";
+}
+
+export type OpenRouterProviderSort = OpenRouterProviderSortKey | OpenRouterProviderSortOptions;
+
+export interface OpenRouterProviderPercentilePreference extends JsonObject {
+  p50?: number;
+  p75?: number;
+  p90?: number;
+  p99?: number;
+}
+
+export type OpenRouterProviderPerformancePreference =
+  | number
+  | OpenRouterProviderPercentilePreference;
+
+export interface OpenRouterProviderMaxPrice extends JsonObject {
+  prompt?: number;
+  completion?: number;
+  request?: number;
+  image?: number;
 }
 
 export interface NanoGPTCacheControl extends JsonObject {

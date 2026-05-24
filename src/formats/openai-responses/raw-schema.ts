@@ -1,9 +1,83 @@
 import { z } from "zod";
 
+const openAIResponsesKnownOutputItemTypes = ["function_call", "message", "reasoning"] as const;
+const openAIResponsesKnownMessageContentPartTypes = ["output_text"] as const;
+
+export const openAIResponsesFunctionCallOutputItemSchema = z
+  .object({
+    arguments: z.string(),
+    call_id: z.string(),
+    name: z.string(),
+    type: z.literal("function_call"),
+  })
+  .passthrough();
+
+export const openAIResponsesOutputTextContentPartSchema = z
+  .object({
+    text: z.string(),
+    type: z.literal("output_text"),
+  })
+  .passthrough();
+
+export const openAIResponsesUnknownMessageContentPartSchema = z
+  .object({
+    type: z
+      .string()
+      .refine(
+        (type) =>
+          !openAIResponsesKnownMessageContentPartTypes.some((knownType) => knownType === type),
+        "Known OpenAI Responses message content part types must match their documented schema.",
+      ),
+  })
+  .passthrough();
+
+export const openAIResponsesMessageContentPartSchema = z.union([
+  openAIResponsesOutputTextContentPartSchema,
+  openAIResponsesUnknownMessageContentPartSchema,
+]);
+
+export const openAIResponsesMessageOutputItemSchema = z
+  .object({
+    content: z.array(openAIResponsesMessageContentPartSchema),
+    type: z.literal("message"),
+  })
+  .passthrough();
+
+export const openAIResponsesReasoningSummaryPartSchema = z
+  .object({
+    text: z.string(),
+  })
+  .passthrough();
+
+export const openAIResponsesReasoningOutputItemSchema = z
+  .object({
+    summary: z.array(openAIResponsesReasoningSummaryPartSchema).optional(),
+    type: z.literal("reasoning"),
+  })
+  .passthrough();
+
+export const openAIResponsesUnknownOutputItemSchema = z
+  .object({
+    type: z
+      .string()
+      .refine(
+        (type) => !openAIResponsesKnownOutputItemTypes.some((knownType) => knownType === type),
+        "Known OpenAI Responses output item types must match their documented schema.",
+      ),
+  })
+  .passthrough();
+
+export const openAIResponsesOutputItemSchema = z.union([
+  openAIResponsesFunctionCallOutputItemSchema,
+  openAIResponsesMessageOutputItemSchema,
+  openAIResponsesReasoningOutputItemSchema,
+  openAIResponsesUnknownOutputItemSchema,
+]);
+
 export const openAIResponsesRawSchema = z
   .object({
     id: z.string().optional(),
-    output: z.array(z.unknown()).optional(),
+    output: z.array(openAIResponsesOutputItemSchema).optional(),
     usage: z
       .object({
         input_tokens: z.number().optional(),

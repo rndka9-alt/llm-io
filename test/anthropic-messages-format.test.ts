@@ -130,13 +130,19 @@ describe("AnthropicMessagesFormat", () => {
     const fetchRecorder = createRecordingFetch({
       content: [
         { type: "thinking", thinking: "Plan first." },
-        { type: "redacted_thinking" },
+        { type: "thinking", thinking: "Keep signature.", signature: "sig-1" },
+        { type: "redacted_thinking", data: "redacted-1" },
         { type: "text", text: "Done." },
       ],
       stop_reason: "max_tokens",
       usage: {
+        cache_creation_input_tokens: 2,
+        cache_read_input_tokens: 3,
         input_tokens: 11,
         output_tokens: 7,
+        server_tool_use: {
+          web_search_requests: 1,
+        },
       },
     });
     const client = new Llm({
@@ -153,11 +159,20 @@ describe("AnthropicMessagesFormat", () => {
     });
 
     expect(output.message.text).toBe("Done.");
-    expect(output.reasoning?.text).toBe("Plan first.\n{{redacted_thinking}}");
+    expect(output.message.content).toEqual([
+      { type: "thinking", thinking: "Plan first." },
+      { type: "thinking", thinking: "Keep signature.", signature: "sig-1" },
+      { type: "redacted-thinking", data: "redacted-1" },
+      { type: "text", text: "Done." },
+    ]);
+    expect(output.reasoning?.text).toBe("Plan first.\nKeep signature.\n{{redacted_thinking}}");
     expect(output.usage).toEqual({
-      inputTokens: 11,
+      cacheCreationInputTokens: 2,
+      cacheReadInputTokens: 3,
+      inputTokens: 16,
       outputTokens: 7,
-      totalTokens: 18,
+      details: { serverToolUse: { web_search_requests: 1 } },
+      totalTokens: 23,
     });
     expect(output.finishReason).toBe("length");
   });
@@ -239,6 +254,87 @@ describe("AnthropicMessagesFormat", () => {
               tool_use_id: "toolu-1",
               content: '{"temperature":18}',
             },
+          ],
+        },
+      ],
+    });
+  });
+
+  it("creates image, document, search result, and thinking continuation bodies", () => {
+    const format = new AnthropicMessagesFormat({
+      maxTokens: 1024,
+      model: "claude-example",
+    });
+
+    expect(
+      format.createRequestBody({
+        messages: [
+          {
+            role: "user",
+            content: [
+              { type: "image", source: { type: "url", url: "https://example.test/chart.png" } },
+              {
+                type: "document",
+                source: {
+                  type: "text",
+                  media_type: "text/plain",
+                  data: "Document text",
+                },
+                citations: { enabled: true },
+              },
+              {
+                type: "search-result",
+                source: "https://example.test/doc",
+                title: "Example doc",
+                content: [{ type: "text", text: "Search result text" }],
+                citations: { enabled: true },
+              },
+              { type: "text", text: "Summarize these." },
+            ],
+          },
+          {
+            role: "assistant",
+            content: [
+              { type: "thinking", thinking: "Need cite.", signature: "sig-1" },
+              { type: "redacted-thinking", data: "opaque" },
+              { type: "text", text: "Summary" },
+            ],
+          },
+        ],
+      }),
+    ).toEqual({
+      max_tokens: 1024,
+      model: "claude-example",
+      messages: [
+        {
+          role: "user",
+          content: [
+            { type: "image", source: { type: "url", url: "https://example.test/chart.png" } },
+            {
+              type: "document",
+              source: {
+                type: "text",
+                media_type: "text/plain",
+                data: "Document text",
+              },
+              citations: { enabled: true },
+            },
+            {
+              type: "search_result",
+              source: "https://example.test/doc",
+              title: "Example doc",
+              content: [{ type: "text", text: "Search result text" }],
+              citations: { enabled: true },
+            },
+            { type: "text", text: "Summarize these." },
+          ],
+        },
+        {
+          role: "assistant",
+          content: [
+            { type: "thinking", thinking: "Need cite.", signature: "sig-1" },
+            { type: "redacted_thinking", data: "opaque" },
+            { type: "text", text: "Summary" },
           ],
         },
       ],

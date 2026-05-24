@@ -1,6 +1,11 @@
 import { LlmIoError } from "../../../core/errors";
 import type { JsonValue } from "../../../core/json";
-import type { LlmMessage, LlmToolCallPart, LlmToolResultPart } from "../../../core/message";
+import type {
+  LlmMessage,
+  LlmSearchResultPart,
+  LlmToolCallPart,
+  LlmToolResultPart,
+} from "../../../core/message";
 import type { AnthropicContentBlock } from "../types";
 
 export function toAnthropicContent(message: LlmMessage): AnthropicContentBlock[] {
@@ -28,6 +33,54 @@ export function toAnthropicContent(message: LlmMessage): AnthropicContentBlock[]
       continue;
     }
 
+    if (contentPart.type === "image") {
+      content.push({
+        ...contentPart,
+        type: "image",
+      });
+      continue;
+    }
+
+    if (contentPart.type === "document") {
+      content.push({
+        ...contentPart,
+        type: "document",
+      });
+      continue;
+    }
+
+    if (contentPart.type === "search-result") {
+      content.push(toAnthropicSearchResultBlock(contentPart));
+      continue;
+    }
+
+    if (contentPart.type === "thinking") {
+      if (message.role !== "assistant") {
+        throw new LlmIoError("Anthropic thinking content parts require assistant messages.");
+      }
+
+      content.push({
+        type: "thinking",
+        thinking: contentPart.thinking,
+        ...(contentPart.signature === undefined ? {} : { signature: contentPart.signature }),
+      });
+      continue;
+    }
+
+    if (contentPart.type === "redacted-thinking") {
+      if (message.role !== "assistant") {
+        throw new LlmIoError(
+          "Anthropic redacted-thinking content parts require assistant messages.",
+        );
+      }
+
+      content.push({
+        type: "redacted_thinking",
+        ...(contentPart.data === undefined ? {} : { data: contentPart.data }),
+      });
+      continue;
+    }
+
     if (contentPart.id === undefined) {
       throw new LlmIoError("Anthropic tool result messages require an id.");
     }
@@ -41,6 +94,14 @@ export function toAnthropicContent(message: LlmMessage): AnthropicContentBlock[]
   }
 
   return content;
+}
+
+function toAnthropicSearchResultBlock(contentPart: LlmSearchResultPart): AnthropicContentBlock {
+  return {
+    ...contentPart,
+    type: "search_result",
+    content: contentPart.content.map((textPart) => ({ type: "text", text: textPart.text })),
+  };
 }
 
 function validateAnthropicToolContent(message: LlmMessage): void {

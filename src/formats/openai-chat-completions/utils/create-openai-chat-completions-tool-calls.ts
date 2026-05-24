@@ -1,5 +1,5 @@
 import { LlmIoError } from "../../../core/errors";
-import { isJsonObject } from "../../../core/json";
+import { jsonObjectSchema } from "../../../core/json";
 import type { LlmToolCall } from "../../../core/message";
 import type { OpenAIChatCompletionsRaw } from "../raw-schema";
 
@@ -32,9 +32,14 @@ function parseOpenAIToolCallArguments(argumentsText: string): LlmToolCall["argum
     throw new LlmIoError("OpenAI tool call arguments must be valid JSON.", cause);
   }
 
-  if (!isJsonObject(parsedArguments)) {
-    throw new LlmIoError("OpenAI tool call arguments must be a JSON object.");
+  const toolArgumentsResult = jsonObjectSchema.safeParse(parsedArguments);
+
+  if (!toolArgumentsResult.success) {
+    throw new LlmIoError(
+      "OpenAI tool call arguments must be a JSON object.",
+      toolArgumentsResult.error,
+    );
   }
 
-  return parsedArguments;
+  return toolArgumentsResult.data;
 }

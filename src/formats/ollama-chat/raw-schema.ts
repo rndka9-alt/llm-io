@@ -1,5 +1,7 @@
 import { z } from "zod";
 
+import { jsonObjectSchema } from "../../core/json";
+
 export const ollamaChatRawSchema = z
   .object({
     done: z.boolean().optional(),
@@ -15,7 +17,7 @@ export const ollamaChatRawSchema = z
               .object({
                 function: z
                   .object({
-                    arguments: z.record(z.unknown()),
+                    arguments: jsonObjectSchema,
                     name: z.string(),
                   })
                   .passthrough(),

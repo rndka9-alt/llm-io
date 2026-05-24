@@ -2,9 +2,17 @@ import type { JsonObject, JsonValue } from "./json";
 
 export type LlmMessageRole = "system" | "user" | "assistant" | "tool";
 
-export type LlmContentPart = LlmTextPart | LlmToolCallPart | LlmToolResultPart;
+export type LlmContentPart =
+  | LlmTextPart
+  | LlmToolCallPart
+  | LlmToolResultPart
+  | LlmImagePart
+  | LlmDocumentPart
+  | LlmSearchResultPart
+  | LlmThinkingPart
+  | LlmRedactedThinkingPart;
 
-export interface LlmTextPart {
+export interface LlmTextPart extends JsonObject {
   type: "text";
   text: string;
 }
@@ -28,6 +36,34 @@ export interface LlmToolCallPart extends LlmToolCall {
 
 export interface LlmToolResultPart extends LlmToolResult {
   type: "tool-result";
+}
+
+export interface LlmImagePart extends JsonObject {
+  source: JsonObject;
+  type: "image";
+}
+
+export interface LlmDocumentPart extends JsonObject {
+  source: JsonObject;
+  type: "document";
+}
+
+export interface LlmSearchResultPart extends JsonObject {
+  content: readonly LlmTextPart[];
+  source: string;
+  title?: string | null;
+  type: "search-result";
+}
+
+export interface LlmThinkingPart extends JsonObject {
+  signature?: string;
+  thinking: string;
+  type: "thinking";
+}
+
+export interface LlmRedactedThinkingPart extends JsonObject {
+  data?: string;
+  type: "redacted-thinking";
 }
 
 export interface LlmMessage {

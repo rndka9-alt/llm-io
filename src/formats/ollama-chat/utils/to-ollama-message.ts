@@ -44,6 +44,8 @@ export function toOllamaMessage(message: LlmMessage): OllamaMessage {
     throw new LlmIoError("Ollama tool messages require a tool-result content part.");
   }
 
+  assertOnlyTextContent(message);
+
   if (message.role === "assistant") {
     return {
       role: "assistant",
@@ -55,6 +57,16 @@ export function toOllamaMessage(message: LlmMessage): OllamaMessage {
     role: message.role,
     content: getMessageText(message),
   };
+}
+
+function assertOnlyTextContent(message: LlmMessage): void {
+  const unsupportedContentPart = message.content.find((contentPart) => contentPart.type !== "text");
+
+  if (unsupportedContentPart !== undefined) {
+    throw new LlmIoError(
+      `Ollama messages do not support ${unsupportedContentPart.type} content parts.`,
+    );
+  }
 }
 
 function toOllamaAssistantToolCallMessage(

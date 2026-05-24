@@ -38,6 +38,38 @@ export interface AnthropicTextBlock extends JsonObject {
   type: "text";
 }
 
+export interface AnthropicImageBlock extends JsonObject {
+  cache_control?: AnthropicCacheControl;
+  source: JsonObject;
+  type: "image";
+}
+
+export interface AnthropicDocumentBlock extends JsonObject {
+  cache_control?: AnthropicCacheControl;
+  source: JsonObject;
+  type: "document";
+}
+
+export interface AnthropicSearchResultBlock extends JsonObject {
+  cache_control?: AnthropicCacheControl;
+  citations?: JsonObject;
+  content: readonly AnthropicTextBlock[];
+  source: string;
+  title?: string | null;
+  type: "search_result";
+}
+
+export interface AnthropicThinkingBlock extends JsonObject {
+  signature?: string;
+  thinking: string;
+  type: "thinking";
+}
+
+export interface AnthropicRedactedThinkingBlock extends JsonObject {
+  data?: string;
+  type: "redacted_thinking";
+}
+
 export interface AnthropicToolUseBlock extends JsonObject {
   /** 모델이 요청한 tool call id다. */
   id: string;
@@ -62,6 +94,11 @@ export interface AnthropicToolResultBlock extends JsonObject {
 
 export type AnthropicContentBlock =
   | AnthropicTextBlock
+  | AnthropicImageBlock
+  | AnthropicDocumentBlock
+  | AnthropicSearchResultBlock
+  | AnthropicThinkingBlock
+  | AnthropicRedactedThinkingBlock
   | AnthropicToolUseBlock
   | AnthropicToolResultBlock;
 
@@ -131,6 +168,10 @@ export interface AnthropicMessagesNoneToolChoice extends JsonObject {
 export interface AnthropicMessagesExtraBody {
   /** Anthropic container 기능을 사용할 때 이어갈 container id다. */
   container?: string | null;
+  /** 응답 출력 형식 설정이다. */
+  output_config?: JsonObject;
+  /** 추론 처리 지역 설정이다. */
+  inference_geo?: string;
   /** Anthropic MCP connector 서버 설정 목록이다. */
   mcp_servers?: readonly JsonObject[];
   /** 요청 추적용 metadata다. */

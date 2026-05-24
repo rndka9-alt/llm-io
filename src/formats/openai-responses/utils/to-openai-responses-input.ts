@@ -41,7 +41,19 @@ export function toOpenAIResponsesInput(message: LlmMessage): OpenAIResponsesInpu
     throw new LlmIoError("OpenAI responses tool messages require a tool-result content part.");
   }
 
+  assertOnlyTextContent(message);
+
   return [createOpenAIResponsesTextInputItem(message)];
+}
+
+function assertOnlyTextContent(message: LlmMessage): void {
+  const unsupportedContentPart = message.content.find((contentPart) => contentPart.type !== "text");
+
+  if (unsupportedContentPart !== undefined) {
+    throw new LlmIoError(
+      `OpenAI responses messages do not support ${unsupportedContentPart.type} content parts.`,
+    );
+  }
 }
 
 function createOpenAIResponsesToolCallInputItems(

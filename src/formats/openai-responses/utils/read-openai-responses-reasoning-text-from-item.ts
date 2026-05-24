@@ -1,19 +1,11 @@
-import { isJsonObject } from "../../../core/json";
+import { openAIResponsesReasoningOutputItemSchema } from "../raw-schema";
 
 export function readOpenAIResponsesReasoningTextFromItem(outputItem: unknown): string[] {
-  if (
-    !isJsonObject(outputItem) ||
-    outputItem.type !== "reasoning" ||
-    !Array.isArray(outputItem.summary)
-  ) {
+  const outputItemResult = openAIResponsesReasoningOutputItemSchema.safeParse(outputItem);
+
+  if (!outputItemResult.success || outputItemResult.data.summary === undefined) {
     return [];
   }
 
-  return outputItem.summary.flatMap((summaryPart) => {
-    if (!isJsonObject(summaryPart) || typeof summaryPart.text !== "string") {
-      return [];
-    }
-
-    return [summaryPart.text];
-  });
+  return outputItemResult.data.summary.map((summaryPart) => summaryPart.text);
 }

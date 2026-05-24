@@ -1,23 +1,22 @@
-import { isJsonObject } from "../../../core/json";
+import {
+  openAIResponsesMessageOutputItemSchema,
+  openAIResponsesOutputTextContentPartSchema,
+} from "../raw-schema";
 
 export function readOpenAIResponsesOutputTextFromItem(outputItem: unknown): string[] {
-  if (
-    !isJsonObject(outputItem) ||
-    outputItem.type !== "message" ||
-    !Array.isArray(outputItem.content)
-  ) {
+  const outputItemResult = openAIResponsesMessageOutputItemSchema.safeParse(outputItem);
+
+  if (!outputItemResult.success) {
     return [];
   }
 
-  return outputItem.content.flatMap((contentPart) => {
-    if (
-      !isJsonObject(contentPart) ||
-      contentPart.type !== "output_text" ||
-      typeof contentPart.text !== "string"
-    ) {
+  return outputItemResult.data.content.flatMap((contentPart) => {
+    const contentPartResult = openAIResponsesOutputTextContentPartSchema.safeParse(contentPart);
+
+    if (!contentPartResult.success) {
       return [];
     }
 
-    return [contentPart.text];
+    return [contentPartResult.data.text];
   });
 }

@@ -15,7 +15,7 @@ export type OpenAIResponsesInclude =
   | "reasoning.encrypted_content";
 
 /** 프롬프트 캐시를 유지할 기간이다. */
-export type OpenAIResponsesPromptCacheRetention = "24h";
+export type OpenAIResponsesPromptCacheRetention = "in_memory" | "24h";
 
 export type OpenAIResponsesReasoningEffort =
   /** 추론 토큰을 쓰지 않도록 요청한다. */
@@ -49,7 +49,9 @@ export type OpenAIResponsesServiceTier =
   /** 지연 시간보다 비용 효율을 우선하는 flex 계층을 사용한다. */
   | "flex"
   /** 낮은 지연 시간을 우선하는 priority 계층을 사용한다. */
-  | "priority";
+  | "priority"
+  /** Scale Tier 크레딧을 사용하도록 요청한다. */
+  | "scale";
 
 export type OpenAIResponsesToolChoice =
   /** 도구 호출을 금지한다. */
@@ -59,7 +61,23 @@ export type OpenAIResponsesToolChoice =
   /** 모델이 하나 이상의 도구를 호출하도록 강제한다. */
   | "required"
   /** 특정 hosted tool 또는 function tool을 지정한다. */
-  | JsonObject;
+  | OpenAIResponsesNamedToolChoice;
+
+export interface OpenAIResponsesFunctionToolChoice extends JsonObject {
+  /** 호출할 함수 도구 이름이다. */
+  name: string;
+  /** tool_choice가 함수 도구를 가리킨다는 표시다. */
+  type: "function";
+}
+
+export interface OpenAIResponsesHostedToolChoice extends JsonObject {
+  /** 호출할 hosted tool type이다. */
+  type: Exclude<OpenAIResponsesTool["type"], "function">;
+}
+
+export type OpenAIResponsesNamedToolChoice =
+  | OpenAIResponsesFunctionToolChoice
+  | OpenAIResponsesHostedToolChoice;
 
 export interface OpenAIResponsesFunctionTool extends JsonObject {
   /** 모델이 tool 사용 시 참고할 설명이다. */
@@ -74,7 +92,64 @@ export interface OpenAIResponsesFunctionTool extends JsonObject {
   type: "function";
 }
 
-export type OpenAIResponsesTool = OpenAIResponsesFunctionTool | JsonObject;
+export interface OpenAIResponsesFileSearchTool extends JsonObject {
+  filters?: JsonObject;
+  max_num_results?: number;
+  ranking_options?: JsonObject;
+  type: "file_search";
+  vector_store_ids?: readonly string[];
+}
+
+export interface OpenAIResponsesWebSearchTool extends JsonObject {
+  search_context_size?: "low" | "medium" | "high";
+  type: "web_search_preview" | "web_search_preview_2025_03_11";
+  user_location?: JsonObject;
+}
+
+export interface OpenAIResponsesComputerUseTool extends JsonObject {
+  display_height?: number;
+  display_width?: number;
+  environment?: string;
+  type: "computer_use_preview";
+}
+
+export interface OpenAIResponsesCodeInterpreterTool extends JsonObject {
+  container?: string | JsonObject;
+  type: "code_interpreter";
+}
+
+export interface OpenAIResponsesMcpTool extends JsonObject {
+  allowed_tools?: readonly string[];
+  authorization?: string;
+  require_approval?: "always" | "never" | JsonObject;
+  server_label: string;
+  server_url: string;
+  type: "mcp";
+}
+
+export interface OpenAIResponsesImageGenerationTool extends JsonObject {
+  background?: "transparent" | "opaque" | "auto";
+  model?: string;
+  output_compression?: number;
+  output_format?: "png" | "webp" | "jpeg";
+  quality?: "low" | "medium" | "high" | "auto";
+  size?: string;
+  type: "image_generation";
+}
+
+export interface OpenAIResponsesLocalShellTool extends JsonObject {
+  type: "local_shell";
+}
+
+export type OpenAIResponsesTool =
+  | OpenAIResponsesFunctionTool
+  | OpenAIResponsesFileSearchTool
+  | OpenAIResponsesWebSearchTool
+  | OpenAIResponsesComputerUseTool
+  | OpenAIResponsesCodeInterpreterTool
+  | OpenAIResponsesMcpTool
+  | OpenAIResponsesImageGenerationTool
+  | OpenAIResponsesLocalShellTool;
 
 export type OpenAIResponsesTruncation =
   /** context 초과 시 API가 입력 일부를 자동으로 잘라낸다. */
@@ -113,7 +188,7 @@ export interface OpenAIResponsesTextFormatJsonSchema extends JsonObject {
   /** 응답 schema 이름이다. */
   name: string;
   /** 모델이 맞춰야 하는 JSON Schema다. */
-  schema: JsonObject;
+  schema: JsonSchemaObject;
   /** 지원 모델에서 schema 엄격 준수를 요청한다. */
   strict?: boolean;
   /** JSON Schema 기반 구조화 출력을 요청한다. */
@@ -130,6 +205,11 @@ export interface OpenAIResponsesTextOptions extends JsonObject {
   format?: OpenAIResponsesTextFormat;
   /** 지원 모델에서 답변 자세함을 조정한다. */
   verbosity?: OpenAIResponsesVerbosity;
+}
+
+export interface OpenAIResponsesStreamOptions extends JsonObject {
+  /** streaming delta에 obfuscation 필드를 포함할지 결정한다. */
+  include_obfuscation?: boolean;
 }
 
 export interface OpenAIResponsesExtraBody {
@@ -165,6 +245,8 @@ export interface OpenAIResponsesExtraBody {
   store?: boolean | null;
   /** streaming 응답을 요청한다. 현재 Llm.generate는 JSON 응답만 처리한다. */
   stream?: boolean | null;
+  /** streaming 응답의 부가 정보를 제어한다. */
+  stream_options?: OpenAIResponsesStreamOptions | null;
   /** 출력 텍스트 형식과 자세함을 설정한다. */
   text?: OpenAIResponsesTextOptions;
   /** tool 호출 정책을 지정한다. */

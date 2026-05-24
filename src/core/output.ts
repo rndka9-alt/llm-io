@@ -1,4 +1,10 @@
-import type { LlmToolCall, LlmToolCallPart } from "./message";
+import type { JsonObject } from "./json";
+import type {
+  LlmRedactedThinkingPart,
+  LlmThinkingPart,
+  LlmToolCall,
+  LlmToolCallPart,
+} from "./message";
 
 export interface LlmAssistantMessage {
   role: "assistant";
@@ -7,7 +13,11 @@ export interface LlmAssistantMessage {
   toolCalls?: readonly LlmToolCall[];
 }
 
-export type LlmAssistantContentPart = LlmAssistantTextPart | LlmAssistantToolCallPart;
+export type LlmAssistantContentPart =
+  | LlmAssistantTextPart
+  | LlmAssistantToolCallPart
+  | LlmAssistantThinkingPart
+  | LlmAssistantRedactedThinkingPart;
 
 export interface LlmAssistantTextPart {
   type: "text";
@@ -16,18 +26,31 @@ export interface LlmAssistantTextPart {
 
 export type LlmAssistantToolCallPart = LlmToolCallPart;
 
+export type LlmAssistantThinkingPart = LlmThinkingPart;
+
+export type LlmAssistantRedactedThinkingPart = LlmRedactedThinkingPart;
+
 export interface LlmReasoning {
   text: string;
 }
 
 export interface LlmUsage {
+  cacheCreationInputTokens?: number;
+  cacheReadInputTokens?: number;
+  details?: JsonObject;
   inputTokens?: number;
   outputTokens?: number;
   reasoningTokens?: number;
   totalTokens?: number;
 }
 
-export type LlmFinishReason = "stop" | "length" | "tool-call" | "content-filter" | "unknown";
+export type LlmFinishReason =
+  | "stop"
+  | "length"
+  | "tool-call"
+  | "content-filter"
+  | "pause"
+  | "unknown";
 
 export interface LlmOutput<TRaw, TExtras = undefined> {
   message: LlmAssistantMessage;
@@ -41,6 +64,35 @@ export interface LlmOutput<TRaw, TExtras = undefined> {
 
 export function createTextAssistantMessage(text: string): LlmAssistantMessage {
   return createAssistantMessage(text, []);
+}
+
+export function createAssistantMessageFromContent(
+  content: readonly LlmAssistantContentPart[],
+): LlmAssistantMessage {
+  const text = content
+    .filter((contentPart): contentPart is LlmAssistantTextPart => contentPart.type === "text")
+    .map((contentPart) => contentPart.text)
+    .join("");
+  const toolCalls = content.flatMap((contentPart) => {
+    if (contentPart.type !== "tool-call") {
+      return [];
+    }
+
+    return [
+      {
+        ...(contentPart.id === undefined ? {} : { id: contentPart.id }),
+        name: contentPart.name,
+        arguments: contentPart.arguments,
+      },
+    ];
+  });
+
+  return {
+    role: "assistant",
+    content,
+    text,
+    ...(toolCalls.length === 0 ? {} : { toolCalls }),
+  };
 }
 
 export function createAssistantMessage(

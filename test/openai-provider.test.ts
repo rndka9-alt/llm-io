@@ -37,7 +37,7 @@ describe("OpenAIProvider", () => {
       format: new OpenAIChatCompletionsFormat({ model: "gpt-example" }),
       provider: new OpenAIProvider({
         apiKey: "openai-key",
-        serviceTier: "priority",
+        serviceTier: "scale",
       }),
     });
 
@@ -45,7 +45,7 @@ describe("OpenAIProvider", () => {
       messages: [{ role: "user", content: [{ type: "text", text: "hi" }] }],
     });
 
-    expect(readRequestBody(fetchRecorder.calls[0]).service_tier).toBe("priority");
+    expect(readRequestBody(fetchRecorder.calls[0]).service_tier).toBe("scale");
   });
 
   it("rejects unsupported service tiers at compile time", () => {

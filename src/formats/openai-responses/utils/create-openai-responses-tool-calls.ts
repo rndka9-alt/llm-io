@@ -1,31 +1,24 @@
 import { LlmIoError } from "../../../core/errors";
-import { isJsonObject } from "../../../core/json";
+import { jsonObjectSchema } from "../../../core/json";
 import type { LlmToolCall } from "../../../core/message";
+import { openAIResponsesFunctionCallOutputItemSchema } from "../raw-schema";
 
 export function createOpenAIResponsesToolCalls(outputItems: readonly unknown[]): LlmToolCall[] {
   const toolCalls: LlmToolCall[] = [];
 
   for (const outputItem of outputItems) {
-    if (!isJsonObject(outputItem) || outputItem.type !== "function_call") {
+    const outputItemResult = openAIResponsesFunctionCallOutputItemSchema.safeParse(outputItem);
+
+    if (!outputItemResult.success) {
       continue;
     }
 
-    if (typeof outputItem.name !== "string") {
-      throw new LlmIoError("OpenAI responses function_call items require a name.");
-    }
-
-    if (typeof outputItem.arguments !== "string") {
-      throw new LlmIoError("OpenAI responses function_call arguments must be a JSON string.");
-    }
-
-    if (typeof outputItem.call_id !== "string") {
-      throw new LlmIoError("OpenAI responses function_call items require a call_id.");
-    }
+    const functionCallOutputItem = outputItemResult.data;
 
     toolCalls.push({
-      id: outputItem.call_id,
-      name: outputItem.name,
-      arguments: parseOpenAIResponsesToolCallArguments(outputItem.arguments),
+      id: functionCallOutputItem.call_id,
+      name: functionCallOutputItem.name,
+      arguments: parseOpenAIResponsesToolCallArguments(functionCallOutputItem.arguments),
     });
   }
 
@@ -41,9 +34,14 @@ function parseOpenAIResponsesToolCallArguments(argumentsText: string): LlmToolCa
     throw new LlmIoError("OpenAI responses function_call arguments must be valid JSON.", cause);
   }
 
-  if (!isJsonObject(parsedArguments)) {
-    throw new LlmIoError("OpenAI responses function_call arguments must be a JSON object.");
+  const toolArgumentsResult = jsonObjectSchema.safeParse(parsedArguments);
+
+  if (!toolArgumentsResult.success) {
+    throw new LlmIoError(
+      "OpenAI responses function_call arguments must be a JSON object.",
+      toolArgumentsResult.error,
+    );
   }
 
-  return parsedArguments;
+  return toolArgumentsResult.data;
 }

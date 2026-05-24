@@ -13,10 +13,18 @@ describe("OpenAI formats", () => {
   it("creates chat completions request bodies", () => {
     const format = new OpenAIChatCompletionsFormat({
       extraBody: {
-        prompt_cache_retention: "24h",
+        audio: { format: "pcm16", voice: "marin" },
+        prompt_cache_retention: "in_memory",
+        provider: {
+          only: ["openai"],
+          sort: { by: "throughput", partition: "none" },
+          preferred_min_throughput: { p90: 50 },
+          preferred_max_latency: 3,
+          max_price: { prompt: 1, completion: 2 },
+        },
         reasoning_effort: "high",
         response_format: { type: "json_object" },
-        stream_options: { include_usage: true },
+        stream_options: { include_obfuscation: false, include_usage: true },
         tool_choice: { type: "function", function: { name: "lookup" } },
         tools: [
           {
@@ -52,10 +60,18 @@ describe("OpenAI formats", () => {
       max_completion_tokens: 100,
       temperature: 0,
       top_p: 0.8,
-      prompt_cache_retention: "24h",
+      audio: { format: "pcm16", voice: "marin" },
+      prompt_cache_retention: "in_memory",
+      provider: {
+        only: ["openai"],
+        sort: { by: "throughput", partition: "none" },
+        preferred_min_throughput: { p90: 50 },
+        preferred_max_latency: 3,
+        max_price: { prompt: 1, completion: 2 },
+      },
       reasoning_effort: "high",
       response_format: { type: "json_object" },
-      stream_options: { include_usage: true },
+      stream_options: { include_obfuscation: false, include_usage: true },
       tool_choice: { type: "function", function: { name: "lookup" } },
       tools: [
         {
@@ -92,6 +108,19 @@ describe("OpenAI formats", () => {
             },
           },
         ],
+        audio: {
+          format: "pcm16",
+          // @ts-expect-error audio voice follows documented built-in values or custom voice objects.
+          voice: "robot",
+        },
+        response_format: {
+          type: "json_schema",
+          json_schema: {
+            name: "result",
+            // @ts-expect-error json_schema.schema must be a JSON Schema object root.
+            schema: { properties: { ok: { type: "boolean" } } },
+          },
+        },
       },
       model: "example-model",
     } satisfies ConstructorParameters<typeof OpenAIChatCompletionsFormat>[0];
@@ -248,9 +277,31 @@ describe("OpenAI formats", () => {
     const format = new OpenAIResponsesFormat({
       extraBody: {
         prompt_cache_key: "shared-prefix",
+        prompt_cache_retention: "in_memory",
         reasoning: { effort: "medium", summary: "auto" },
+        service_tier: "scale",
         store: false,
-        text: { format: { type: "text" }, verbosity: "low" },
+        stream_options: { include_obfuscation: false },
+        text: {
+          format: {
+            type: "json_schema",
+            name: "result",
+            schema: { type: "object", properties: { ok: { type: "boolean" } } },
+          },
+          verbosity: "low",
+        },
+        tool_choice: { type: "function", name: "lookup" },
+        tools: [
+          {
+            type: "function",
+            name: "lookup",
+            parameters: {
+              type: "object",
+              properties: { query: { type: "string" } },
+            },
+          },
+          { type: "web_search_preview", search_context_size: "low" },
+        ],
       },
       model: "example-model",
     });
@@ -277,9 +328,31 @@ describe("OpenAI formats", () => {
       temperature: 0,
       top_p: 0.8,
       prompt_cache_key: "shared-prefix",
+      prompt_cache_retention: "in_memory",
       reasoning: { effort: "medium", summary: "auto" },
+      service_tier: "scale",
       store: false,
-      text: { format: { type: "text" }, verbosity: "low" },
+      stream_options: { include_obfuscation: false },
+      text: {
+        format: {
+          type: "json_schema",
+          name: "result",
+          schema: { type: "object", properties: { ok: { type: "boolean" } } },
+        },
+        verbosity: "low",
+      },
+      tool_choice: { type: "function", name: "lookup" },
+      tools: [
+        {
+          type: "function",
+          name: "lookup",
+          parameters: {
+            type: "object",
+            properties: { query: { type: "string" } },
+          },
+        },
+        { type: "web_search_preview", search_context_size: "low" },
+      ],
     });
   });
 
@@ -339,6 +412,22 @@ describe("OpenAI formats", () => {
         reasoning: { effort: "maximum" },
         // @ts-expect-error truncation supports only documented values.
         truncation: "truncate",
+        text: {
+          format: {
+            type: "json_schema",
+            name: "result",
+            // @ts-expect-error text.format.schema must be a JSON Schema object root.
+            schema: { properties: { ok: { type: "boolean" } } },
+          },
+        },
+        tools: [
+          {
+            type: "function",
+            name: "lookup",
+            // @ts-expect-error function tool parameters must be a JSON Schema object root.
+            parameters: { properties: { query: { type: "string" } } },
+          },
+        ],
       },
       model: "example-model",
     } satisfies ConstructorParameters<typeof OpenAIResponsesFormat>[0];

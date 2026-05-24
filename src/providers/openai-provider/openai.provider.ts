@@ -4,7 +4,7 @@ import type { LlmProviderRequest, LlmProviderRequestInput } from "../../core/pro
 import { GenericHttpProvider, type GenericHttpProviderOptions } from "../generic-http-provider";
 import { resolveOpenAICompatibleRequestPath } from "../utils/index";
 
-export type OpenAIServiceTier = "auto" | "default" | "flex" | "priority";
+export type OpenAIServiceTier = "auto" | "default" | "flex" | "priority" | "scale";
 
 export interface OpenAIProviderOptions extends Omit<
   GenericHttpProviderOptions,

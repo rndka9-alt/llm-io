@@ -46,6 +46,8 @@ export function toOpenAIMessage(message: LlmMessage): OpenAIMessage {
     throw new LlmIoError("OpenAI tool messages require a tool-result content part.");
   }
 
+  assertOnlyTextContent(message, "OpenAI");
+
   if (message.role === "assistant") {
     return {
       role: "assistant",
@@ -57,6 +59,16 @@ export function toOpenAIMessage(message: LlmMessage): OpenAIMessage {
     role: message.role,
     content: getMessageText(message),
   };
+}
+
+function assertOnlyTextContent(message: LlmMessage, formatName: string): void {
+  const unsupportedContentPart = message.content.find((contentPart) => contentPart.type !== "text");
+
+  if (unsupportedContentPart !== undefined) {
+    throw new LlmIoError(
+      `${formatName} messages do not support ${unsupportedContentPart.type} content parts.`,
+    );
+  }
 }
 
 function toOpenAIAssistantToolCallMessage(

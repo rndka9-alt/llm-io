@@ -1,5 +1,3 @@
-import { LlmIoError } from "../../../core/errors";
-import { isJsonObject } from "../../../core/json";
 import type { LlmToolCall } from "../../../core/message";
 import type { GeminiGenerateContentRaw } from "../raw-schema";
 
@@ -17,10 +15,6 @@ export function createGeminiToolCalls(parts: readonly GeminiPart[]): LlmToolCall
 
     const functionCallArguments = part.functionCall.args;
     const toolArguments = functionCallArguments === undefined ? {} : functionCallArguments;
-
-    if (!isJsonObject(toolArguments)) {
-      throw new LlmIoError("Gemini functionCall args must be a JSON object.");
-    }
 
     toolCalls.push({
       name: part.functionCall.name,
