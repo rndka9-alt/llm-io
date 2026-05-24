@@ -2,7 +2,7 @@ import type { LlmFormat } from "../../core/format";
 import { readGeminiGenerateContentModel } from "./read-gemini-generate-content-model";
 
 export function createGeminiGenerateContentRequestPath(
-  format: LlmFormat<unknown, unknown>,
+  format: LlmFormat<unknown, unknown, string>,
   providerId: string,
   options: { stream?: boolean } = {},
 ): string {

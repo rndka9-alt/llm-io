@@ -1,5 +1,6 @@
 export { Llm } from "./llm";
 export { LlmHttpError, LlmIoError } from "./core/errors";
+export { LLM_FORMAT_IDS, llmFormatIdSchema } from "./core/format-id";
 export { createToolResultMessage } from "./core/message";
 export { AnthropicMessagesFormat } from "./formats/anthropic-messages/index";
 export { GeminiGenerateContentFormat } from "./formats/gemini-generate-content/index";
@@ -27,6 +28,12 @@ export type {
   InferFormatRaw,
   LlmFormat,
 } from "./core/format";
+export type {
+  AnyLlmFormatId,
+  BuiltInLlmFormatId,
+  CustomLlmFormatId,
+  OpenAICompatibleFormatId,
+} from "./core/format-id";
 export type {
   JsonArray,
   JsonObject,

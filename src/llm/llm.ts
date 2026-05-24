@@ -1,5 +1,6 @@
 import { LlmHttpError, LlmIoError } from "../core/errors";
 import type { LlmFormat } from "../core/format";
+import type { BuiltInLlmFormatId } from "../core/format-id";
 import type { LlmRequest } from "../core/message";
 import type { LlmOutput } from "../core/output";
 import type { LlmProvider } from "../core/provider";
@@ -9,12 +10,12 @@ import { omitUndefined } from "../utils/object";
 import { createProvider } from "./create-provider";
 import type { LlmOptions } from "./types";
 
-export class Llm<TRaw, TExtras = undefined> {
+export class Llm<TRaw, TExtras = undefined, TId extends string = BuiltInLlmFormatId> {
   private readonly fetchImplementation: FetchLike;
-  private readonly format: LlmFormat<TRaw, TExtras>;
+  private readonly format: LlmFormat<TRaw, TExtras, TId>;
   private readonly provider: LlmProvider;
 
-  constructor(options: LlmOptions<TRaw, TExtras>) {
+  constructor(options: LlmOptions<TRaw, TExtras, TId>) {
     this.fetchImplementation = options.fetch ?? fetch;
     this.format = options.format;
     this.provider = createProvider(options);

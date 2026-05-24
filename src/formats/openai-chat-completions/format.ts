@@ -1,4 +1,5 @@
 import type { LlmFormat } from "../../core/format";
+import { LLM_FORMAT_IDS } from "../../core/format-id";
 import type { JsonObject } from "../../types/json";
 import type { LlmRequest } from "../../core/message";
 import type { LlmOutput } from "../../core/output";
@@ -18,7 +19,7 @@ export interface OpenAIChatCompletionsFormatOptions {
 }
 
 export class OpenAIChatCompletionsFormat implements LlmFormat<OpenAIChatCompletionsRaw> {
-  readonly id = "openai-chat-completions";
+  readonly id = LLM_FORMAT_IDS.openaiChatCompletions;
   private readonly extraBody: OpenAIChatCompletionsExtraBody | undefined;
   readonly model: string;
 

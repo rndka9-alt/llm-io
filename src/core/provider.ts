@@ -4,7 +4,7 @@ import type { LlmRequest } from "./message";
 
 export interface LlmProviderRequestInput {
   /** provider request shape를 만들 format입니다. */
-  format: LlmFormat<unknown, unknown>;
+  format: LlmFormat<unknown, unknown, string>;
   /** 호출자가 전달한 공통 요청입니다. */
   request: LlmRequest;
 }
@@ -33,6 +33,6 @@ export interface LlmProvider {
   /** provider streaming body를 JSON event stream으로 읽습니다. */
   readStream?(
     body: ReadableStream<Uint8Array>,
-    format: LlmFormat<unknown, unknown>,
+    format: LlmFormat<unknown, unknown, string>,
   ): AsyncIterable<unknown>;
 }

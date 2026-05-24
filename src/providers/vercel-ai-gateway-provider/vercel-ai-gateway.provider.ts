@@ -1,4 +1,5 @@
 import type { JsonObject } from "../../types/json";
+import { LLM_FORMAT_IDS } from "../../core/format-id";
 import type { LlmProvider, LlmProviderRequest, LlmProviderRequestInput } from "../../core/provider";
 import { omitUndefined } from "../../utils/object";
 import {
@@ -216,11 +217,14 @@ export class VercelAIGatewayProvider<
   }
 
   private resolveRequestPath(format: LlmProviderRequestInput["format"]): string {
-    if (format.id === "anthropic-messages") {
+    if (format.id === LLM_FORMAT_IDS.anthropicMessages) {
       return "/messages";
     }
 
-    if (format.id === "openai-chat-completions" || format.id === "openai-responses") {
+    if (
+      format.id === LLM_FORMAT_IDS.openaiChatCompletions ||
+      format.id === LLM_FORMAT_IDS.openaiResponses
+    ) {
       return resolveOpenAICompatibleRequestPath(format);
     }
 

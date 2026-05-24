@@ -1,4 +1,5 @@
 import type { LlmProvider, LlmProviderRequest, LlmProviderRequestInput } from "../../core/provider";
+import { LLM_FORMAT_IDS } from "../../core/format-id";
 import { omitUndefined } from "../../utils/object";
 import {
   createBearerHeaders,
@@ -60,7 +61,7 @@ export class DeepSeekProvider implements LlmProvider {
   }
 
   private createHeaders(input: LlmProviderRequestInput): Record<string, string> {
-    if (input.format.id === "anthropic-messages") {
+    if (input.format.id === LLM_FORMAT_IDS.anthropicMessages) {
       return {
         "content-type": "application/json",
         ...this.headers,

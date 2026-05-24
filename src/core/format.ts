@@ -1,10 +1,11 @@
 import type { JsonObject } from "../types/json";
+import type { BuiltInLlmFormatId } from "./format-id";
 import type { LlmRequest } from "./message";
 import type { LlmOutput } from "./output";
 import type { LlmStreamEvent } from "./stream";
 
-export interface LlmFormat<TRaw, TExtras = undefined> {
-  readonly id: string;
+export interface LlmFormat<TRaw, TExtras = undefined, TId extends string = BuiltInLlmFormatId> {
+  readonly id: TId;
   readonly model?: string;
 
   /** 일반 요청 body를 만듭니다. */
@@ -17,10 +18,11 @@ export interface LlmFormat<TRaw, TExtras = undefined> {
   parseStream?(events: AsyncIterable<unknown>): AsyncIterable<LlmStreamEvent>;
 }
 
-export type InferFormatRaw<TFormat> = TFormat extends LlmFormat<infer TRaw, unknown> ? TRaw : never;
+export type InferFormatRaw<TFormat> =
+  TFormat extends LlmFormat<infer TRaw, unknown, string> ? TRaw : never;
 
 export type InferFormatExtras<TFormat> =
-  TFormat extends LlmFormat<unknown, infer TExtras> ? TExtras : never;
+  TFormat extends LlmFormat<unknown, infer TExtras, string> ? TExtras : never;
 
 export type InferFormatOutput<TFormat> =
-  TFormat extends LlmFormat<infer TRaw, infer TExtras> ? LlmOutput<TRaw, TExtras> : never;
+  TFormat extends LlmFormat<infer TRaw, infer TExtras, string> ? LlmOutput<TRaw, TExtras> : never;

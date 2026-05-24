@@ -1,4 +1,5 @@
 import type { LlmFormat } from "../../core/format";
+import { LLM_FORMAT_IDS } from "../../core/format-id";
 import type { JsonObject } from "../../types/json";
 import type { LlmRequest } from "../../core/message";
 import type { LlmOutput } from "../../core/output";
@@ -18,7 +19,7 @@ export interface OpenAIResponsesFormatOptions {
 }
 
 export class OpenAIResponsesFormat implements LlmFormat<OpenAIResponsesRaw, OpenAIResponsesExtras> {
-  readonly id = "openai-responses";
+  readonly id = LLM_FORMAT_IDS.openaiResponses;
   private readonly extraBody: OpenAIResponsesExtraBody | undefined;
   readonly model: string;
 

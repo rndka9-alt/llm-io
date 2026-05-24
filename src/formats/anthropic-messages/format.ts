@@ -1,4 +1,5 @@
 import type { LlmFormat } from "../../core/format";
+import { LLM_FORMAT_IDS } from "../../core/format-id";
 import type { JsonObject } from "../../types/json";
 import type { LlmRequest } from "../../core/message";
 import type { LlmOutput } from "../../core/output";
@@ -20,7 +21,7 @@ export interface AnthropicMessagesFormatOptions {
 }
 
 export class AnthropicMessagesFormat implements LlmFormat<AnthropicMessagesRaw> {
-  readonly id = "anthropic-messages";
+  readonly id = LLM_FORMAT_IDS.anthropicMessages;
   readonly model: string;
   private readonly extraBody: AnthropicMessagesExtraBody | undefined;
   private readonly maxTokens: number;

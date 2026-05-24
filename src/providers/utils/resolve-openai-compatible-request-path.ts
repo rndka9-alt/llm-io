@@ -1,12 +1,15 @@
 import type { LlmFormat } from "../../core/format";
+import { LLM_FORMAT_IDS } from "../../core/format-id";
 import { throwUnsupportedFormat } from "./throw-unsupported-format";
 
-export function resolveOpenAICompatibleRequestPath(format: LlmFormat<unknown, unknown>): string {
-  if (format.id === "openai-chat-completions") {
+export function resolveOpenAICompatibleRequestPath(
+  format: LlmFormat<unknown, unknown, string>,
+): string {
+  if (format.id === LLM_FORMAT_IDS.openaiChatCompletions) {
     return "/chat/completions";
   }
 
-  if (format.id === "openai-responses") {
+  if (format.id === LLM_FORMAT_IDS.openaiResponses) {
     return "/responses";
   }
 

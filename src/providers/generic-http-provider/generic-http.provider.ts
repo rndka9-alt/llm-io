@@ -17,9 +17,9 @@ export interface GenericHttpProviderOptions {
   /** 요청에 추가할 header입니다. */
   headers?: Record<string, string>;
   /** format별 request path를 직접 정할 때 사용합니다. */
-  resolveRequestPath?: (format: LlmFormat<unknown, unknown>) => string | undefined;
+  resolveRequestPath?: (format: LlmFormat<unknown, unknown, string>) => string | undefined;
   /** streaming request path를 직접 정할 때 사용합니다. */
-  resolveStreamRequestPath?: (format: LlmFormat<unknown, unknown>) => string | undefined;
+  resolveStreamRequestPath?: (format: LlmFormat<unknown, unknown, string>) => string | undefined;
 }
 
 export class GenericHttpProvider implements LlmProvider {
@@ -27,9 +27,11 @@ export class GenericHttpProvider implements LlmProvider {
   private readonly apiKey: string | undefined;
   private readonly baseUrl: string;
   private readonly headers: Record<string, string> | undefined;
-  private readonly resolveRequestPath: (format: LlmFormat<unknown, unknown>) => string | undefined;
+  private readonly resolveRequestPath: (
+    format: LlmFormat<unknown, unknown, string>,
+  ) => string | undefined;
   private readonly resolveStreamRequestPath: (
-    format: LlmFormat<unknown, unknown>,
+    format: LlmFormat<unknown, unknown, string>,
   ) => string | undefined;
 
   constructor(options: GenericHttpProviderOptions) {
@@ -71,7 +73,7 @@ export class GenericHttpProvider implements LlmProvider {
 
   readStream(
     body: ReadableStream<Uint8Array>,
-    format: LlmFormat<unknown, unknown>,
+    format: LlmFormat<unknown, unknown, string>,
   ): AsyncIterable<unknown> {
     return readProviderStream(this.id, body, format);
   }

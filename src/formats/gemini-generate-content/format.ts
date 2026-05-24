@@ -1,4 +1,5 @@
 import type { LlmFormat } from "../../core/format";
+import { LLM_FORMAT_IDS } from "../../core/format-id";
 import type { JsonObject } from "../../types/json";
 import type { LlmRequest } from "../../core/message";
 import type { LlmOutput } from "../../core/output";
@@ -18,7 +19,7 @@ export interface GeminiGenerateContentFormatOptions {
 }
 
 export class GeminiGenerateContentFormat implements LlmFormat<GeminiGenerateContentRaw> {
-  readonly id = "gemini-generate-content";
+  readonly id = LLM_FORMAT_IDS.geminiGenerateContent;
   readonly model: string;
   private readonly extraBody: GeminiGenerateContentExtraBody | undefined;
 
