@@ -1,4 +1,4 @@
-import type { JsonObject, JsonSchemaObject } from "../../core/json";
+import type { JsonObject, JsonSchemaObject } from "../../types/json";
 
 export type OpenAIChatCompletionsReasoningEffort =
   /** 추론 토큰을 쓰지 않도록 요청한다. */

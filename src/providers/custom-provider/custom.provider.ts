@@ -1,5 +1,5 @@
 import { LlmIoError } from "../../core/errors";
-import type { JsonObject, JsonValue } from "../../core/json";
+import type { JsonObject, JsonValue } from "../../types/json";
 import type { LlmProvider, LlmProviderRequest, LlmProviderRequestInput } from "../../core/provider";
 import { createBearerHeaders, joinUrlPath } from "../utils/index";
 import { resolveCustomRequestPath } from "./utils/resolve-custom-request-path";

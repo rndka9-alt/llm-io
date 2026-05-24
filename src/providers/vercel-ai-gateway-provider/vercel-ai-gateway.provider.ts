@@ -1,4 +1,4 @@
-import type { JsonObject } from "../../core/json";
+import type { JsonObject } from "../../types/json";
 import type { LlmProvider, LlmProviderRequest, LlmProviderRequestInput } from "../../core/provider";
 import {
   createBearerHeaders,

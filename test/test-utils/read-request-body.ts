@@ -1,5 +1,5 @@
-import { isJsonObject } from "../../src/core/json";
 import type { JsonObject } from "../../src/index";
+import { isJsonObject } from "../../src/utils/json";
 import type { FetchCall } from "./types";
 
 export function readRequestBody(call: FetchCall | undefined): JsonObject {

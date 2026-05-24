@@ -1,5 +1,5 @@
 import { LlmIoError } from "../../../core/errors";
-import { jsonObjectSchema } from "../../../core/json";
+import { jsonObjectSchema } from "../../../utils/json";
 import type { LlmToolCall } from "../../../core/message";
 import type { OpenAIChatCompletionsRaw } from "../raw-schema";
 

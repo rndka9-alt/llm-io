@@ -1,4 +1,4 @@
-import type { JsonObject, JsonSchemaObject } from "../../core/json";
+import type { JsonObject, JsonSchemaObject } from "../../types/json";
 
 export type OllamaThink =
   /** thinking 출력을 켜거나 끈다. */

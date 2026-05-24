@@ -1,4 +1,5 @@
 import type { LlmUsage } from "../../../core/output";
+import { omitUndefined } from "../../../utils/object";
 import type { AnthropicMessagesRaw } from "../raw-schema";
 
 export function createAnthropicUsage(usage: AnthropicMessagesRaw["usage"]): LlmUsage | undefined {
@@ -19,16 +20,12 @@ export function createAnthropicUsage(usage: AnthropicMessagesRaw["usage"]): LlmU
   const details =
     usage.server_tool_use === undefined ? undefined : { serverToolUse: usage.server_tool_use };
 
-  return {
-    ...(usage.cache_creation_input_tokens === undefined
-      ? {}
-      : { cacheCreationInputTokens: usage.cache_creation_input_tokens }),
-    ...(usage.cache_read_input_tokens === undefined
-      ? {}
-      : { cacheReadInputTokens: usage.cache_read_input_tokens }),
-    ...(inputTokens === undefined ? {} : { inputTokens }),
-    ...(usage.output_tokens === undefined ? {} : { outputTokens: usage.output_tokens }),
-    ...(details === undefined ? {} : { details }),
-    ...(totalTokens === undefined ? {} : { totalTokens }),
-  };
+  return omitUndefined({
+    cacheCreationInputTokens: usage.cache_creation_input_tokens,
+    cacheReadInputTokens: usage.cache_read_input_tokens,
+    inputTokens,
+    outputTokens: usage.output_tokens,
+    details,
+    totalTokens,
+  });
 }

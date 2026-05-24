@@ -1,5 +1,5 @@
 import { LlmIoError } from "../../../core/errors";
-import { jsonObjectSchema } from "../../../core/json";
+import { jsonObjectSchema } from "../../../utils/json";
 import type { LlmToolCall } from "../../../core/message";
 import { openAIResponsesFunctionCallOutputItemSchema } from "../raw-schema";
 

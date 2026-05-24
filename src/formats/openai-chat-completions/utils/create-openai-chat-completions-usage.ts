@@ -1,4 +1,5 @@
 import type { LlmUsage } from "../../../core/output";
+import { omitUndefined } from "../../../utils/object";
 import type { OpenAIChatCompletionsRaw } from "../raw-schema";
 
 export function createOpenAIChatCompletionsUsage(
@@ -8,9 +9,9 @@ export function createOpenAIChatCompletionsUsage(
     return undefined;
   }
 
-  return {
-    ...(usage.prompt_tokens === undefined ? {} : { inputTokens: usage.prompt_tokens }),
-    ...(usage.completion_tokens === undefined ? {} : { outputTokens: usage.completion_tokens }),
-    ...(usage.total_tokens === undefined ? {} : { totalTokens: usage.total_tokens }),
-  };
+  return omitUndefined({
+    inputTokens: usage.prompt_tokens,
+    outputTokens: usage.completion_tokens,
+    totalTokens: usage.total_tokens,
+  });
 }

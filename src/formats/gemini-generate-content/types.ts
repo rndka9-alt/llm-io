@@ -1,4 +1,4 @@
-import type { JsonObject, JsonSchemaObject } from "../../core/json";
+import type { JsonObject, JsonSchemaObject } from "../../types/json";
 
 export type GeminiResponseMimeType =
   /** 일반 텍스트 응답을 요청한다. */

@@ -1,4 +1,4 @@
-import type { JsonObject, JsonSchemaObject } from "../../core/json";
+import type { JsonObject, JsonSchemaObject } from "../../types/json";
 
 export type OpenAIResponsesInclude =
   /** code interpreter 실행 결과를 응답에 포함한다. */

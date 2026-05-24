@@ -1,4 +1,4 @@
-import type { JsonObject, JsonValue } from "./json";
+import type { JsonObject, JsonValue } from "../types/json";
 
 export type LlmMessageRole = "system" | "user" | "assistant" | "tool";
 

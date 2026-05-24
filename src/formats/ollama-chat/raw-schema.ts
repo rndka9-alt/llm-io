@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-import { jsonObjectSchema } from "../../core/json";
+import { jsonObjectSchema } from "../../utils/json";
 
 export const ollamaChatRawSchema = z
   .object({

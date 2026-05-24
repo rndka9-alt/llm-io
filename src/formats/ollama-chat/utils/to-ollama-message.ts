@@ -1,5 +1,5 @@
 import { LlmIoError } from "../../../core/errors";
-import type { JsonValue } from "../../../core/json";
+import type { JsonValue } from "../../../types/json";
 import type { LlmMessage, LlmToolCallPart, LlmToolResultPart } from "../../../core/message";
 import { getMessageText } from "../../../core/message";
 

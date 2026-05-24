@@ -1,5 +1,5 @@
 import { isJsonObject } from "./is-json-object";
-import type { JsonValue } from "./types";
+import type { JsonValue } from "../../types/json";
 
 export function isJsonValue(value: unknown): value is JsonValue {
   if (value === null) {

@@ -1,5 +1,5 @@
 import type { LlmFormat } from "./format";
-import type { JsonValue } from "./json";
+import type { JsonValue } from "../types/json";
 import type { LlmRequest } from "./message";
 
 export interface LlmProviderRequestInput {

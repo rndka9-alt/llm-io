@@ -1,4 +1,4 @@
-import type { JsonObject } from "../../core/json";
+import type { JsonObject } from "../../types/json";
 import type { LlmRequest } from "../../core/message";
 import type { OpenAIChatCompletionsExtraBody } from "./types";
 import { toOpenAIMessage } from "./utils/to-openai-message";

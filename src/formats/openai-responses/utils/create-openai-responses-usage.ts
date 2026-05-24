@@ -1,4 +1,5 @@
 import type { LlmUsage } from "../../../core/output";
+import { omitUndefined } from "../../../utils/object";
 import type { OpenAIResponsesRaw } from "../raw-schema";
 
 export function createOpenAIResponsesUsage(
@@ -10,10 +11,10 @@ export function createOpenAIResponsesUsage(
 
   const reasoningTokens = usage.output_tokens_details?.reasoning_tokens;
 
-  return {
-    ...(usage.input_tokens === undefined ? {} : { inputTokens: usage.input_tokens }),
-    ...(usage.output_tokens === undefined ? {} : { outputTokens: usage.output_tokens }),
-    ...(reasoningTokens === undefined ? {} : { reasoningTokens }),
-    ...(usage.total_tokens === undefined ? {} : { totalTokens: usage.total_tokens }),
-  };
+  return omitUndefined({
+    inputTokens: usage.input_tokens,
+    outputTokens: usage.output_tokens,
+    reasoningTokens,
+    totalTokens: usage.total_tokens,
+  });
 }

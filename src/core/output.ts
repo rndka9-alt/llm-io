@@ -1,4 +1,4 @@
-import type { JsonObject } from "./json";
+import type { JsonObject } from "../types/json";
 import type {
   LlmRedactedThinkingPart,
   LlmThinkingPart,

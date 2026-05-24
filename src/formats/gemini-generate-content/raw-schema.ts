@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-import { jsonObjectSchema, jsonValueSchema } from "../../core/json";
+import { jsonObjectSchema, jsonValueSchema } from "../../utils/json";
 
 export const geminiGenerateContentRawSchema = z
   .object({

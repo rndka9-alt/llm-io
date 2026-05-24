@@ -1,4 +1,4 @@
-import type { JsonObject } from "../../core/json";
+import type { JsonObject } from "../../types/json";
 import type { LlmRequest } from "../../core/message";
 import type { CreateAnthropicMessagesRequestBodyOptions } from "./types";
 import { createAnthropicMessages } from "./utils/create-anthropic-messages";

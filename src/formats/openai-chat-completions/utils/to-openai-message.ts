@@ -1,7 +1,7 @@
 import { LlmIoError } from "../../../core/errors";
 import type { LlmMessage, LlmToolCallPart, LlmToolResultPart } from "../../../core/message";
 import { getMessageText } from "../../../core/message";
-import type { JsonValue } from "../../../core/json";
+import type { JsonValue } from "../../../types/json";
 
 export type OpenAIMessage =
   | {

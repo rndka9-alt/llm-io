@@ -1,4 +1,4 @@
-import type { JsonObject, JsonSchemaObject } from "../../core/json";
+import type { JsonObject, JsonSchemaObject } from "../../types/json";
 
 export type AnthropicMessagesServiceTier =
   /** Anthropic이 사용 가능한 처리 계층을 자동 선택한다. */

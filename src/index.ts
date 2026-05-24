@@ -33,7 +33,7 @@ export type {
   JsonPrimitive,
   JsonSchemaObject,
   JsonValue,
-} from "./core/json";
+} from "./types/json";
 export type {
   LlmContentPart,
   LlmMessage,

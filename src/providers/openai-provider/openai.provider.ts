@@ -1,5 +1,6 @@
 import { LlmIoError } from "../../core/errors";
-import { isJsonObject, type JsonObject } from "../../core/json";
+import type { JsonObject } from "../../types/json";
+import { isJsonObject } from "../../utils/json";
 import type { LlmProviderRequest, LlmProviderRequestInput } from "../../core/provider";
 import { GenericHttpProvider, type GenericHttpProviderOptions } from "../generic-http-provider";
 import { resolveOpenAICompatibleRequestPath } from "../utils/index";
