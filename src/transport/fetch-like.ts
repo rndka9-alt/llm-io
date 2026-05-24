@@ -7,6 +7,7 @@ export type FetchLike = (
     signal?: AbortSignal;
   },
 ) => Promise<{
+  body?: ReadableStream<Uint8Array> | null;
   ok: boolean;
   status: number;
   statusText: string;

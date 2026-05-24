@@ -1,9 +1,11 @@
-import { LlmHttpError } from "../core/errors";
+import { LlmHttpError, LlmIoError } from "../core/errors";
 import type { LlmFormat } from "../core/format";
 import type { LlmRequest } from "../core/message";
 import type { LlmOutput } from "../core/output";
 import type { LlmProvider } from "../core/provider";
+import type { LlmStreamEvent } from "../core/stream";
 import type { FetchLike } from "../transport/fetch-like";
+import { readSseJsonStream } from "../utils/sse";
 import { omitUndefined } from "../utils/object";
 import { createProvider } from "./create-provider";
 import type { LlmOptions } from "./types";
@@ -44,6 +46,112 @@ export class Llm<TRaw, TExtras = undefined> {
     const responseJson = JSON.parse(responseText);
 
     return this.format.parseResponse(responseJson);
+  }
+
+  stream(request: LlmRequest): ReadableStream<LlmStreamEvent> {
+    const events = this.createStreamEvents(request);
+
+    return new ReadableStream({
+      async start(controller) {
+        try {
+          for await (const event of events) {
+            controller.enqueue(event);
+          }
+
+          controller.close();
+        } catch (error) {
+          controller.error(error);
+        }
+      },
+    });
+  }
+
+  streamText(request: LlmRequest): ReadableStream<string> {
+    const events = this.stream(request);
+
+    return new ReadableStream({
+      async start(controller) {
+        const reader = events.getReader();
+
+        try {
+          while (true) {
+            const result = await reader.read();
+
+            if (result.done) {
+              break;
+            }
+
+            if (result.value.type === "text-delta") {
+              controller.enqueue(result.value.text);
+            }
+          }
+
+          controller.close();
+        } catch (error) {
+          controller.error(error);
+        } finally {
+          reader.releaseLock();
+        }
+      },
+    });
+  }
+
+  private async *createStreamEvents(request: LlmRequest): AsyncIterable<LlmStreamEvent> {
+    if (
+      this.format.createStreamRequestBody === undefined ||
+      this.format.parseStream === undefined
+    ) {
+      throw new LlmIoError(`${this.format.id} does not support streaming.`);
+    }
+
+    const streamFormat = this.createStreamFormat(
+      this.format.createStreamRequestBody.bind(this.format),
+    );
+    const providerRequest = await this.provider.createRequest({
+      format: streamFormat,
+      request,
+    });
+
+    const response = await this.fetchImplementation(
+      providerRequest.url,
+      omitUndefined({
+        body: JSON.stringify(providerRequest.body),
+        headers: providerRequest.headers,
+        method: providerRequest.method,
+        signal: providerRequest.signal,
+      }),
+    );
+
+    if (!response.ok) {
+      throw new LlmHttpError(response.status, await response.text());
+    }
+
+    if (response.body === undefined || response.body === null) {
+      throw new LlmIoError("Streaming response body is empty.");
+    }
+
+    yield* this.format.parseStream(readSseJsonStream(response.body));
+  }
+
+  private createStreamFormat(
+    createStreamRequestBody: (
+      request: LlmRequest,
+    ) => ReturnType<LlmFormat<TRaw, TExtras>["createRequestBody"]>,
+  ): LlmFormat<TRaw, TExtras> {
+    const streamFormat = {
+      id: this.format.id,
+      createRequestBody: createStreamRequestBody,
+      parseResponse: (responseJson: unknown) => this.format.parseResponse(responseJson),
+    };
+
+    if (this.format.model === undefined) {
+      return streamFormat;
+    }
+
+    return {
+      ...streamFormat,
+      model: this.format.model,
+    };
   }
 }
 

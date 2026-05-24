@@ -52,3 +52,46 @@ export const openAIChatCompletionsRawSchema = z
   .passthrough();
 
 export type OpenAIChatCompletionsRaw = z.infer<typeof openAIChatCompletionsRawSchema>;
+
+export const openAIChatCompletionsStreamRawSchema = z
+  .object({
+    choices: z
+      .array(
+        z
+          .object({
+            delta: z
+              .object({
+                content: z.string().nullable().optional(),
+                reasoning: z.string().optional(),
+                reasoning_content: z.string().optional(),
+                tool_calls: z
+                  .array(
+                    z
+                      .object({
+                        function: z
+                          .object({
+                            arguments: z.string().optional(),
+                            name: z.string().optional(),
+                          })
+                          .passthrough()
+                          .optional(),
+                        id: z.string().optional(),
+                        index: z.number(),
+                        type: z.literal("function").optional(),
+                      })
+                      .passthrough(),
+                  )
+                  .optional(),
+              })
+              .passthrough(),
+            finish_reason: z.string().nullable().optional(),
+            index: z.number(),
+          })
+          .passthrough(),
+      )
+      .optional(),
+    usage: openAIChatCompletionsRawSchema.shape.usage,
+  })
+  .passthrough();
+
+export type OpenAIChatCompletionsStreamRaw = z.infer<typeof openAIChatCompletionsStreamRawSchema>;

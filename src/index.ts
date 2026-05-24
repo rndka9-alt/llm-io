@@ -61,6 +61,16 @@ export type {
   LlmReasoning,
   LlmUsage,
 } from "./core/output";
+export type {
+  LlmDoneStreamEvent,
+  LlmFinishStreamEvent,
+  LlmReasoningDeltaStreamEvent,
+  LlmStreamEvent,
+  LlmTextDeltaStreamEvent,
+  LlmToolCallDeltaStreamEvent,
+  LlmToolCallStreamEvent,
+  LlmUsageStreamEvent,
+} from "./core/stream";
 export type { LlmProvider, LlmProviderRequest, LlmProviderRequestInput } from "./core/provider";
 export type { LlmLegacyHttpOptions, LlmOptions, LlmProviderOptions } from "./llm";
 export type {
