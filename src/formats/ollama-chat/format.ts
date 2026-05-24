@@ -6,7 +6,9 @@ import { omitUndefined } from "../../utils/object";
 import { createOllamaChatRequestBody } from "./create-request-body";
 import type { OllamaChatRaw } from "./raw-schema";
 import { parseOllamaChatResponse, type OllamaChatExtras } from "./parse-response";
+import { parseOllamaChatStream } from "./parse-stream";
 import type { OllamaChatExtraBody } from "./types";
+import type { LlmStreamEvent } from "../../core/stream";
 
 export interface OllamaChatFormatOptions {
   /** Chat body에 추가할 format 전용 옵션입니다. */
@@ -37,5 +39,9 @@ export class OllamaChatFormat implements LlmFormat<OllamaChatRaw, OllamaChatExtr
 
   parseResponse(responseJson: unknown): LlmOutput<OllamaChatRaw, OllamaChatExtras> {
     return parseOllamaChatResponse(responseJson);
+  }
+
+  parseStream(events: AsyncIterable<unknown>): AsyncIterable<LlmStreamEvent> {
+    return parseOllamaChatStream(events);
   }
 }

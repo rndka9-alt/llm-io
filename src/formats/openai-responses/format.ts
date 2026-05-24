@@ -6,7 +6,9 @@ import { omitUndefined } from "../../utils/object";
 import { createOpenAIResponsesRequestBody } from "./create-request-body";
 import type { OpenAIResponsesRaw } from "./raw-schema";
 import { parseOpenAIResponsesResponse, type OpenAIResponsesExtras } from "./parse-response";
+import { parseOpenAIResponsesStream } from "./parse-stream";
 import type { OpenAIResponsesExtraBody } from "./types";
+import type { LlmStreamEvent } from "../../core/stream";
 
 export interface OpenAIResponsesFormatOptions {
   /** 요청 body에 넣을 model id입니다. */
@@ -37,5 +39,9 @@ export class OpenAIResponsesFormat implements LlmFormat<OpenAIResponsesRaw, Open
 
   parseResponse(responseJson: unknown): LlmOutput<OpenAIResponsesRaw, OpenAIResponsesExtras> {
     return parseOpenAIResponsesResponse(responseJson);
+  }
+
+  parseStream(events: AsyncIterable<unknown>): AsyncIterable<LlmStreamEvent> {
+    return parseOpenAIResponsesStream(events);
   }
 }

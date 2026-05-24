@@ -1,6 +1,10 @@
 import type { LlmProvider, LlmProviderRequest, LlmProviderRequestInput } from "../../core/provider";
 import { omitUndefined } from "../../utils/object";
-import { createGeminiGenerateContentRequestPath, joinUrlPath } from "../utils/index";
+import {
+  createGeminiGenerateContentRequestPath,
+  joinUrlPath,
+  readProviderStream,
+} from "../utils/index";
 import { appendApiKey } from "./utils/append-api-key";
 
 export interface GoogleAIStudioProviderOptions {
@@ -33,10 +37,31 @@ export class GoogleAIStudioProvider implements LlmProvider {
       },
       method: "POST",
       signal: input.request.signal,
-      url: appendApiKey(
-        joinUrlPath(this.baseUrl, createGeminiGenerateContentRequestPath(input.format, this.id)),
-        this.apiKey,
-      ),
+      url: this.createUrl(input.format),
     });
+  }
+
+  createStreamRequest(input: LlmProviderRequestInput): LlmProviderRequest {
+    return {
+      ...this.createRequest(input),
+      url: this.createUrl(input.format, { stream: true }),
+    };
+  }
+
+  readStream(
+    body: ReadableStream<Uint8Array>,
+    format: LlmProviderRequestInput["format"],
+  ): AsyncIterable<unknown> {
+    return readProviderStream(this.id, body, format);
+  }
+
+  private createUrl(
+    format: LlmProviderRequestInput["format"],
+    options: { stream?: boolean } = {},
+  ): string {
+    return appendApiKey(
+      joinUrlPath(this.baseUrl, createGeminiGenerateContentRequestPath(format, this.id, options)),
+      this.apiKey,
+    );
   }
 }

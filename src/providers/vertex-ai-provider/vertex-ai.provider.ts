@@ -1,6 +1,6 @@
 import type { LlmProvider, LlmProviderRequest, LlmProviderRequestInput } from "../../core/provider";
 import { omitUndefined } from "../../utils/object";
-import { readGeminiGenerateContentModel } from "../utils/index";
+import { readGeminiGenerateContentModel, readProviderStream } from "../utils/index";
 
 export interface VertexAIProviderOptions {
   /** Bearer 인증에 사용할 access token입니다. */
@@ -41,11 +41,28 @@ export class VertexAIProvider implements LlmProvider {
       },
       method: "POST",
       signal: input.request.signal,
-      url: this.createUrl(input.format),
+      url: this.createUrl(input.format, "generateContent"),
     });
   }
 
-  private createUrl(format: LlmProviderRequestInput["format"]): string {
+  createStreamRequest(input: LlmProviderRequestInput): LlmProviderRequest {
+    return {
+      ...this.createRequest(input),
+      url: this.createUrl(input.format, "streamGenerateContent"),
+    };
+  }
+
+  readStream(
+    body: ReadableStream<Uint8Array>,
+    format: LlmProviderRequestInput["format"],
+  ): AsyncIterable<unknown> {
+    return readProviderStream(this.id, body, format);
+  }
+
+  private createUrl(
+    format: LlmProviderRequestInput["format"],
+    method: "generateContent" | "streamGenerateContent",
+  ): string {
     const model = readGeminiGenerateContentModel(format, this.id);
     const normalizedBaseUrl = this.baseUrl.replace(/\/$/, "");
 
@@ -56,7 +73,7 @@ export class VertexAIProvider implements LlmProvider {
       "locations",
       encodeURIComponent(this.location),
       "publishers/google/models",
-      `${encodeURIComponent(model)}:generateContent`,
+      `${encodeURIComponent(model)}:${method}`,
     ].join("/");
   }
 }

@@ -6,7 +6,9 @@ import { omitUndefined } from "../../utils/object";
 import { createGeminiGenerateContentRequestBody } from "./create-request-body";
 import type { GeminiGenerateContentRaw } from "./raw-schema";
 import { parseGeminiGenerateContentResponse } from "./parse-response";
+import { parseGeminiGenerateContentStream } from "./parse-stream";
 import type { GeminiGenerateContentExtraBody } from "./types";
+import type { LlmStreamEvent } from "../../core/stream";
 
 export interface GeminiGenerateContentFormatOptions {
   /** GenerateContent body에 추가할 format 전용 옵션입니다. */
@@ -36,5 +38,9 @@ export class GeminiGenerateContentFormat implements LlmFormat<GeminiGenerateCont
 
   parseResponse(responseJson: unknown): LlmOutput<GeminiGenerateContentRaw> {
     return parseGeminiGenerateContentResponse(responseJson);
+  }
+
+  parseStream(events: AsyncIterable<unknown>): AsyncIterable<LlmStreamEvent> {
+    return parseGeminiGenerateContentStream(events);
   }
 }

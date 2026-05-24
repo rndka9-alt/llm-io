@@ -6,7 +6,7 @@ import {
   LlmIoError,
   OllamaChatFormat,
 } from "../src/index";
-import { createJsonFetch } from "./test-utils";
+import { createJsonFetch, createStreamFetch, readRequestBody, readStream } from "./test-utils";
 
 describe("Ollama chat format", () => {
   it("creates request bodies with options and extra body", () => {
@@ -158,6 +158,54 @@ describe("Ollama chat format", () => {
     expect(output.message.content).toEqual([
       { type: "tool-call", name: "lookup", arguments: { query: "weather" } },
     ]);
+  });
+
+  it("streams NDJSON text, thinking, tool calls, usage, and finish reason", async () => {
+    const fetchRecorder = createStreamFetch([
+      '{"message":{"thinking":"think"},"done":false}\n',
+      '{"message":{"content":"Hi"},"done":false}\n',
+      '{"message":{"tool_calls":[{"function":{"name":"lookup","arguments":{"query":"weather"}}}]},"done":false}\n',
+      '{"done":true,"done_reason":"stop","prompt_eval_count":5,"eval_count":6}\n',
+    ]);
+    const client = new Llm({
+      fetch: fetchRecorder.fetch,
+      format: new OllamaChatFormat({ model: "example-model" }),
+      provider: new GenericHttpProvider({ baseUrl: "https://example.test/api" }),
+    });
+
+    const events = await readStream(
+      client.stream({
+        messages: [{ role: "user", content: [{ type: "text", text: "hi" }] }],
+      }),
+    );
+
+    expect(readRequestBody(fetchRecorder.calls[0]).stream).toBe(true);
+    expect(events).toContainEqual({ type: "reasoning-delta", text: "think" });
+    expect(events).toContainEqual({ type: "text-delta", text: "Hi" });
+    expect(events).toContainEqual({
+      type: "usage",
+      usage: { inputTokens: 5, outputTokens: 6, totalTokens: 11 },
+    });
+    expect(events).toContainEqual({
+      type: "tool-call",
+      toolCall: { name: "lookup", arguments: { query: "weather" } },
+    });
+    expect(events.at(-1)).toEqual({
+      type: "done",
+      message: {
+        role: "assistant",
+        content: [
+          { type: "text", text: "Hi" },
+          { type: "tool-call", name: "lookup", arguments: { query: "weather" } },
+        ],
+        text: "Hi",
+        toolCalls: [{ name: "lookup", arguments: { query: "weather" } }],
+      },
+      reasoning: { text: "think" },
+      toolCalls: [{ name: "lookup", arguments: { query: "weather" } }],
+      usage: { inputTokens: 5, outputTokens: 6, totalTokens: 11 },
+      finishReason: "stop",
+    });
   });
 
   it("creates tool result continuation bodies", () => {

@@ -3,7 +3,9 @@ import type { LlmProvider, LlmProviderRequest, LlmProviderRequestInput } from ".
 import { omitUndefined } from "../../utils/object";
 import {
   createBearerHeaders,
+  createStreamRequestBody,
   joinUrlPath,
+  readProviderStream,
   resolveOpenAICompatibleRequestPath,
 } from "../utils/index";
 import { throwUnsupportedFormat } from "../utils/throw-unsupported-format";
@@ -184,6 +186,22 @@ export class VercelAIGatewayProvider<
       signal: input.request.signal,
       url: joinUrlPath(this.baseUrl, this.resolveRequestPath(input.format)),
     });
+  }
+
+  createStreamRequest(input: LlmProviderRequestInput): LlmProviderRequest {
+    const providerRequest = this.createRequest(input);
+
+    return {
+      ...providerRequest,
+      body: createStreamRequestBody(this.id, input.format, providerRequest.body),
+    };
+  }
+
+  readStream(
+    body: ReadableStream<Uint8Array>,
+    format: LlmProviderRequestInput["format"],
+  ): AsyncIterable<unknown> {
+    return readProviderStream(this.id, body, format);
   }
 
   private createBody(body: JsonObject): JsonObject {

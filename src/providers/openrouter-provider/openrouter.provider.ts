@@ -1,6 +1,11 @@
 import type { LlmProvider, LlmProviderRequest, LlmProviderRequestInput } from "../../core/provider";
 import { omitUndefined } from "../../utils/object";
-import { createBearerHeaders, joinUrlPath } from "../utils/index";
+import {
+  createBearerHeaders,
+  createStreamRequestBody,
+  joinUrlPath,
+  readProviderStream,
+} from "../utils/index";
 import { resolveOpenRouterRequestPath } from "./utils/resolve-openrouter-request-path";
 
 export interface OpenRouterProviderOptions {
@@ -51,5 +56,21 @@ export class OpenRouterProvider implements LlmProvider {
       signal: input.request.signal,
       url: joinUrlPath(this.baseUrl, resolveOpenRouterRequestPath(input.format)),
     });
+  }
+
+  createStreamRequest(input: LlmProviderRequestInput): LlmProviderRequest {
+    const providerRequest = this.createRequest(input);
+
+    return {
+      ...providerRequest,
+      body: createStreamRequestBody(this.id, input.format, providerRequest.body),
+    };
+  }
+
+  readStream(
+    body: ReadableStream<Uint8Array>,
+    format: LlmProviderRequestInput["format"],
+  ): AsyncIterable<unknown> {
+    return readProviderStream(this.id, body, format);
   }
 }

@@ -3,10 +3,11 @@ import {
   createToolResultMessage,
   GeminiGenerateContentFormat,
   GenericHttpProvider,
+  GoogleAIStudioProvider,
   Llm,
   LlmIoError,
 } from "../src/index";
-import { createJsonFetch } from "./test-utils";
+import { createJsonFetch, createStreamFetch, readRequestBody, readStream } from "./test-utils";
 
 describe("Gemini generateContent format", () => {
   it("creates request bodies with system instructions, model roles, generation config, and extra body", () => {
@@ -211,6 +212,57 @@ describe("Gemini generateContent format", () => {
     expect(output.message.content).toEqual([
       { type: "tool-call", id: "call-1", name: "lookup", arguments: { query: "weather" } },
     ]);
+  });
+
+  it("streams text, reasoning, tool calls, usage, and finish reason", async () => {
+    const fetchRecorder = createStreamFetch([
+      'data: {"candidates":[{"content":{"parts":[{"text":"think","thought":true},{"text":"Hi"}]}}]}\n\n',
+      'data: {"candidates":[{"content":{"parts":[{"functionCall":{"id":"call-1","name":"lookup","args":{"query":"weather"}}}]},"finishReason":"STOP"}],"usageMetadata":{"promptTokenCount":5,"candidatesTokenCount":6,"totalTokenCount":11}}\n\n',
+    ]);
+    const client = new Llm({
+      fetch: fetchRecorder.fetch,
+      format: new GeminiGenerateContentFormat({ model: "gemini-example" }),
+      provider: new GoogleAIStudioProvider({ apiKey: "key" }),
+    });
+
+    const events = await readStream(
+      client.stream({
+        messages: [{ role: "user", content: [{ type: "text", text: "hi" }] }],
+      }),
+    );
+
+    expect(fetchRecorder.calls[0]?.input).toBe(
+      "https://generativelanguage.googleapis.com/v1beta/models/gemini-example:streamGenerateContent?key=key",
+    );
+    expect(readRequestBody(fetchRecorder.calls[0]).contents).toEqual([
+      { role: "user", parts: [{ text: "hi" }] },
+    ]);
+    expect(events).toContainEqual({ type: "reasoning-delta", text: "think" });
+    expect(events).toContainEqual({ type: "text-delta", text: "Hi" });
+    expect(events).toContainEqual({
+      type: "usage",
+      usage: { inputTokens: 5, outputTokens: 6, totalTokens: 11 },
+    });
+    expect(events).toContainEqual({
+      type: "tool-call",
+      toolCall: { id: "call-1", name: "lookup", arguments: { query: "weather" } },
+    });
+    expect(events.at(-1)).toEqual({
+      type: "done",
+      message: {
+        role: "assistant",
+        content: [
+          { type: "text", text: "Hi" },
+          { type: "tool-call", id: "call-1", name: "lookup", arguments: { query: "weather" } },
+        ],
+        text: "Hi",
+        toolCalls: [{ id: "call-1", name: "lookup", arguments: { query: "weather" } }],
+      },
+      reasoning: { text: "think" },
+      toolCalls: [{ id: "call-1", name: "lookup", arguments: { query: "weather" } }],
+      usage: { inputTokens: 5, outputTokens: 6, totalTokens: 11 },
+      finishReason: "stop",
+    });
   });
 
   it("creates function response continuation bodies", () => {

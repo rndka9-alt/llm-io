@@ -1,6 +1,11 @@
 import type { LlmProvider, LlmProviderRequest, LlmProviderRequestInput } from "../../core/provider";
 import { omitUndefined } from "../../utils/object";
-import { createBearerHeaders, joinUrlPath } from "../utils/index";
+import {
+  createBearerHeaders,
+  createStreamRequestBody,
+  joinUrlPath,
+  readProviderStream,
+} from "../utils/index";
 import { resolveNanoGPTRequestPath } from "./utils/resolve-nanogpt-request-path";
 
 export type NanoGPTAuthentication = "bearer" | "x-api-key";
@@ -38,6 +43,22 @@ export class NanoGPTProvider implements LlmProvider {
       signal: input.request.signal,
       url: joinUrlPath(this.baseUrl, resolveNanoGPTRequestPath(input.format)),
     });
+  }
+
+  createStreamRequest(input: LlmProviderRequestInput): LlmProviderRequest {
+    const providerRequest = this.createRequest(input);
+
+    return {
+      ...providerRequest,
+      body: createStreamRequestBody(this.id, input.format, providerRequest.body),
+    };
+  }
+
+  readStream(
+    body: ReadableStream<Uint8Array>,
+    format: LlmProviderRequestInput["format"],
+  ): AsyncIterable<unknown> {
+    return readProviderStream(this.id, body, format);
   }
 
   private createHeaders(): Record<string, string> {

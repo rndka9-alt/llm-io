@@ -37,13 +37,6 @@ export class OpenAIChatCompletionsFormat implements LlmFormat<OpenAIChatCompleti
     );
   }
 
-  createStreamRequestBody(request: LlmRequest): JsonObject {
-    return {
-      ...this.createRequestBody(request),
-      stream: true,
-    };
-  }
-
   parseResponse(responseJson: unknown): LlmOutput<OpenAIChatCompletionsRaw> {
     return parseOpenAIChatCompletionsResponse(responseJson);
   }

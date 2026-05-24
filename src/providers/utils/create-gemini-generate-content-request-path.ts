@@ -4,6 +4,9 @@ import { readGeminiGenerateContentModel } from "./read-gemini-generate-content-m
 export function createGeminiGenerateContentRequestPath(
   format: LlmFormat<unknown, unknown>,
   providerId: string,
+  options: { stream?: boolean } = {},
 ): string {
-  return `models/${encodeURIComponent(readGeminiGenerateContentModel(format, providerId))}:generateContent`;
+  const method = options.stream === true ? "streamGenerateContent" : "generateContent";
+
+  return `models/${encodeURIComponent(readGeminiGenerateContentModel(format, providerId))}:${method}`;
 }

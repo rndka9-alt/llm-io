@@ -8,7 +8,13 @@ import {
   OpenAIChatCompletionsFormat,
   OpenAIResponsesFormat,
 } from "../src/index";
-import { createAnthropicResponse, createRecordingFetch } from "./test-utils";
+import {
+  createAnthropicResponse,
+  createRecordingFetch,
+  createStreamFetch,
+  readRequestBody,
+  readTextStream,
+} from "./test-utils";
 
 describe("NanoGPTProvider", () => {
   it("uses NanoGPT OpenAI-compatible chat completions endpoint", async () => {
@@ -72,6 +78,28 @@ describe("NanoGPTProvider", () => {
     });
 
     expect(fetchRecorder.calls[0]?.input).toBe("https://nano-gpt.com/api/v1/responses");
+  });
+
+  it("streams through NanoGPT OpenAI-compatible endpoint", async () => {
+    const fetchRecorder = createStreamFetch([
+      'data: {"choices":[{"index":0,"delta":{"content":"ok"},"finish_reason":null}]}\n\n',
+      "data: [DONE]\n\n",
+    ]);
+    const client = new Llm({
+      fetch: fetchRecorder.fetch,
+      format: new OpenAIChatCompletionsFormat({ model: "google/gemini-3-flash-preview" }),
+      provider: new NanoGPTProvider({ apiKey: "nanogpt-key" }),
+    });
+
+    const text = await readTextStream(
+      client.streamText({
+        messages: [{ role: "user", content: [{ type: "text", text: "hi" }] }],
+      }),
+    );
+
+    expect(text).toBe("ok");
+    expect(fetchRecorder.calls[0]?.input).toBe("https://nano-gpt.com/api/v1/chat/completions");
+    expect(readRequestBody(fetchRecorder.calls[0]).stream).toBe(true);
   });
 
   it("throws before fetch when format is unsupported", async () => {

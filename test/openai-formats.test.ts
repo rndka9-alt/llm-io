@@ -1,14 +1,19 @@
 import { describe, expect, it } from "vitest";
 import {
   createToolResultMessage,
-  type FetchLike,
   GenericHttpProvider,
   Llm,
   LlmIoError,
   OpenAIChatCompletionsFormat,
   OpenAIResponsesFormat,
 } from "../src/index";
-import { createJsonFetch, readRequestBody } from "./test-utils";
+import {
+  createJsonFetch,
+  createStreamFetch,
+  readRequestBody,
+  readStream,
+  readTextStream,
+} from "./test-utils";
 
 describe("OpenAI formats", () => {
   it("creates chat completions request bodies", () => {
@@ -166,7 +171,7 @@ describe("OpenAI formats", () => {
   });
 
   it("streams chat completions text deltas", async () => {
-    const fetchRecorder = createSseFetch([
+    const fetchRecorder = createStreamFetch([
       'data: {"choices":[{"index":0,"delta":{"content":"Hel"},"finish_reason":null}]}\n',
       '\ndata: {"choices":[{"index":0,"delta":{"content":"lo"},"finish_reason":null}]}\n\n',
       'data: {"choices":[{"index":0,"delta":{},"finish_reason":"stop"}]}\n\n',
@@ -189,7 +194,7 @@ describe("OpenAI formats", () => {
   });
 
   it("streams chat completions tool calls", async () => {
-    const fetchRecorder = createSseFetch([
+    const fetchRecorder = createStreamFetch([
       'data: {"choices":[{"index":0,"delta":{"tool_calls":[{"index":0,"id":"call-1","type":"function","function":{"name":"lookup","arguments":"{\\"query\\""}}]},"finish_reason":null}]}\n\n',
       'data: {"choices":[{"index":0,"delta":{"tool_calls":[{"index":0,"function":{"arguments":":\\"weather\\"}"}}]},"finish_reason":null}]}\n\n',
       'data: {"choices":[{"index":0,"delta":{},"finish_reason":"tool_calls"}]}\n\n',
@@ -607,6 +612,84 @@ describe("OpenAI formats", () => {
     expect(output.finishReason).toBe("tool-call");
   });
 
+  it("streams responses text, reasoning, and usage", async () => {
+    const fetchRecorder = createStreamFetch([
+      'data: {"type":"response.reasoning_summary_text.delta","delta":"think"}\n\n',
+      'data: {"type":"response.output_text.delta","delta":"Hel"}\n\n',
+      'data: {"type":"response.output_text.delta","delta":"lo"}\n\n',
+      'data: {"type":"response.completed","response":{"usage":{"input_tokens":3,"output_tokens":4,"total_tokens":7}}}\n\n',
+    ]);
+    const client = new Llm({
+      fetch: fetchRecorder.fetch,
+      format: new OpenAIResponsesFormat({ model: "example-model" }),
+      provider: new GenericHttpProvider({ baseUrl: "https://example.test/v1" }),
+    });
+
+    const events = await readStream(
+      client.stream({
+        messages: [{ role: "user", content: [{ type: "text", text: "hi" }] }],
+      }),
+    );
+
+    expect(readRequestBody(fetchRecorder.calls[0]).stream).toBe(true);
+    expect(events).toContainEqual({ type: "reasoning-delta", text: "think" });
+    expect(events).toContainEqual({ type: "text-delta", text: "Hel" });
+    expect(events).toContainEqual({
+      type: "usage",
+      usage: { inputTokens: 3, outputTokens: 4, totalTokens: 7 },
+    });
+    expect(events.at(-1)).toEqual({
+      type: "done",
+      message: { role: "assistant", content: [{ type: "text", text: "Hello" }], text: "Hello" },
+      reasoning: { text: "think" },
+      usage: { inputTokens: 3, outputTokens: 4, totalTokens: 7 },
+      finishReason: "stop",
+    });
+  });
+
+  it("streams responses tool calls", async () => {
+    const fetchRecorder = createStreamFetch([
+      'data: {"type":"response.output_item.added","output_index":0,"item":{"type":"function_call","call_id":"call-1","name":"lookup"}}\n\n',
+      'data: {"type":"response.function_call_arguments.delta","output_index":0,"delta":"{\\"query\\""}\n\n',
+      'data: {"type":"response.function_call_arguments.delta","output_index":0,"delta":":\\"weather\\"}"}\n\n',
+      'data: {"type":"response.completed","response":{}}\n\n',
+    ]);
+    const client = new Llm({
+      fetch: fetchRecorder.fetch,
+      format: new OpenAIResponsesFormat({ model: "example-model" }),
+      provider: new GenericHttpProvider({ baseUrl: "https://example.test/v1" }),
+    });
+
+    const events = await readStream(
+      client.stream({
+        messages: [{ role: "user", content: [{ type: "text", text: "hi" }] }],
+      }),
+    );
+
+    expect(events).toContainEqual({
+      type: "tool-call",
+      toolCall: { id: "call-1", name: "lookup", arguments: { query: "weather" } },
+    });
+    expect(events.at(-1)).toEqual({
+      type: "done",
+      message: {
+        role: "assistant",
+        content: [
+          {
+            type: "tool-call",
+            id: "call-1",
+            name: "lookup",
+            arguments: { query: "weather" },
+          },
+        ],
+        text: "",
+        toolCalls: [{ id: "call-1", name: "lookup", arguments: { query: "weather" } }],
+      },
+      toolCalls: [{ id: "call-1", name: "lookup", arguments: { query: "weather" } }],
+      finishReason: "tool-call",
+    });
+  });
+
   it("throws when responses output text is missing", () => {
     const format = new OpenAIResponsesFormat({ model: "example-model" });
 
@@ -622,72 +705,3 @@ describe("OpenAI formats", () => {
     ).toThrow(LlmIoError);
   });
 });
-
-function createSseFetch(chunks: readonly string[]): {
-  calls: { input: string; init?: Parameters<FetchLike>[1] }[];
-  fetch: FetchLike;
-} {
-  const calls: { input: string; init?: Parameters<FetchLike>[1] }[] = [];
-  const responseText = chunks.join("");
-
-  return {
-    calls,
-    fetch: async (input, init) => {
-      calls.push(init === undefined ? { input } : { input, init });
-
-      return {
-        body: createReadableByteStream(chunks),
-        ok: true,
-        status: 200,
-        statusText: "OK",
-        async json() {
-          return {};
-        },
-        async text() {
-          return responseText;
-        },
-      };
-    },
-  };
-}
-
-function createReadableByteStream(chunks: readonly string[]): ReadableStream<Uint8Array> {
-  const encoder = new TextEncoder();
-
-  return new ReadableStream({
-    start(controller) {
-      for (const chunk of chunks) {
-        controller.enqueue(encoder.encode(chunk));
-      }
-
-      controller.close();
-    },
-  });
-}
-
-async function readTextStream(stream: ReadableStream<string>): Promise<string> {
-  const chunks = await readStream(stream);
-
-  return chunks.join("");
-}
-
-async function readStream<TValue>(stream: ReadableStream<TValue>): Promise<TValue[]> {
-  const reader = stream.getReader();
-  const values: TValue[] = [];
-
-  try {
-    while (true) {
-      const result = await reader.read();
-
-      if (result.done) {
-        break;
-      }
-
-      values.push(result.value);
-    }
-  } finally {
-    reader.releaseLock();
-  }
-
-  return values;
-}

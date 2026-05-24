@@ -1,6 +1,12 @@
 import { describe, expect, it } from "vitest";
 import { AnthropicMessagesFormat, createToolResultMessage, Llm, LlmIoError } from "../src/index";
-import { createAnthropicResponse, createRecordingFetch, readRequestBody } from "./test-utils";
+import {
+  createAnthropicResponse,
+  createRecordingFetch,
+  createStreamFetch,
+  readRequestBody,
+  readStream,
+} from "./test-utils";
 
 describe("AnthropicMessagesFormat", () => {
   it("creates Anthropic messages request bodies with system extraction and role merging", async () => {
@@ -225,6 +231,60 @@ describe("AnthropicMessagesFormat", () => {
       { type: "tool-call", id: "toolu-1", name: "lookup", arguments: { query: "weather" } },
     ]);
     expect(output.finishReason).toBe("tool-call");
+  });
+
+  it("streams text, thinking, tool calls, usage, and finish reason", async () => {
+    const fetchRecorder = createStreamFetch([
+      'event: message_start\ndata: {"type":"message_start","message":{"usage":{"input_tokens":5,"output_tokens":0}}}\n\n',
+      'event: content_block_delta\ndata: {"type":"content_block_delta","index":0,"delta":{"type":"thinking_delta","thinking":"plan"}}\n\n',
+      'event: content_block_delta\ndata: {"type":"content_block_delta","index":1,"delta":{"type":"text_delta","text":"Hi"}}\n\n',
+      'event: content_block_start\ndata: {"type":"content_block_start","index":2,"content_block":{"type":"tool_use","id":"toolu-1","name":"lookup","input":{}}}\n\n',
+      'event: content_block_delta\ndata: {"type":"content_block_delta","index":2,"delta":{"type":"input_json_delta","partial_json":"{\\"query\\":\\"weather\\"}"}}\n\n',
+      'event: message_delta\ndata: {"type":"message_delta","delta":{"stop_reason":"tool_use"},"usage":{"output_tokens":7}}\n\n',
+      'event: message_stop\ndata: {"type":"message_stop"}\n\n',
+    ]);
+    const client = new Llm({
+      baseUrl: "https://api.anthropic.com/v1",
+      fetch: fetchRecorder.fetch,
+      format: new AnthropicMessagesFormat({
+        maxTokens: 1024,
+        model: "claude-example",
+      }),
+    });
+
+    const events = await readStream(
+      client.stream({
+        messages: [{ role: "user", content: [{ type: "text", text: "Hi" }] }],
+      }),
+    );
+
+    expect(readRequestBody(fetchRecorder.calls[0]).stream).toBe(true);
+    expect(events).toContainEqual({ type: "reasoning-delta", text: "plan" });
+    expect(events).toContainEqual({ type: "text-delta", text: "Hi" });
+    expect(events).toContainEqual({
+      type: "usage",
+      usage: { inputTokens: 5, outputTokens: 7, totalTokens: 12 },
+    });
+    expect(events).toContainEqual({
+      type: "tool-call",
+      toolCall: { id: "toolu-1", name: "lookup", arguments: { query: "weather" } },
+    });
+    expect(events.at(-1)).toEqual({
+      type: "done",
+      message: {
+        role: "assistant",
+        content: [
+          { type: "text", text: "Hi" },
+          { type: "tool-call", id: "toolu-1", name: "lookup", arguments: { query: "weather" } },
+        ],
+        text: "Hi",
+        toolCalls: [{ id: "toolu-1", name: "lookup", arguments: { query: "weather" } }],
+      },
+      reasoning: { text: "plan" },
+      toolCalls: [{ id: "toolu-1", name: "lookup", arguments: { query: "weather" } }],
+      usage: { inputTokens: 5, outputTokens: 7, totalTokens: 12 },
+      finishReason: "tool-call",
+    });
   });
 
   it("creates tool result continuation bodies", () => {

@@ -1,7 +1,10 @@
 import type { LlmFormat } from "../../../core/format";
 import { createGeminiGenerateContentRequestPath, throwUnsupportedFormat } from "../../utils/index";
 
-export function resolveGenericRequestPath(format: LlmFormat<unknown, unknown>): string {
+export function resolveGenericRequestPath(
+  format: LlmFormat<unknown, unknown>,
+  options: { stream?: boolean } = {},
+): string {
   if (format.id === "anthropic-messages") {
     return "/messages";
   }
@@ -19,7 +22,7 @@ export function resolveGenericRequestPath(format: LlmFormat<unknown, unknown>): 
   }
 
   if (format.id === "gemini-generate-content") {
-    return createGeminiGenerateContentRequestPath(format, "generic-http");
+    return createGeminiGenerateContentRequestPath(format, "generic-http", options);
   }
 
   throwUnsupportedFormat("generic-http", format);

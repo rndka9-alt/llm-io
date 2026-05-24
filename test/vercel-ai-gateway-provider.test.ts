@@ -7,7 +7,13 @@ import {
   VercelAIGatewayProvider,
   type VercelAIGatewayProviderOptionsMap,
 } from "../src/index";
-import { createAnthropicResponse, createRecordingFetch, readRequestBody } from "./test-utils";
+import {
+  createAnthropicResponse,
+  createRecordingFetch,
+  createStreamFetch,
+  readRequestBody,
+  readTextStream,
+} from "./test-utils";
 
 describe("VercelAIGatewayProvider", () => {
   it("injects providerOptions into OpenAI-compatible bodies", async () => {
@@ -144,5 +150,41 @@ describe("VercelAIGatewayProvider", () => {
     });
 
     expect(fetchRecorder.calls[0]?.input).toBe("https://ai-gateway.vercel.sh/v1/messages");
+  });
+
+  it("streams while preserving providerOptions", async () => {
+    const fetchRecorder = createStreamFetch([
+      'data: {"choices":[{"index":0,"delta":{"content":"ok"},"finish_reason":null}]}\n\n',
+      "data: [DONE]\n\n",
+    ]);
+    const client = new Llm({
+      fetch: fetchRecorder.fetch,
+      format: new OpenAIChatCompletionsFormat({ model: "openai/gpt-5.1" }),
+      provider: new VercelAIGatewayProvider({
+        apiKey: "gateway-key",
+        providerOptions: {
+          gateway: {
+            caching: "auto",
+          },
+        },
+      }),
+    });
+
+    const text = await readTextStream(
+      client.streamText({
+        messages: [{ role: "user", content: [{ type: "text", text: "hi" }] }],
+      }),
+    );
+
+    expect(text).toBe("ok");
+    expect(fetchRecorder.calls[0]?.input).toBe("https://ai-gateway.vercel.sh/v1/chat/completions");
+    expect(readRequestBody(fetchRecorder.calls[0])).toMatchObject({
+      providerOptions: {
+        gateway: {
+          caching: "auto",
+        },
+      },
+      stream: true,
+    });
   });
 });

@@ -1,6 +1,6 @@
 import type { LlmProvider, LlmProviderRequest, LlmProviderRequestInput } from "../../core/provider";
 import { omitUndefined } from "../../utils/object";
-import { joinUrlPath } from "../utils/index";
+import { createStreamRequestBody, joinUrlPath, readProviderStream } from "../utils/index";
 import { resolveAnthropicRequestPath } from "./utils/resolve-anthropic-request-path";
 
 export interface AnthropicProviderOptions {
@@ -41,5 +41,21 @@ export class AnthropicProvider implements LlmProvider {
       signal: input.request.signal,
       url: joinUrlPath(this.baseUrl, resolveAnthropicRequestPath(input.format)),
     });
+  }
+
+  createStreamRequest(input: LlmProviderRequestInput): LlmProviderRequest {
+    const providerRequest = this.createRequest(input);
+
+    return {
+      ...providerRequest,
+      body: createStreamRequestBody(this.id, input.format, providerRequest.body),
+    };
+  }
+
+  readStream(
+    body: ReadableStream<Uint8Array>,
+    format: LlmProviderRequestInput["format"],
+  ): AsyncIterable<unknown> {
+    return readProviderStream(this.id, body, format);
   }
 }

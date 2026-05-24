@@ -5,8 +5,10 @@ import type { LlmOutput } from "../../core/output";
 import { omitUndefined } from "../../utils/object";
 import { createAnthropicMessagesRequestBody } from "./create-request-body";
 import { parseAnthropicMessagesResponse } from "./parse-response";
+import { parseAnthropicMessagesStream } from "./parse-stream";
 import type { AnthropicMessagesRaw } from "./raw-schema";
 import type { AnthropicMessagesExtraBody } from "./types";
+import type { LlmStreamEvent } from "../../core/stream";
 
 export interface AnthropicMessagesFormatOptions {
   /** Messages body에 추가할 format 전용 옵션입니다. */
@@ -42,5 +44,9 @@ export class AnthropicMessagesFormat implements LlmFormat<AnthropicMessagesRaw> 
 
   parseResponse(responseJson: unknown): LlmOutput<AnthropicMessagesRaw> {
     return parseAnthropicMessagesResponse(responseJson);
+  }
+
+  parseStream(events: AsyncIterable<unknown>): AsyncIterable<LlmStreamEvent> {
+    return parseAnthropicMessagesStream(events);
   }
 }

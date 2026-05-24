@@ -5,7 +5,6 @@ import type { LlmOutput } from "../core/output";
 import type { LlmProvider } from "../core/provider";
 import type { LlmStreamEvent } from "../core/stream";
 import type { FetchLike } from "../transport/fetch-like";
-import { readSseJsonStream } from "../utils/sse";
 import { omitUndefined } from "../utils/object";
 import { createProvider } from "./create-provider";
 import type { LlmOptions } from "./types";
@@ -99,18 +98,16 @@ export class Llm<TRaw, TExtras = undefined> {
   }
 
   private async *createStreamEvents(request: LlmRequest): AsyncIterable<LlmStreamEvent> {
-    if (
-      this.format.createStreamRequestBody === undefined ||
-      this.format.parseStream === undefined
-    ) {
+    if (this.format.parseStream === undefined) {
       throw new LlmIoError(`${this.format.id} does not support streaming.`);
     }
 
-    const streamFormat = this.createStreamFormat(
-      this.format.createStreamRequestBody.bind(this.format),
-    );
-    const providerRequest = await this.provider.createRequest({
-      format: streamFormat,
+    if (this.provider.createStreamRequest === undefined || this.provider.readStream === undefined) {
+      throw new LlmIoError(`${this.provider.id} does not support streaming.`);
+    }
+
+    const providerRequest = await this.provider.createStreamRequest({
+      format: this.format,
       request,
     });
 
@@ -132,28 +129,7 @@ export class Llm<TRaw, TExtras = undefined> {
       throw new LlmIoError("Streaming response body is empty.");
     }
 
-    yield* this.format.parseStream(readSseJsonStream(response.body));
-  }
-
-  private createStreamFormat(
-    createStreamRequestBody: (
-      request: LlmRequest,
-    ) => ReturnType<LlmFormat<TRaw, TExtras>["createRequestBody"]>,
-  ): LlmFormat<TRaw, TExtras> {
-    const streamFormat = {
-      id: this.format.id,
-      createRequestBody: createStreamRequestBody,
-      parseResponse: (responseJson: unknown) => this.format.parseResponse(responseJson),
-    };
-
-    if (this.format.model === undefined) {
-      return streamFormat;
-    }
-
-    return {
-      ...streamFormat,
-      model: this.format.model,
-    };
+    yield* this.format.parseStream(this.provider.readStream(response.body, this.format));
   }
 }
 

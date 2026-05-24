@@ -1,7 +1,12 @@
 import type { LlmFormat } from "../../core/format";
 import type { LlmProvider, LlmProviderRequest, LlmProviderRequestInput } from "../../core/provider";
 import { omitUndefined } from "../../utils/object";
-import { createBearerHeaders, joinUrlPath } from "../utils/index";
+import {
+  createBearerHeaders,
+  createStreamRequestBody,
+  joinUrlPath,
+  readProviderStream,
+} from "../utils/index";
 import { resolveGenericRequestPath } from "./utils/resolve-generic-request-path";
 
 export interface GenericHttpProviderOptions {
@@ -13,6 +18,8 @@ export interface GenericHttpProviderOptions {
   headers?: Record<string, string>;
   /** format별 request path를 직접 정할 때 사용합니다. */
   resolveRequestPath?: (format: LlmFormat<unknown, unknown>) => string | undefined;
+  /** streaming request path를 직접 정할 때 사용합니다. */
+  resolveStreamRequestPath?: (format: LlmFormat<unknown, unknown>) => string | undefined;
 }
 
 export class GenericHttpProvider implements LlmProvider {
@@ -21,12 +28,20 @@ export class GenericHttpProvider implements LlmProvider {
   private readonly baseUrl: string;
   private readonly headers: Record<string, string> | undefined;
   private readonly resolveRequestPath: (format: LlmFormat<unknown, unknown>) => string | undefined;
+  private readonly resolveStreamRequestPath: (
+    format: LlmFormat<unknown, unknown>,
+  ) => string | undefined;
 
   constructor(options: GenericHttpProviderOptions) {
     this.apiKey = options.apiKey;
     this.baseUrl = options.baseUrl;
     this.headers = options.headers;
-    this.resolveRequestPath = options.resolveRequestPath ?? resolveGenericRequestPath;
+    this.resolveRequestPath =
+      options.resolveRequestPath ?? ((format) => resolveGenericRequestPath(format));
+    this.resolveStreamRequestPath =
+      options.resolveStreamRequestPath ??
+      options.resolveRequestPath ??
+      ((format) => resolveGenericRequestPath(format, { stream: true }));
   }
 
   createRequest(input: LlmProviderRequestInput): LlmProviderRequest {
@@ -42,5 +57,22 @@ export class GenericHttpProvider implements LlmProvider {
       signal: input.request.signal,
       url: joinUrlPath(this.baseUrl, this.resolveRequestPath(input.format)),
     });
+  }
+
+  createStreamRequest(input: LlmProviderRequestInput): LlmProviderRequest {
+    const providerRequest = this.createRequest(input);
+
+    return {
+      ...providerRequest,
+      body: createStreamRequestBody(this.id, input.format, providerRequest.body),
+      url: joinUrlPath(this.baseUrl, this.resolveStreamRequestPath(input.format)),
+    };
+  }
+
+  readStream(
+    body: ReadableStream<Uint8Array>,
+    format: LlmFormat<unknown, unknown>,
+  ): AsyncIterable<unknown> {
+    return readProviderStream(this.id, body, format);
   }
 }

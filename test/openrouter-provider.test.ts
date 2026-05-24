@@ -8,7 +8,13 @@ import {
   OpenAIResponsesFormat,
   OpenRouterProvider,
 } from "../src/index";
-import { createAnthropicResponse, createRecordingFetch } from "./test-utils";
+import {
+  createAnthropicResponse,
+  createRecordingFetch,
+  createStreamFetch,
+  readRequestBody,
+  readTextStream,
+} from "./test-utils";
 
 describe("OpenRouterProvider", () => {
   it("uses OpenRouter chat completions endpoint and ranking headers", async () => {
@@ -68,6 +74,28 @@ describe("OpenRouterProvider", () => {
     });
 
     expect(fetchRecorder.calls[0]?.input).toBe("https://openrouter.ai/api/v1/messages");
+  });
+
+  it("streams through OpenRouter OpenAI-compatible endpoint", async () => {
+    const fetchRecorder = createStreamFetch([
+      'data: {"choices":[{"index":0,"delta":{"content":"ok"},"finish_reason":null}]}\n\n',
+      "data: [DONE]\n\n",
+    ]);
+    const client = new Llm({
+      fetch: fetchRecorder.fetch,
+      format: new OpenAIChatCompletionsFormat({ model: "openai/gpt-5.2" }),
+      provider: new OpenRouterProvider({ apiKey: "openrouter-key" }),
+    });
+
+    const text = await readTextStream(
+      client.streamText({
+        messages: [{ role: "user", content: [{ type: "text", text: "hi" }] }],
+      }),
+    );
+
+    expect(text).toBe("ok");
+    expect(fetchRecorder.calls[0]?.input).toBe("https://openrouter.ai/api/v1/chat/completions");
+    expect(readRequestBody(fetchRecorder.calls[0]).stream).toBe(true);
   });
 
   it("throws before fetch when format is unsupported", async () => {

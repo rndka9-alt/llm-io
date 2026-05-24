@@ -26,4 +26,13 @@ export interface LlmProvider {
   readonly id: string;
   /** 공통 요청을 provider별 HTTP 요청으로 변환합니다. */
   createRequest(input: LlmProviderRequestInput): LlmProviderRequest | Promise<LlmProviderRequest>;
+  /** 공통 요청을 provider별 streaming HTTP 요청으로 변환합니다. */
+  createStreamRequest?(
+    input: LlmProviderRequestInput,
+  ): LlmProviderRequest | Promise<LlmProviderRequest>;
+  /** provider streaming body를 JSON event stream으로 읽습니다. */
+  readStream?(
+    body: ReadableStream<Uint8Array>,
+    format: LlmFormat<unknown, unknown>,
+  ): AsyncIterable<unknown>;
 }
