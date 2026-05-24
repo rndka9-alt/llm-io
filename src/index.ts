@@ -26,7 +26,13 @@ export type {
   InferFormatRaw,
   LlmFormat,
 } from "./core/format";
-export type { JsonArray, JsonObject, JsonPrimitive, JsonValue } from "./core/json";
+export type {
+  JsonArray,
+  JsonObject,
+  JsonPrimitive,
+  JsonSchemaObject,
+  JsonValue,
+} from "./core/json";
 export type {
   LlmContentPart,
   LlmMessage,
@@ -39,33 +45,46 @@ export type {
   LlmAssistantContentPart,
   LlmAssistantMessage,
   LlmAssistantTextPart,
+  LlmAssistantToolCallPart,
   LlmFinishReason,
   LlmOutput,
   LlmReasoning,
+  LlmToolCall,
   LlmUsage,
 } from "./core/output";
 export type { LlmProvider, LlmProviderRequest, LlmProviderRequestInput } from "./core/provider";
 export type { LlmLegacyHttpOptions, LlmOptions, LlmProviderOptions } from "./llm";
 export type {
+  AnthropicTool,
   AnthropicMessagesExtraBody,
   AnthropicMessagesFormatOptions,
   AnthropicMessagesRaw,
 } from "./formats/anthropic-messages/index";
 export type {
+  GeminiFunctionDeclaration,
   GeminiGenerateContentExtraBody,
   GeminiGenerateContentFormatOptions,
   GeminiGenerateContentRaw,
+  GeminiObjectSchema,
+  GeminiSchema,
+  GeminiTool,
+  GeminiToolConfig,
 } from "./formats/gemini-generate-content/index";
 export type {
   OllamaChatExtraBody,
   OllamaChatExtras,
   OllamaChatFormatOptions,
   OllamaChatRaw,
+  OllamaFunctionTool,
+  OllamaTool,
 } from "./formats/ollama-chat/index";
 export type {
   OpenAIChatCompletionsExtraBody,
   OpenAIChatCompletionsFormatOptions,
+  OpenAIChatCompletionsFunctionTool,
+  OpenAIChatCompletionsFunctionToolDefinition,
   OpenAIChatCompletionsRaw,
+  OpenAIChatCompletionsTool,
 } from "./formats/openai-chat-completions/index";
 export type {
   OpenAIResponsesExtraBody,

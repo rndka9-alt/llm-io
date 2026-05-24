@@ -1,4 +1,4 @@
-import type { JsonObject } from "../../core/json";
+import type { JsonObject, JsonSchemaObject } from "../../core/json";
 
 export type OpenAIChatCompletionsReasoningEffort =
   /** 추론 토큰을 쓰지 않도록 요청한다. */
@@ -128,6 +128,26 @@ export interface OpenAIChatCompletionsNamedToolChoice extends JsonObject {
   /** tool_choice가 함수 도구를 가리킨다는 표시다. */
   type: "function";
 }
+
+export interface OpenAIChatCompletionsFunctionToolDefinition extends JsonObject {
+  /** 모델이 tool 사용 시 참고할 설명이다. */
+  description?: string;
+  /** 모델이 호출할 함수 이름이다. */
+  name: string;
+  /** 함수 인자의 JSON Schema object다. */
+  parameters?: JsonSchemaObject;
+  /** 지원 모델에서 schema 엄격 준수를 요청한다. */
+  strict?: boolean;
+}
+
+export interface OpenAIChatCompletionsFunctionTool extends JsonObject {
+  /** 함수 도구 정의다. */
+  function: OpenAIChatCompletionsFunctionToolDefinition;
+  /** OpenAI tool type 식별자다. */
+  type: "function";
+}
+
+export type OpenAIChatCompletionsTool = OpenAIChatCompletionsFunctionTool;
 
 export interface OpenAIChatCompletionsStreamOptions extends JsonObject {
   /** 스트림 마지막 chunk에 token usage 정보를 포함할지 결정한다. */
@@ -275,7 +295,7 @@ export interface OpenAIChatCompletionsExtraBody {
   /** tool 호출 정책을 지정한다. */
   tool_choice?: OpenAIChatCompletionsToolChoice;
   /** 모델이 호출할 수 있는 도구 목록이다. */
-  tools?: readonly JsonObject[];
+  tools?: readonly OpenAIChatCompletionsTool[];
   /** sampling 후보 token 수를 제한한다. */
   top_k?: number;
   /** 반환할 상위 token log probability 개수다. */

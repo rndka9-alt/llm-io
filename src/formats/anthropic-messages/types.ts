@@ -1,4 +1,4 @@
-import type { JsonObject } from "../../core/json";
+import type { JsonObject, JsonSchemaObject } from "../../core/json";
 
 export type AnthropicMessagesServiceTier =
   /** Anthropic이 사용 가능한 처리 계층을 자동 선택한다. */
@@ -68,7 +68,7 @@ export interface AnthropicTool extends JsonObject {
   /** 모델이 tool 사용 시 참고할 설명이다. */
   description?: string;
   /** tool input의 JSON Schema다. */
-  input_schema: JsonObject;
+  input_schema: JsonSchemaObject;
   /** 모델이 호출할 tool 이름이다. */
   name: string;
 }

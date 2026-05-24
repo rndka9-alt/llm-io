@@ -17,6 +17,21 @@ describe("OpenAI formats", () => {
         response_format: { type: "json_object" },
         stream_options: { include_usage: true },
         tool_choice: { type: "function", function: { name: "lookup" } },
+        tools: [
+          {
+            type: "function",
+            function: {
+              name: "lookup",
+              parameters: {
+                type: "object",
+                properties: {
+                  query: { type: "string" },
+                },
+                required: ["query"],
+              },
+            },
+          },
+        ],
       },
       model: "example-model",
     });
@@ -41,6 +56,21 @@ describe("OpenAI formats", () => {
       response_format: { type: "json_object" },
       stream_options: { include_usage: true },
       tool_choice: { type: "function", function: { name: "lookup" } },
+      tools: [
+        {
+          type: "function",
+          function: {
+            name: "lookup",
+            parameters: {
+              type: "object",
+              properties: {
+                query: { type: "string" },
+              },
+              required: ["query"],
+            },
+          },
+        },
+      ],
     });
   });
 
@@ -51,6 +81,16 @@ describe("OpenAI formats", () => {
         reasoning_effort: "maximum",
         // @ts-expect-error prompt_cache_retention only supports documented retention values.
         prompt_cache_retention: "7d",
+        tools: [
+          {
+            type: "function",
+            function: {
+              name: "lookup",
+              // @ts-expect-error function tool parameters must be a JSON Schema object root.
+              parameters: { properties: { query: { type: "string" } } },
+            },
+          },
+        ],
       },
       model: "example-model",
     } satisfies ConstructorParameters<typeof OpenAIChatCompletionsFormat>[0];
@@ -88,6 +128,46 @@ describe("OpenAI formats", () => {
     expect(output.reasoning?.text).toBe("because");
     expect(output.usage?.totalTokens).toBe(7);
     expect(output.raw.choices[0]?.message.content).toBe("hello");
+  });
+
+  it("normalizes chat completions tool calls without text", async () => {
+    const client = new Llm({
+      fetch: createJsonFetch({
+        choices: [
+          {
+            finish_reason: "tool_calls",
+            message: {
+              content: null,
+              tool_calls: [
+                {
+                  id: "call-1",
+                  type: "function",
+                  function: {
+                    name: "lookup",
+                    arguments: '{"query":"weather"}',
+                  },
+                },
+              ],
+            },
+          },
+        ],
+      }),
+      format: new OpenAIChatCompletionsFormat({ model: "example-model" }),
+      provider: new GenericHttpProvider({ baseUrl: "https://example.test/v1" }),
+    });
+
+    const output = await client.generate({
+      messages: [{ role: "user", content: [{ type: "text", text: "hi" }] }],
+    });
+
+    expect(output.message.text).toBe("");
+    expect(output.toolCalls).toEqual([
+      { id: "call-1", name: "lookup", arguments: { query: "weather" } },
+    ]);
+    expect(output.message.content).toEqual([
+      { type: "tool-call", id: "call-1", name: "lookup", arguments: { query: "weather" } },
+    ]);
+    expect(output.finishReason).toBe("tool-call");
   });
 
   it("throws when chat completions output text is missing", () => {

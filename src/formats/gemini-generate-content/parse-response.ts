@@ -1,7 +1,8 @@
 import { LlmIoError } from "../../core/errors";
 import type { LlmOutput } from "../../core/output";
-import { createTextAssistantMessage } from "../../core/output";
+import { createAssistantMessage } from "../../core/output";
 import { geminiGenerateContentRawSchema, type GeminiGenerateContentRaw } from "./raw-schema";
+import { createGeminiToolCalls } from "./utils/create-gemini-tool-calls";
 import { createGeminiUsage } from "./utils/create-gemini-usage";
 import { normalizeGeminiFinishReason } from "./utils/normalize-gemini-finish-reason";
 
@@ -15,9 +16,12 @@ export function parseGeminiGenerateContentResponse(
     .filter((part) => part.thought !== true)
     .map((part) => part.text ?? "")
     .join("");
+  const toolCalls = createGeminiToolCalls(parts);
 
-  if (text.length === 0) {
-    throw new LlmIoError("Gemini generateContent response must contain non-thinking text content.");
+  if (text.length === 0 && toolCalls.length === 0) {
+    throw new LlmIoError(
+      "Gemini generateContent response must contain non-thinking text content or tool calls.",
+    );
   }
 
   const reasoningText = parts
@@ -28,8 +32,9 @@ export function parseGeminiGenerateContentResponse(
   const finishReason = normalizeGeminiFinishReason(firstCandidate?.finishReason);
 
   return {
-    message: createTextAssistantMessage(text),
+    message: createAssistantMessage(text, toolCalls),
     ...(reasoningText.length === 0 ? {} : { reasoning: { text: reasoningText } }),
+    ...(toolCalls.length === 0 ? {} : { toolCalls }),
     ...(usage === undefined ? {} : { usage }),
     ...(finishReason === undefined ? {} : { finishReason }),
     raw,

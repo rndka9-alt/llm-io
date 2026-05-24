@@ -17,7 +17,13 @@ describe("AnthropicMessagesFormat", () => {
           tools: [
             {
               cache_control: { ttl: "5m", type: "ephemeral" },
-              input_schema: { type: "object" },
+              input_schema: {
+                type: "object",
+                properties: {
+                  query: { type: "string" },
+                },
+                required: ["query"],
+              },
               name: "lookup",
             },
           ],
@@ -63,7 +69,13 @@ describe("AnthropicMessagesFormat", () => {
       tools: [
         {
           cache_control: { ttl: "5m", type: "ephemeral" },
-          input_schema: { type: "object" },
+          input_schema: {
+            type: "object",
+            properties: {
+              query: { type: "string" },
+            },
+            required: ["query"],
+          },
           name: "lookup",
         },
       ],
@@ -78,6 +90,13 @@ describe("AnthropicMessagesFormat", () => {
         service_tier: "priority",
         // @ts-expect-error thinking type follows documented Anthropic values.
         thinking: { type: "maybe" },
+        tools: [
+          {
+            name: "lookup",
+            // @ts-expect-error tool input_schema must be a JSON Schema object root.
+            input_schema: { properties: { query: { type: "string" } } },
+          },
+        ],
       },
       maxTokens: 1024,
       model: "claude-example",
@@ -141,6 +160,41 @@ describe("AnthropicMessagesFormat", () => {
       totalTokens: 18,
     });
     expect(output.finishReason).toBe("length");
+  });
+
+  it("parses tool_use blocks without text", async () => {
+    const fetchRecorder = createRecordingFetch({
+      content: [
+        {
+          type: "tool_use",
+          id: "toolu-1",
+          name: "lookup",
+          input: { query: "weather" },
+        },
+      ],
+      stop_reason: "tool_use",
+    });
+    const client = new Llm({
+      baseUrl: "https://api.anthropic.com/v1",
+      fetch: fetchRecorder.fetch,
+      format: new AnthropicMessagesFormat({
+        maxTokens: 1024,
+        model: "claude-example",
+      }),
+    });
+
+    const output = await client.generate({
+      messages: [{ role: "user", content: [{ type: "text", text: "Hi" }] }],
+    });
+
+    expect(output.message.text).toBe("");
+    expect(output.toolCalls).toEqual([
+      { id: "toolu-1", name: "lookup", arguments: { query: "weather" } },
+    ]);
+    expect(output.message.content).toEqual([
+      { type: "tool-call", id: "toolu-1", name: "lookup", arguments: { query: "weather" } },
+    ]);
+    expect(output.finishReason).toBe("tool-call");
   });
 
   it("throws when Anthropic response has no text content", async () => {

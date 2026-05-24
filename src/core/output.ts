@@ -1,14 +1,27 @@
+import type { JsonObject } from "./json";
+
 export interface LlmAssistantMessage {
   role: "assistant";
   content: readonly LlmAssistantContentPart[];
   text: string;
+  toolCalls?: readonly LlmToolCall[];
 }
 
-export type LlmAssistantContentPart = LlmAssistantTextPart;
+export type LlmAssistantContentPart = LlmAssistantTextPart | LlmAssistantToolCallPart;
 
 export interface LlmAssistantTextPart {
   type: "text";
   text: string;
+}
+
+export interface LlmAssistantToolCallPart extends LlmToolCall {
+  type: "tool-call";
+}
+
+export interface LlmToolCall {
+  arguments: JsonObject;
+  id?: string;
+  name: string;
 }
 
 export interface LlmReasoning {
@@ -27,6 +40,7 @@ export type LlmFinishReason = "stop" | "length" | "tool-call" | "content-filter"
 export interface LlmOutput<TRaw, TExtras = undefined> {
   message: LlmAssistantMessage;
   reasoning?: LlmReasoning;
+  toolCalls?: readonly LlmToolCall[];
   usage?: LlmUsage;
   finishReason?: LlmFinishReason;
   raw: TRaw;
@@ -34,9 +48,27 @@ export interface LlmOutput<TRaw, TExtras = undefined> {
 }
 
 export function createTextAssistantMessage(text: string): LlmAssistantMessage {
+  return createAssistantMessage(text, []);
+}
+
+export function createAssistantMessage(
+  text: string,
+  toolCalls: readonly LlmToolCall[],
+): LlmAssistantMessage {
+  const content: LlmAssistantContentPart[] = [];
+
+  if (text.length > 0) {
+    content.push({ type: "text", text });
+  }
+
+  for (const toolCall of toolCalls) {
+    content.push({ type: "tool-call", ...toolCall });
+  }
+
   return {
     role: "assistant",
-    content: [{ type: "text", text }],
+    content,
     text,
+    ...(toolCalls.length === 0 ? {} : { toolCalls }),
   };
 }

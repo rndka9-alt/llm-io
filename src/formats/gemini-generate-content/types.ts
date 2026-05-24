@@ -1,4 +1,4 @@
-import type { JsonObject } from "../../core/json";
+import type { JsonObject, JsonSchemaObject } from "../../core/json";
 
 export type GeminiResponseMimeType =
   /** 일반 텍스트 응답을 요청한다. */
@@ -70,6 +70,71 @@ export interface GeminiGenerationConfig extends JsonObject {
   topP?: number;
 }
 
+export type GeminiSchemaType =
+  | "TYPE_UNSPECIFIED"
+  | "STRING"
+  | "NUMBER"
+  | "INTEGER"
+  | "BOOLEAN"
+  | "ARRAY"
+  | "OBJECT";
+
+export interface GeminiSchema extends JsonObject {
+  /** Gemini Schema type이다. */
+  type: GeminiSchemaType;
+  /** schema 목적을 설명하는 문장이다. */
+  description?: string;
+  /** enum 문자열 후보 목록이다. */
+  enum?: readonly string[];
+  /** ARRAY item schema다. */
+  items?: GeminiSchema;
+  /** null 값을 허용할지 결정한다. */
+  nullable?: boolean;
+  /** OBJECT property schema map이다. */
+  properties?: { [propertyName: string]: GeminiSchema | undefined };
+  /** 필수 property 이름 목록이다. */
+  required?: readonly string[];
+}
+
+export interface GeminiObjectSchema extends GeminiSchema {
+  /** function parameter root는 Gemini object schema다. */
+  type: "OBJECT";
+}
+
+export interface GeminiFunctionDeclaration extends JsonObject {
+  /** 모델이 function 사용 시 참고할 설명이다. */
+  description?: string;
+  /** 모델이 호출할 function 이름이다. */
+  name: string;
+  /** Gemini Schema dialect의 function parameters다. */
+  parameters?: GeminiObjectSchema;
+  /** JSON Schema dialect의 function parameters다. */
+  parametersJsonSchema?: JsonSchemaObject;
+  /** Gemini Schema dialect의 function response다. */
+  response?: GeminiSchema;
+}
+
+export interface GeminiTool extends JsonObject {
+  /** 코드 실행 tool 설정이다. */
+  codeExecution?: JsonObject;
+  /** function calling에 사용할 declaration 목록이다. */
+  functionDeclarations?: readonly GeminiFunctionDeclaration[];
+  /** Google Search tool 설정이다. */
+  googleSearch?: JsonObject;
+}
+
+export interface GeminiFunctionCallingConfig extends JsonObject {
+  /** function calling mode다. */
+  mode?: "MODE_UNSPECIFIED" | "AUTO" | "ANY" | "NONE" | "VALIDATED";
+  /** 호출을 허용할 function 이름 목록이다. */
+  allowedFunctionNames?: readonly string[];
+}
+
+export interface GeminiToolConfig extends JsonObject {
+  /** function calling 동작 설정이다. */
+  functionCallingConfig?: GeminiFunctionCallingConfig;
+}
+
 export interface GeminiSafetySetting extends JsonObject {
   /** 적용할 safety category다. */
   category: GeminiHarmCategory;
@@ -87,9 +152,9 @@ export interface GeminiGenerateContentExtraBody {
   /** safety category별 차단 설정이다. */
   safetySettings?: readonly GeminiSafetySetting[];
   /** tool 호출 관련 설정이다. */
-  toolConfig?: JsonObject;
+  toolConfig?: GeminiToolConfig;
   /** 모델이 사용할 수 있는 tool 목록이다. */
-  tools?: readonly JsonObject[];
+  tools?: readonly GeminiTool[];
 }
 
 export interface CreateGeminiGenerateContentRequestBodyOptions {

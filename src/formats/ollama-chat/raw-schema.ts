@@ -9,6 +9,20 @@ export const ollamaChatRawSchema = z
       .object({
         content: z.string().optional(),
         thinking: z.string().optional(),
+        tool_calls: z
+          .array(
+            z
+              .object({
+                function: z
+                  .object({
+                    arguments: z.record(z.unknown()),
+                    name: z.string(),
+                  })
+                  .passthrough(),
+              })
+              .passthrough(),
+          )
+          .optional(),
       })
       .passthrough()
       .optional(),

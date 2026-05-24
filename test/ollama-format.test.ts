@@ -9,6 +9,21 @@ describe("Ollama chat format", () => {
         format: "json",
         keep_alive: "5m",
         think: "low",
+        tools: [
+          {
+            type: "function",
+            function: {
+              name: "lookup",
+              parameters: {
+                type: "object",
+                properties: {
+                  query: { type: "string" },
+                },
+                required: ["query"],
+              },
+            },
+          },
+        ],
       },
       model: "example-model",
     });
@@ -40,6 +55,21 @@ describe("Ollama chat format", () => {
       },
       stream: false,
       think: "low",
+      tools: [
+        {
+          type: "function",
+          function: {
+            name: "lookup",
+            parameters: {
+              type: "object",
+              properties: {
+                query: { type: "string" },
+              },
+              required: ["query"],
+            },
+          },
+        },
+      ],
     });
   });
 
@@ -48,6 +78,16 @@ describe("Ollama chat format", () => {
       extraBody: {
         // @ts-expect-error think follows documented Ollama values.
         think: "maximum",
+        tools: [
+          {
+            type: "function",
+            function: {
+              name: "lookup",
+              // @ts-expect-error function tool parameters must be a JSON Schema object root.
+              parameters: { properties: { query: { type: "string" } } },
+            },
+          },
+        ],
       },
       model: "example-model",
     } satisfies ConstructorParameters<typeof OllamaChatFormat>[0];
@@ -82,6 +122,36 @@ describe("Ollama chat format", () => {
     expect(output.usage?.totalTokens).toBe(11);
     expect(output.finishReason).toBe("length");
     expect(output.extras?.model).toBe("example-model");
+  });
+
+  it("normalizes tool calls without text", async () => {
+    const client = new Llm({
+      fetch: createJsonFetch({
+        done_reason: "stop",
+        message: {
+          tool_calls: [
+            {
+              function: {
+                name: "lookup",
+                arguments: { query: "weather" },
+              },
+            },
+          ],
+        },
+      }),
+      format: new OllamaChatFormat({ model: "example-model" }),
+      provider: new GenericHttpProvider({ baseUrl: "https://example.test/api" }),
+    });
+
+    const output = await client.generate({
+      messages: [{ role: "user", content: [{ type: "text", text: "hi" }] }],
+    });
+
+    expect(output.message.text).toBe("");
+    expect(output.toolCalls).toEqual([{ name: "lookup", arguments: { query: "weather" } }]);
+    expect(output.message.content).toEqual([
+      { type: "tool-call", name: "lookup", arguments: { query: "weather" } },
+    ]);
   });
 
   it("throws when message content is missing", () => {

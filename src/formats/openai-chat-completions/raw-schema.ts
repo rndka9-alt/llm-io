@@ -12,6 +12,22 @@ export const openAIChatCompletionsRawSchema = z
                 content: z.string().nullable().optional(),
                 reasoning: z.string().optional(),
                 reasoning_content: z.string().optional(),
+                tool_calls: z
+                  .array(
+                    z
+                      .object({
+                        function: z
+                          .object({
+                            arguments: z.string(),
+                            name: z.string(),
+                          })
+                          .passthrough(),
+                        id: z.string().optional(),
+                        type: z.literal("function"),
+                      })
+                      .passthrough(),
+                  )
+                  .optional(),
               })
               .passthrough(),
           })

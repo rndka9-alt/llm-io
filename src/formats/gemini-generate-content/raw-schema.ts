@@ -12,6 +12,13 @@ export const geminiGenerateContentRawSchema = z
                   .array(
                     z
                       .object({
+                        functionCall: z
+                          .object({
+                            args: z.record(z.unknown()).optional(),
+                            name: z.string(),
+                          })
+                          .passthrough()
+                          .optional(),
                         text: z.string().optional(),
                         thought: z.boolean().optional(),
                       })

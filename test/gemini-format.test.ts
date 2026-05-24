@@ -12,6 +12,23 @@ describe("Gemini generateContent format", () => {
           thinkingConfig: { thinkingBudget: 0 },
         },
         safetySettings: [{ category: "HARM_CATEGORY_DANGEROUS_CONTENT", threshold: "BLOCK_NONE" }],
+        toolConfig: { functionCallingConfig: { mode: "AUTO" } },
+        tools: [
+          {
+            functionDeclarations: [
+              {
+                name: "lookup",
+                parameters: {
+                  type: "OBJECT",
+                  properties: {
+                    query: { type: "STRING" },
+                  },
+                  required: ["query"],
+                },
+              },
+            ],
+          },
+        ],
       },
       model: "gemini-example",
     });
@@ -46,6 +63,23 @@ describe("Gemini generateContent format", () => {
       systemInstruction: {
         parts: [{ text: "rules" }],
       },
+      toolConfig: { functionCallingConfig: { mode: "AUTO" } },
+      tools: [
+        {
+          functionDeclarations: [
+            {
+              name: "lookup",
+              parameters: {
+                type: "OBJECT",
+                properties: {
+                  query: { type: "STRING" },
+                },
+                required: ["query"],
+              },
+            },
+          ],
+        },
+      ],
     });
   });
 
@@ -56,6 +90,17 @@ describe("Gemini generateContent format", () => {
           // @ts-expect-error responseMimeType follows documented Gemini values.
           responseMimeType: "application/xml",
         },
+        tools: [
+          {
+            functionDeclarations: [
+              {
+                name: "lookup",
+                // @ts-expect-error function parameters must be a Gemini object schema root.
+                parameters: { properties: { query: { type: "STRING" } } },
+              },
+            ],
+          },
+        ],
         safetySettings: [
           {
             category: "HARM_CATEGORY_DANGEROUS_CONTENT",
@@ -103,6 +148,33 @@ describe("Gemini generateContent format", () => {
     expect(output.usage?.reasoningTokens).toBe(2);
     expect(output.usage?.totalTokens).toBe(13);
     expect(output.finishReason).toBe("content-filter");
+  });
+
+  it("normalizes function calls without text", async () => {
+    const client = new Llm({
+      fetch: createJsonFetch({
+        candidates: [
+          {
+            content: {
+              parts: [{ functionCall: { name: "lookup", args: { query: "weather" } } }],
+            },
+            finishReason: "STOP",
+          },
+        ],
+      }),
+      format: new GeminiGenerateContentFormat({ model: "gemini-example" }),
+      provider: new GenericHttpProvider({ baseUrl: "https://example.test/v1" }),
+    });
+
+    const output = await client.generate({
+      messages: [{ role: "user", content: [{ type: "text", text: "hi" }] }],
+    });
+
+    expect(output.message.text).toBe("");
+    expect(output.toolCalls).toEqual([{ name: "lookup", arguments: { query: "weather" } }]);
+    expect(output.message.content).toEqual([
+      { type: "tool-call", name: "lookup", arguments: { query: "weather" } },
+    ]);
   });
 
   it("throws when response only contains thinking content", () => {

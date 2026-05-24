@@ -7,3 +7,10 @@ export interface JsonObject {
 }
 
 export type JsonValue = JsonPrimitive | JsonObject | JsonArray;
+
+export interface JsonSchemaObject extends JsonObject {
+  type: "object";
+  additionalProperties?: boolean | JsonObject;
+  properties?: JsonObject;
+  required?: readonly string[];
+}
