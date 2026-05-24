@@ -4,9 +4,13 @@ import { joinUrlPath } from "../utils/index";
 import { resolveAnthropicRequestPath } from "./utils/resolve-anthropic-request-path";
 
 export interface AnthropicProviderOptions {
+  /** anthropic-version header 값입니다. */
   anthropicVersion?: string;
+  /** x-api-key header에 넣을 API key입니다. */
   apiKey?: string;
+  /** 기본 Anthropic endpoint를 바꿀 때 사용합니다. */
   baseUrl?: string;
+  /** 요청에 추가할 header입니다. */
   headers?: Record<string, string>;
 }
 

@@ -6,9 +6,13 @@ import { resolveNanoGPTRequestPath } from "./utils/resolve-nanogpt-request-path"
 export type NanoGPTAuthentication = "bearer" | "x-api-key";
 
 export interface NanoGPTProviderOptions {
+  /** 선택한 인증 방식에 사용할 API key입니다. */
   apiKey?: string;
+  /** API key를 전달할 header 방식입니다. */
   authentication?: NanoGPTAuthentication;
+  /** 기본 NanoGPT endpoint를 바꿀 때 사용합니다. */
   baseUrl?: string;
+  /** 요청에 추가할 header입니다. */
   headers?: Record<string, string>;
 }
 

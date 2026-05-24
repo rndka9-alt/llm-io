@@ -4,9 +4,13 @@ import { createBearerHeaders, joinUrlPath } from "../utils/index";
 import { resolveDeepSeekRequestPath } from "./utils/resolve-deepseek-request-path";
 
 export interface DeepSeekProviderOptions {
+  /** Anthropic 호환 요청에 사용할 version header입니다. */
   anthropicVersion?: string;
+  /** 요청 인증에 사용할 API key입니다. */
   apiKey?: string;
+  /** 기본 DeepSeek endpoint를 바꿀 때 사용합니다. */
   baseUrl?: string;
+  /** 요청에 추가할 header입니다. */
   headers?: Record<string, string>;
 }
 

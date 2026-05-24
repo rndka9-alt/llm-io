@@ -9,7 +9,9 @@ import { parseGeminiGenerateContentResponse } from "./parse-response";
 import type { GeminiGenerateContentExtraBody } from "./types";
 
 export interface GeminiGenerateContentFormatOptions {
+  /** GenerateContent body에 추가할 format 전용 옵션입니다. */
   extraBody?: GeminiGenerateContentExtraBody;
+  /** 요청 path에 넣을 model id입니다. */
   model: string;
 }
 

@@ -9,7 +9,9 @@ import { parseOllamaChatResponse, type OllamaChatExtras } from "./parse-response
 import type { OllamaChatExtraBody } from "./types";
 
 export interface OllamaChatFormatOptions {
+  /** Chat body에 추가할 format 전용 옵션입니다. */
   extraBody?: OllamaChatExtraBody;
+  /** 요청 body에 넣을 model id입니다. */
   model: string;
 }
 

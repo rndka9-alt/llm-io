@@ -3,10 +3,15 @@ import { omitUndefined } from "../../utils/object";
 import { readGeminiGenerateContentModel } from "../utils/index";
 
 export interface VertexAIProviderOptions {
+  /** Bearer 인증에 사용할 access token입니다. */
   accessToken: string;
+  /** 기본 Vertex AI endpoint를 바꿀 때 사용합니다. */
   baseUrl?: string;
+  /** 요청에 추가할 header입니다. */
   headers?: Record<string, string>;
+  /** Vertex AI location입니다. */
   location: string;
+  /** Google Cloud project id입니다. */
   projectId: string;
 }
 

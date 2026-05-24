@@ -5,6 +5,7 @@ export interface OllamaCloudProviderOptions extends Omit<
   GenericHttpProviderOptions,
   "baseUrl" | "resolveRequestPath"
 > {
+  /** 기본 Ollama Cloud endpoint를 바꿀 때 사용합니다. */
   baseUrl?: string;
 }
 

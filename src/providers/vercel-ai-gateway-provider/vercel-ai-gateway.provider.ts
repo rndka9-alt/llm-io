@@ -50,89 +50,89 @@ export type VercelAIGatewayProviderId =
   | (string & {});
 
 export interface VercelAIGatewayProviderTimeouts extends JsonObject {
-  /** BYOK provider별 timeout(ms) 설정이다. */
+  /** provider별 timeout(ms)입니다. */
   byok?: { [providerId: string]: number | undefined };
 }
 
 export interface VercelAIGatewayByokCredentials extends JsonObject {
-  /** provider id별 Bring Your Own Key credential 목록이다. */
+  /** provider별 BYOK credential입니다. */
   [providerId: string]: readonly JsonObject[] | undefined;
 }
 
 export interface VercelAIGatewayOptions extends JsonObject {
-  /** Vercel AI Gateway에 전달할 provider별 BYOK credential이다. */
+  /** Gateway BYOK credential입니다. */
   byok?: VercelAIGatewayByokCredentials;
-  /** Gateway prompt caching을 자동으로 사용하도록 요청한다. */
+  /** Gateway prompt caching 설정입니다. */
   caching?: "auto";
-  /** Gateway가 선택할 수 있는 model id 후보 목록이다. */
+  /** Gateway model 후보입니다. */
   models?: readonly string[];
-  /** 지정한 provider만 사용하도록 제한한다. */
+  /** 허용할 provider 목록입니다. */
   only?: readonly VercelAIGatewayProviderId[];
-  /** provider 시도 순서다. */
+  /** provider 시도 순서입니다. */
   order?: readonly VercelAIGatewayProviderId[];
-  /** provider별 timeout 설정이다. */
+  /** provider별 timeout 설정입니다. */
   providerTimeouts?: VercelAIGatewayProviderTimeouts;
-  /** Gateway analytics나 tracing에 붙일 tag 목록이다. */
+  /** Gateway tag 목록입니다. */
   tags?: readonly string[];
-  /** Gateway에 전달할 최종 사용자 식별자다. */
+  /** 최종 사용자 식별자입니다. */
   user?: string;
-  /** zero data retention 경로를 요청한다. */
+  /** zero data retention 설정입니다. */
   zeroDataRetention?: boolean;
 }
 
 export type VercelAIGatewayReasoningEffort =
-  /** 추론 토큰을 쓰지 않도록 요청한다. */
+  /** 추론 없음 */
   | "none"
-  /** 가능한 가장 적은 추론으로 응답 지연과 비용을 줄인다. */
+  /** 최소 추론 */
   | "minimal"
-  /** 낮은 추론 예산으로 빠른 응답을 우선한다. */
+  /** 낮은 추론 */
   | "low"
-  /** 일반적인 추론 예산을 사용한다. */
+  /** 기본 추론 */
   | "medium"
-  /** 더 어려운 작업을 위해 높은 추론 예산을 사용한다. */
+  /** 높은 추론 */
   | "high"
-  /** 지원 모델에서 가장 높은 추론 예산을 요청한다. */
+  /** 최대 추론 */
   | "xhigh";
 
 export interface VercelAIGatewayOpenAIProviderOptions extends JsonObject {
-  /** OpenAI provider에 전달할 reasoning effort다. */
+  /** OpenAI reasoning effort입니다. */
   reasoningEffort?: VercelAIGatewayReasoningEffort;
-  /** OpenAI structured output 지원 경로를 요청한다. */
+  /** OpenAI structured output 설정입니다. */
   structuredOutputs?: boolean;
 }
 
 export interface VercelAIGatewayAnthropicProviderOptions extends JsonObject {
-  /** Anthropic provider에 cache-control 자동 처리를 요청한다. */
+  /** Anthropic cache-control 설정입니다. */
   cacheControl?: boolean;
-  /** Anthropic extended thinking 설정이다. */
+  /** Anthropic thinking 설정입니다. */
   thinking?: {
-    /** extended thinking에 배정할 token 예산이다. */
+    /** thinking token 예산입니다. */
     budgetTokens?: number;
-    /** extended thinking을 켠다. */
+    /** thinking mode입니다. */
     type: "enabled";
   };
 }
 
 export interface VercelAIGatewayGoogleProviderOptions extends JsonObject {
-  /** Google provider에 전달할 cachedContent 리소스 이름이다. */
+  /** Google cachedContent입니다. */
   cachedContent?: string;
-  /** Google provider에 전달할 safety setting 목록이다. */
+  /** Google safety settings입니다. */
   safetySettings?: readonly JsonObject[];
-  /** Google provider에 전달할 thinking 설정이다. */
+  /** Google thinking 설정입니다. */
   thinkingConfig?: {
-    /** reasoning/thought 내용을 응답 part에 포함할지 결정한다. */
+    /** thought 포함 여부입니다. */
     includeThoughts?: boolean;
-    /** 모델 thinking에 사용할 token 예산이다. */
+    /** thinking token 예산입니다. */
     thinkingBudget?: number;
   };
 }
 
 export interface VercelAIGatewayKnownProviderOptions extends JsonObject {
-  /** Anthropic provider-specific 옵션이다. */
+  /** Anthropic provider 옵션입니다. */
   anthropic?: VercelAIGatewayAnthropicProviderOptions;
-  /** Google provider-specific 옵션이다. */
+  /** Google provider 옵션입니다. */
   google?: VercelAIGatewayGoogleProviderOptions;
-  /** OpenAI provider-specific 옵션이다. */
+  /** OpenAI provider 옵션입니다. */
   openai?: VercelAIGatewayOpenAIProviderOptions;
 }
 
@@ -145,9 +145,13 @@ export type VercelAIGatewayProviderOptionsMap<
 export interface VercelAIGatewayProviderOptions<
   TProviderOptions extends VercelAIGatewayProviderOptionsMap = VercelAIGatewayProviderOptionsMap,
 > {
+  /** Bearer 인증에 사용할 API key입니다. */
   apiKey?: string;
+  /** 기본 Vercel AI Gateway endpoint를 바꿀 때 사용합니다. */
   baseUrl?: string;
+  /** 요청에 추가할 header입니다. */
   headers?: Record<string, string>;
+  /** Gateway와 provider별 옵션입니다. */
   providerOptions?: TProviderOptions;
 }
 

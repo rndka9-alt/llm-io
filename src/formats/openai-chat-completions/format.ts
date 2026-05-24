@@ -11,7 +11,9 @@ import type { OpenAIChatCompletionsExtraBody } from "./types";
 import type { LlmStreamEvent } from "../../core/stream";
 
 export interface OpenAIChatCompletionsFormatOptions {
+  /** 요청 body에 넣을 model id입니다. */
   model: string;
+  /** Chat Completions body에 추가할 format 전용 옵션입니다. */
   extraBody?: OpenAIChatCompletionsExtraBody;
 }
 

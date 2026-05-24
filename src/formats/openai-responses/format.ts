@@ -9,7 +9,9 @@ import { parseOpenAIResponsesResponse, type OpenAIResponsesExtras } from "./pars
 import type { OpenAIResponsesExtraBody } from "./types";
 
 export interface OpenAIResponsesFormatOptions {
+  /** 요청 body에 넣을 model id입니다. */
   model: string;
+  /** Responses body에 추가할 format 전용 옵션입니다. */
   extraBody?: OpenAIResponsesExtraBody;
 }
 

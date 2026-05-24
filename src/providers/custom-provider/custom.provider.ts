@@ -6,13 +6,18 @@ import { createBearerHeaders, joinUrlPath } from "../utils/index";
 import { resolveCustomRequestPath } from "./utils/resolve-custom-request-path";
 
 export interface CustomProviderBodyContext {
+  /** format이 만든 기본 body입니다. */
   body: JsonObject;
+  /** provider request 생성 입력입니다. */
   input: LlmProviderRequestInput;
 }
 
 export interface CustomProviderHeadersContext {
+  /** 최종 body 후보입니다. */
   body: JsonValue;
+  /** 기본 header입니다. */
   headers: Record<string, string>;
+  /** provider request 생성 입력입니다. */
   input: LlmProviderRequestInput;
 }
 
@@ -25,12 +30,19 @@ export type CustomProviderRequestPathResolver = (
 ) => string | undefined;
 
 export interface CustomProviderOptions {
+  /** Bearer 인증에 사용할 API key입니다. */
   apiKey?: string;
+  /** 요청을 보낼 기본 URL입니다. */
   baseUrl: string;
+  /** provider body를 직접 바꿀 때 사용합니다. */
   createBody?: CustomProviderBodyFactory;
+  /** provider header를 직접 바꿀 때 사용합니다. */
   createHeaders?: CustomProviderHeadersFactory;
+  /** 요청에 추가할 header입니다. */
   headers?: Record<string, string>;
+  /** 고정 request path입니다. */
   requestPath?: string;
+  /** format별 request path를 직접 정할 때 사용합니다. */
   resolveRequestPath?: CustomProviderRequestPathResolver;
 }
 

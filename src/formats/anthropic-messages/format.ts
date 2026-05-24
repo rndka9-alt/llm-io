@@ -9,8 +9,11 @@ import type { AnthropicMessagesRaw } from "./raw-schema";
 import type { AnthropicMessagesExtraBody } from "./types";
 
 export interface AnthropicMessagesFormatOptions {
+  /** Messages body에 추가할 format 전용 옵션입니다. */
   extraBody?: AnthropicMessagesExtraBody;
+  /** Anthropic Messages의 필수 출력 token 상한입니다. */
   maxTokens: number;
+  /** 요청 body에 넣을 model id입니다. */
   model: string;
 }
 

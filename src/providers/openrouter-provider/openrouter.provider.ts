@@ -4,10 +4,15 @@ import { createBearerHeaders, joinUrlPath } from "../utils/index";
 import { resolveOpenRouterRequestPath } from "./utils/resolve-openrouter-request-path";
 
 export interface OpenRouterProviderOptions {
+  /** Bearer 인증에 사용할 API key입니다. */
   apiKey?: string;
+  /** OpenRouter attribution title입니다. */
   appName?: string;
+  /** 기본 OpenRouter endpoint를 바꿀 때 사용합니다. */
   baseUrl?: string;
+  /** 요청에 추가할 header입니다. */
   headers?: Record<string, string>;
+  /** OpenRouter attribution referrer입니다. */
   siteUrl?: string;
 }
 

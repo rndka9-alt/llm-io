@@ -11,7 +11,9 @@ export interface OpenAIProviderOptions extends Omit<
   GenericHttpProviderOptions,
   "baseUrl" | "resolveRequestPath"
 > {
+  /** 기본 OpenAI endpoint를 바꿀 때 사용합니다. */
   baseUrl?: string;
+  /** OpenAI request body에 넣을 service_tier입니다. */
   serviceTier?: OpenAIServiceTier;
 }
 

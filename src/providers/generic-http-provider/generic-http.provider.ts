@@ -5,9 +5,13 @@ import { createBearerHeaders, joinUrlPath } from "../utils/index";
 import { resolveGenericRequestPath } from "./utils/resolve-generic-request-path";
 
 export interface GenericHttpProviderOptions {
+  /** Bearer 인증에 사용할 API key입니다. */
   apiKey?: string;
+  /** 요청을 보낼 기본 URL입니다. */
   baseUrl: string;
+  /** 요청에 추가할 header입니다. */
   headers?: Record<string, string>;
+  /** format별 request path를 직접 정할 때 사용합니다. */
   resolveRequestPath?: (format: LlmFormat<unknown, unknown>) => string | undefined;
 }
 

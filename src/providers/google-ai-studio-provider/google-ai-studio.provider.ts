@@ -4,8 +4,11 @@ import { createGeminiGenerateContentRequestPath, joinUrlPath } from "../utils/in
 import { appendApiKey } from "./utils/append-api-key";
 
 export interface GoogleAIStudioProviderOptions {
+  /** URL query에 넣을 API key입니다. */
   apiKey: string;
+  /** 기본 Google AI Studio endpoint를 바꿀 때 사용합니다. */
   baseUrl?: string;
+  /** 요청에 추가할 header입니다. */
   headers?: Record<string, string>;
 }
 
