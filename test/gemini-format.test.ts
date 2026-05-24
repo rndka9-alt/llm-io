@@ -1,5 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { GeminiGenerateContentFormat, GenericHttpProvider, Llm, LlmIoError } from "../src/index";
+import {
+  createToolResultMessage,
+  GeminiGenerateContentFormat,
+  GenericHttpProvider,
+  Llm,
+  LlmIoError,
+} from "../src/index";
 import { createJsonFetch } from "./test-utils";
 
 describe("Gemini generateContent format", () => {
@@ -175,6 +181,36 @@ describe("Gemini generateContent format", () => {
     expect(output.message.content).toEqual([
       { type: "tool-call", name: "lookup", arguments: { query: "weather" } },
     ]);
+  });
+
+  it("creates function response continuation bodies", () => {
+    const format = new GeminiGenerateContentFormat({ model: "gemini-example" });
+    const toolCall = { name: "lookup", arguments: { query: "weather" } };
+
+    expect(
+      format.createRequestBody({
+        messages: [
+          { role: "user", content: [{ type: "text", text: "weather?" }] },
+          {
+            role: "assistant",
+            content: [{ type: "tool-call", ...toolCall }],
+          },
+          createToolResultMessage(toolCall, { temperature: 18 }),
+        ],
+      }),
+    ).toEqual({
+      contents: [
+        { role: "user", parts: [{ text: "weather?" }] },
+        {
+          role: "model",
+          parts: [{ functionCall: { name: "lookup", args: { query: "weather" } } }],
+        },
+        {
+          role: "user",
+          parts: [{ functionResponse: { name: "lookup", response: { temperature: 18 } } }],
+        },
+      ],
+    });
   });
 
   it("throws when response only contains thinking content", () => {

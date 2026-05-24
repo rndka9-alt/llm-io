@@ -1,4 +1,4 @@
-import type { JsonObject } from "./json";
+import type { LlmToolCall, LlmToolCallPart } from "./message";
 
 export interface LlmAssistantMessage {
   role: "assistant";
@@ -14,15 +14,7 @@ export interface LlmAssistantTextPart {
   text: string;
 }
 
-export interface LlmAssistantToolCallPart extends LlmToolCall {
-  type: "tool-call";
-}
-
-export interface LlmToolCall {
-  arguments: JsonObject;
-  id?: string;
-  name: string;
-}
+export type LlmAssistantToolCallPart = LlmToolCallPart;
 
 export interface LlmReasoning {
   text: string;

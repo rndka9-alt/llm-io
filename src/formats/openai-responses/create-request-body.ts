@@ -14,7 +14,7 @@ export function createOpenAIResponsesRequestBody(
 ): JsonObject {
   const requestBody: JsonObject = {
     model: options.model,
-    input: request.messages.map(toOpenAIResponsesInput),
+    input: request.messages.flatMap(toOpenAIResponsesInput),
   };
 
   if (request.options?.maxTokens !== undefined) {

@@ -1,5 +1,6 @@
 export { Llm } from "./llm";
 export { LlmHttpError, LlmIoError } from "./core/errors";
+export { createToolResultMessage } from "./core/message";
 export { AnthropicMessagesFormat } from "./formats/anthropic-messages/index";
 export { GeminiGenerateContentFormat } from "./formats/gemini-generate-content/index";
 export { OllamaChatFormat } from "./formats/ollama-chat/index";
@@ -40,6 +41,10 @@ export type {
   LlmRequest,
   LlmRequestOptions,
   LlmTextPart,
+  LlmToolCall,
+  LlmToolCallPart,
+  LlmToolResult,
+  LlmToolResultPart,
 } from "./core/message";
 export type {
   LlmAssistantContentPart,
@@ -49,7 +54,6 @@ export type {
   LlmFinishReason,
   LlmOutput,
   LlmReasoning,
-  LlmToolCall,
   LlmUsage,
 } from "./core/output";
 export type { LlmProvider, LlmProviderRequest, LlmProviderRequestInput } from "./core/provider";

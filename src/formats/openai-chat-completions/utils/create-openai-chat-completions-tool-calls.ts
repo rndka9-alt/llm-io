@@ -1,6 +1,6 @@
 import { LlmIoError } from "../../../core/errors";
 import { isJsonObject } from "../../../core/json";
-import type { LlmToolCall } from "../../../core/output";
+import type { LlmToolCall } from "../../../core/message";
 import type { OpenAIChatCompletionsRaw } from "../raw-schema";
 
 type OpenAIChatCompletionsMessage = OpenAIChatCompletionsRaw["choices"][number]["message"];

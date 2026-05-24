@@ -1,5 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { GenericHttpProvider, Llm, LlmIoError, OllamaChatFormat } from "../src/index";
+import {
+  createToolResultMessage,
+  GenericHttpProvider,
+  Llm,
+  LlmIoError,
+  OllamaChatFormat,
+} from "../src/index";
 import { createJsonFetch } from "./test-utils";
 
 describe("Ollama chat format", () => {
@@ -152,6 +158,47 @@ describe("Ollama chat format", () => {
     expect(output.message.content).toEqual([
       { type: "tool-call", name: "lookup", arguments: { query: "weather" } },
     ]);
+  });
+
+  it("creates tool result continuation bodies", () => {
+    const format = new OllamaChatFormat({ model: "example-model" });
+    const toolCall = { name: "lookup", arguments: { query: "weather" } };
+
+    expect(
+      format.createRequestBody({
+        messages: [
+          { role: "user", content: [{ type: "text", text: "weather?" }] },
+          {
+            role: "assistant",
+            content: [{ type: "tool-call", ...toolCall }],
+          },
+          createToolResultMessage(toolCall, { temperature: 18 }),
+        ],
+      }),
+    ).toEqual({
+      model: "example-model",
+      stream: false,
+      messages: [
+        { role: "user", content: "weather?" },
+        {
+          role: "assistant",
+          content: "",
+          tool_calls: [
+            {
+              function: {
+                name: "lookup",
+                arguments: { query: "weather" },
+              },
+            },
+          ],
+        },
+        {
+          role: "tool",
+          tool_name: "lookup",
+          content: '{"temperature":18}',
+        },
+      ],
+    });
   });
 
   it("throws when message content is missing", () => {

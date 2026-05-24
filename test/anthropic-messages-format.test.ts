@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { AnthropicMessagesFormat, Llm, LlmIoError } from "../src/index";
+import { AnthropicMessagesFormat, createToolResultMessage, Llm, LlmIoError } from "../src/index";
 import { createAnthropicResponse, createRecordingFetch, readRequestBody } from "./test-utils";
 
 describe("AnthropicMessagesFormat", () => {
@@ -195,6 +195,54 @@ describe("AnthropicMessagesFormat", () => {
       { type: "tool-call", id: "toolu-1", name: "lookup", arguments: { query: "weather" } },
     ]);
     expect(output.finishReason).toBe("tool-call");
+  });
+
+  it("creates tool result continuation bodies", () => {
+    const format = new AnthropicMessagesFormat({
+      maxTokens: 1024,
+      model: "claude-example",
+    });
+    const toolCall = { id: "toolu-1", name: "lookup", arguments: { query: "weather" } };
+
+    expect(
+      format.createRequestBody({
+        messages: [
+          { role: "user", content: [{ type: "text", text: "weather?" }] },
+          {
+            role: "assistant",
+            content: [{ type: "tool-call", ...toolCall }],
+          },
+          createToolResultMessage(toolCall, { temperature: 18 }),
+        ],
+      }),
+    ).toEqual({
+      max_tokens: 1024,
+      model: "claude-example",
+      messages: [
+        { role: "user", content: [{ type: "text", text: "weather?" }] },
+        {
+          role: "assistant",
+          content: [
+            {
+              type: "tool_use",
+              id: "toolu-1",
+              name: "lookup",
+              input: { query: "weather" },
+            },
+          ],
+        },
+        {
+          role: "user",
+          content: [
+            {
+              type: "tool_result",
+              tool_use_id: "toolu-1",
+              content: '{"temperature":18}',
+            },
+          ],
+        },
+      ],
+    });
   });
 
   it("throws when Anthropic response has no text content", async () => {

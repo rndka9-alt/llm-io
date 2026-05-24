@@ -1,8 +1,12 @@
 import type { LlmMessage } from "../../../core/message";
 import { getMessageText } from "../../../core/message";
 import type { AnthropicMessage } from "../types";
-import { mergeOrPushAnthropicMessage } from "./merge-or-push-anthropic-message";
+import {
+  mergeOrPushAnthropicContent,
+  mergeOrPushAnthropicMessage,
+} from "./merge-or-push-anthropic-message";
 import { normalizeAnthropicMessageRole } from "./normalize-anthropic-message-role";
+import { toAnthropicContent } from "./to-anthropic-content";
 
 export function createAnthropicMessages(messages: readonly LlmMessage[]): AnthropicMessage[] {
   const anthropicMessages: AnthropicMessage[] = [];
@@ -17,17 +21,31 @@ export function createAnthropicMessages(messages: readonly LlmMessage[]): Anthro
       continue;
     }
 
-    const text =
-      message.role === "system" ? `System: ${getMessageText(message)}` : getMessageText(message);
+    if (message.role === "system") {
+      const text = `System: ${getMessageText(message)}`;
 
-    if (text.length === 0) {
+      if (text.length === 0) {
+        continue;
+      }
+
+      mergeOrPushAnthropicMessage(
+        anthropicMessages,
+        normalizeAnthropicMessageRole(message.role),
+        text,
+      );
       continue;
     }
 
-    mergeOrPushAnthropicMessage(
+    const content = toAnthropicContent(message);
+
+    if (content.length === 0) {
+      continue;
+    }
+
+    mergeOrPushAnthropicContent(
       anthropicMessages,
       normalizeAnthropicMessageRole(message.role),
-      text,
+      content,
     );
   }
 

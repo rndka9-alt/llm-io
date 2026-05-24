@@ -1,6 +1,6 @@
 import { LlmIoError } from "../../../core/errors";
 import { isJsonObject } from "../../../core/json";
-import type { LlmToolCall } from "../../../core/output";
+import type { LlmToolCall } from "../../../core/message";
 
 export function readAnthropicToolCalls(contentBlocks: readonly unknown[]): LlmToolCall[] {
   const toolCalls: LlmToolCall[] = [];

@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  createToolResultMessage,
   GenericHttpProvider,
   Llm,
   LlmIoError,
@@ -170,6 +171,48 @@ describe("OpenAI formats", () => {
     expect(output.finishReason).toBe("tool-call");
   });
 
+  it("creates chat completions tool result continuation bodies", () => {
+    const format = new OpenAIChatCompletionsFormat({ model: "example-model" });
+    const toolCall = { id: "call-1", name: "lookup", arguments: { query: "weather" } };
+
+    expect(
+      format.createRequestBody({
+        messages: [
+          { role: "user", content: [{ type: "text", text: "weather?" }] },
+          {
+            role: "assistant",
+            content: [{ type: "tool-call", ...toolCall }],
+          },
+          createToolResultMessage(toolCall, { temperature: 18 }),
+        ],
+      }),
+    ).toEqual({
+      model: "example-model",
+      messages: [
+        { role: "user", content: "weather?" },
+        {
+          role: "assistant",
+          content: null,
+          tool_calls: [
+            {
+              id: "call-1",
+              type: "function",
+              function: {
+                name: "lookup",
+                arguments: '{"query":"weather"}',
+              },
+            },
+          ],
+        },
+        {
+          role: "tool",
+          tool_call_id: "call-1",
+          content: '{"temperature":18}',
+        },
+      ],
+    });
+  });
+
   it("throws when chat completions output text is missing", () => {
     const format = new OpenAIChatCompletionsFormat({ model: "example-model" });
 
@@ -225,6 +268,40 @@ describe("OpenAI formats", () => {
     });
   });
 
+  it("creates responses tool result continuation bodies", () => {
+    const format = new OpenAIResponsesFormat({ model: "example-model" });
+    const toolCall = { id: "call-1", name: "lookup", arguments: { query: "weather" } };
+
+    expect(
+      format.createRequestBody({
+        messages: [
+          { role: "user", content: [{ type: "text", text: "weather?" }] },
+          {
+            role: "assistant",
+            content: [{ type: "tool-call", ...toolCall }],
+          },
+          createToolResultMessage(toolCall, { temperature: 18 }),
+        ],
+      }),
+    ).toEqual({
+      model: "example-model",
+      input: [
+        { role: "user", content: "weather?" },
+        {
+          type: "function_call",
+          call_id: "call-1",
+          name: "lookup",
+          arguments: '{"query":"weather"}',
+        },
+        {
+          type: "function_call_output",
+          call_id: "call-1",
+          output: '{"temperature":18}',
+        },
+      ],
+    });
+  });
+
   it("rejects unsupported responses extraBody values at compile time", () => {
     const formatOptions = {
       extraBody: {
@@ -275,6 +352,37 @@ describe("OpenAI formats", () => {
     expect(output.usage?.reasoningTokens).toBe(2);
     expect(output.raw.output).toHaveLength(2);
     expect(output.extras?.responseId).toBe("response-1");
+  });
+
+  it("normalizes responses tool calls without text", async () => {
+    const client = new Llm({
+      fetch: createJsonFetch({
+        id: "response-1",
+        output: [
+          {
+            type: "function_call",
+            call_id: "call-1",
+            name: "lookup",
+            arguments: '{"query":"weather"}',
+          },
+        ],
+      }),
+      format: new OpenAIResponsesFormat({ model: "example-model" }),
+      provider: new GenericHttpProvider({ baseUrl: "https://example.test/v1" }),
+    });
+
+    const output = await client.generate({
+      messages: [{ role: "user", content: [{ type: "text", text: "hi" }] }],
+    });
+
+    expect(output.message.text).toBe("");
+    expect(output.toolCalls).toEqual([
+      { id: "call-1", name: "lookup", arguments: { query: "weather" } },
+    ]);
+    expect(output.message.content).toEqual([
+      { type: "tool-call", id: "call-1", name: "lookup", arguments: { query: "weather" } },
+    ]);
+    expect(output.finishReason).toBe("tool-call");
   });
 
   it("throws when responses output text is missing", () => {

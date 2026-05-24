@@ -38,9 +38,36 @@ export interface AnthropicTextBlock extends JsonObject {
   type: "text";
 }
 
+export interface AnthropicToolUseBlock extends JsonObject {
+  /** 모델이 요청한 tool call id다. */
+  id: string;
+  /** tool input JSON object다. */
+  input: JsonObject;
+  /** 모델이 호출할 tool 이름이다. */
+  name: string;
+  /** Anthropic tool use content block 식별자다. */
+  type: "tool_use";
+}
+
+export interface AnthropicToolResultBlock extends JsonObject {
+  /** tool 실행 실패 여부다. */
+  is_error?: boolean;
+  /** tool 실행 결과다. */
+  content: string;
+  /** 대응하는 tool_use id다. */
+  tool_use_id: string;
+  /** Anthropic tool result content block 식별자다. */
+  type: "tool_result";
+}
+
+export type AnthropicContentBlock =
+  | AnthropicTextBlock
+  | AnthropicToolUseBlock
+  | AnthropicToolResultBlock;
+
 export interface AnthropicMessage extends JsonObject {
   /** Anthropic message의 content block 목록이다. */
-  content: AnthropicTextBlock[];
+  content: AnthropicContentBlock[];
   /** Anthropic Messages API가 허용하는 대화 role이다. */
   role: "assistant" | "user";
 }

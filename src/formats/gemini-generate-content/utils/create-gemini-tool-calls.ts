@@ -1,6 +1,6 @@
 import { LlmIoError } from "../../../core/errors";
 import { isJsonObject } from "../../../core/json";
-import type { LlmToolCall } from "../../../core/output";
+import type { LlmToolCall } from "../../../core/message";
 import type { GeminiGenerateContentRaw } from "../raw-schema";
 
 type GeminiPart = NonNullable<

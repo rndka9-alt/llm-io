@@ -1,4 +1,4 @@
-import type { JsonObject } from "../../core/json";
+import type { JsonObject, JsonSchemaObject } from "../../core/json";
 
 export type OpenAIResponsesInclude =
   /** code interpreter 실행 결과를 응답에 포함한다. */
@@ -60,6 +60,21 @@ export type OpenAIResponsesToolChoice =
   | "required"
   /** 특정 hosted tool 또는 function tool을 지정한다. */
   | JsonObject;
+
+export interface OpenAIResponsesFunctionTool extends JsonObject {
+  /** 모델이 tool 사용 시 참고할 설명이다. */
+  description?: string;
+  /** 모델이 호출할 함수 이름이다. */
+  name: string;
+  /** 함수 인자의 JSON Schema object다. */
+  parameters?: JsonSchemaObject;
+  /** 지원 모델에서 schema 엄격 준수를 요청한다. */
+  strict?: boolean;
+  /** OpenAI Responses function tool 식별자다. */
+  type: "function";
+}
+
+export type OpenAIResponsesTool = OpenAIResponsesFunctionTool | JsonObject;
 
 export type OpenAIResponsesTruncation =
   /** context 초과 시 API가 입력 일부를 자동으로 잘라낸다. */
@@ -155,7 +170,7 @@ export interface OpenAIResponsesExtraBody {
   /** tool 호출 정책을 지정한다. */
   tool_choice?: OpenAIResponsesToolChoice;
   /** 모델이 호출할 수 있는 도구 목록이다. */
-  tools?: readonly JsonObject[];
+  tools?: readonly OpenAIResponsesTool[];
   /** context 초과 시 입력을 자동으로 줄일지 결정한다. */
   truncation?: OpenAIResponsesTruncation;
   /** provider/API에 전달할 최종 사용자 식별자다. */
