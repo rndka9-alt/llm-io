@@ -194,12 +194,19 @@ describe("OpenAI formats", () => {
         usage: {
           prompt_tokens: 3,
           prompt_tokens_details: {
+            cache_write_tokens: 1,
             cached_tokens: 2,
           },
           completion_tokens: 4,
           completion_tokens_details: {
             reasoning_tokens: 2,
           },
+          cost: 0.125,
+          cost_details: {
+            total_cost: 0.125,
+            cached_input_cost: 0.01,
+          },
+          info: "gateway-cost",
           total_tokens: 7,
         },
       }),
@@ -213,7 +220,16 @@ describe("OpenAI formats", () => {
 
     expect(output.message.text).toBe("hello");
     expect(output.reasoning?.text).toBe("because");
+    expect(output.usage?.cacheCreationInputTokens).toBe(1);
     expect(output.usage?.cacheReadInputTokens).toBe(2);
+    expect(output.usage?.details).toEqual({
+      cost: 0.125,
+      costDetails: {
+        total_cost: 0.125,
+        cached_input_cost: 0.01,
+      },
+      info: "gateway-cost",
+    });
     expect(output.usage?.reasoningTokens).toBe(2);
     expect(output.usage?.totalTokens).toBe(7);
     expect(output.raw.choices[0]?.message.content).toBe("hello");
@@ -221,8 +237,8 @@ describe("OpenAI formats", () => {
 
   it("streams chat completions text deltas", async () => {
     const fetchRecorder = createStreamFetch([
-      'data: {"choices":[{"index":0,"delta":{"content":"Hel"},"finish_reason":null}]}\n',
-      '\ndata: {"choices":[{"index":0,"delta":{"content":"lo"},"finish_reason":null}]}\n\n',
+      'data: {"choices":[{"index":0,"delta":{"content":"Hel"},"finish_reason":null}],"usage":null}\n',
+      '\ndata: {"choices":[{"index":0,"delta":{"content":"lo"},"finish_reason":null}],"usage":null}\n\n',
       'data: {"choices":[{"index":0,"delta":{},"finish_reason":"stop"}]}\n\n',
       "data: [DONE]\n\n",
     ]);
@@ -240,6 +256,42 @@ describe("OpenAI formats", () => {
 
     expect(text).toBe("Hello");
     expect(readRequestBody(fetchRecorder.calls[0]).stream).toBe(true);
+  });
+
+  it("streams chat completions cache and cost usage", async () => {
+    const fetchRecorder = createStreamFetch([
+      'data: {"choices":[{"index":0,"delta":{"content":"ok"},"finish_reason":null}]}\n\n',
+      'data: {"choices":[{"index":0,"delta":{},"finish_reason":"stop"}]}\n\n',
+      'data: {"choices":[],"usage":{"prompt_tokens":3,"completion_tokens":1,"total_tokens":4,"prompt_tokens_details":{"cached_tokens":2,"cache_write_tokens":1},"cost":0.125,"cost_details":{"total_cost":0.125}}}\n\n',
+      "data: [DONE]\n\n",
+    ]);
+    const client = new Llm({
+      fetch: fetchRecorder.fetch,
+      format: new OpenAIChatCompletionsFormat({ model: "example-model" }),
+      provider: new GenericHttpProvider({ baseUrl: "https://example.test/v1" }),
+    });
+
+    const events = await readStream(
+      client.stream({
+        messages: [{ role: "user", content: [{ type: "text", text: "hi" }] }],
+      }),
+    );
+    const usage = {
+      cacheCreationInputTokens: 1,
+      cacheReadInputTokens: 2,
+      inputTokens: 3,
+      outputTokens: 1,
+      details: { cost: 0.125, costDetails: { total_cost: 0.125 } },
+      totalTokens: 4,
+    };
+
+    expect(events).toContainEqual({ type: "usage", usage });
+    expect(events.at(-1)).toEqual({
+      type: "done",
+      message: { role: "assistant", content: [{ type: "text", text: "ok" }], text: "ok" },
+      usage,
+      finishReason: "stop",
+    });
   });
 
   it("streams chat completions tool calls", async () => {

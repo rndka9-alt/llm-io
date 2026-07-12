@@ -1,5 +1,7 @@
 import { z } from "zod";
 
+import { jsonObjectSchema } from "../../utils/json";
+
 export const openAIChatCompletionsRawSchema = z
   .object({
     choices: z
@@ -43,8 +45,12 @@ export const openAIChatCompletionsRawSchema = z
           .passthrough()
           .optional(),
         completion_tokens: z.number().optional(),
+        cost: z.number().optional(),
+        cost_details: jsonObjectSchema.optional(),
+        info: z.string().optional(),
         prompt_tokens_details: z
           .object({
+            cache_write_tokens: z.number().optional(),
             cached_tokens: z.number().optional(),
           })
           .passthrough()
@@ -96,7 +102,7 @@ export const openAIChatCompletionsStreamRawSchema = z
           .passthrough(),
       )
       .optional(),
-    usage: openAIChatCompletionsRawSchema.shape.usage,
+    usage: openAIChatCompletionsRawSchema.shape.usage.nullable(),
   })
   .passthrough();
 

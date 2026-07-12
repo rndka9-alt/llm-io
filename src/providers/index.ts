@@ -3,6 +3,7 @@ export { CustomProvider } from "./custom-provider";
 export { DeepSeekProvider } from "./deepseek-provider";
 export { GenericHttpProvider } from "./generic-http-provider";
 export { GoogleAIStudioProvider } from "./google-ai-studio-provider";
+export { LLMGatewayProvider } from "./llm-gateway-provider";
 export { NanoGPTProvider } from "./nanogpt-provider";
 export { OllamaCloudProvider } from "./ollama-cloud-provider";
 export { OpenAIProvider } from "./openai-provider";
@@ -22,6 +23,7 @@ export type {
 export type { DeepSeekProviderOptions } from "./deepseek-provider";
 export type { GenericHttpProviderOptions } from "./generic-http-provider";
 export type { GoogleAIStudioProviderOptions } from "./google-ai-studio-provider";
+export type { LLMGatewayProviderOptions } from "./llm-gateway-provider";
 export type { NanoGPTAuthentication, NanoGPTProviderOptions } from "./nanogpt-provider";
 export type { OllamaCloudProviderOptions } from "./ollama-cloud-provider";
 export type { OpenAIProviderOptions, OpenAIServiceTier } from "./openai-provider";
