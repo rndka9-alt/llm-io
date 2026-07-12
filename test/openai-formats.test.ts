@@ -134,6 +134,51 @@ describe("OpenAI formats", () => {
     expect(formatOptions.model).toBe("example-model");
   });
 
+  it("places explicit chat completions cache breakpoints on text content", () => {
+    const format = new OpenAIChatCompletionsFormat({
+      extraBody: {
+        prompt_cache_options: { mode: "explicit", ttl: "30m" },
+        reasoning_effort: "max",
+      },
+      model: "example-model",
+    });
+
+    expect(
+      format.createRequestBody({
+        messages: [
+          {
+            role: "system",
+            content: [
+              {
+                type: "text",
+                text: "stable prefix",
+                cacheBreakpoint: { mode: "explicit" },
+              },
+            ],
+          },
+          { role: "user", content: [{ type: "text", text: "dynamic suffix" }] },
+        ],
+      }),
+    ).toEqual({
+      model: "example-model",
+      messages: [
+        {
+          role: "system",
+          content: [
+            {
+              type: "text",
+              text: "stable prefix",
+              prompt_cache_breakpoint: { mode: "explicit" },
+            },
+          ],
+        },
+        { role: "user", content: "dynamic suffix" },
+      ],
+      prompt_cache_options: { mode: "explicit", ttl: "30m" },
+      reasoning_effort: "max",
+    });
+  });
+
   it("normalizes chat completions output", async () => {
     const client = new Llm({
       fetch: createJsonFetch({
@@ -148,6 +193,9 @@ describe("OpenAI formats", () => {
         ],
         usage: {
           prompt_tokens: 3,
+          prompt_tokens_details: {
+            cached_tokens: 2,
+          },
           completion_tokens: 4,
           completion_tokens_details: {
             reasoning_tokens: 2,
@@ -165,6 +213,7 @@ describe("OpenAI formats", () => {
 
     expect(output.message.text).toBe("hello");
     expect(output.reasoning?.text).toBe("because");
+    expect(output.usage?.cacheReadInputTokens).toBe(2);
     expect(output.usage?.reasoningTokens).toBe(2);
     expect(output.usage?.totalTokens).toBe(7);
     expect(output.raw.choices[0]?.message.content).toBe("hello");
@@ -432,6 +481,51 @@ describe("OpenAI formats", () => {
     });
   });
 
+  it("places explicit responses cache breakpoints on input text content", () => {
+    const format = new OpenAIResponsesFormat({
+      extraBody: {
+        prompt_cache_options: { mode: "explicit", ttl: "30m" },
+        reasoning: { effort: "max" },
+      },
+      model: "example-model",
+    });
+
+    expect(
+      format.createRequestBody({
+        messages: [
+          {
+            role: "system",
+            content: [
+              {
+                type: "text",
+                text: "stable prefix",
+                cacheBreakpoint: { mode: "explicit" },
+              },
+            ],
+          },
+          { role: "user", content: [{ type: "text", text: "dynamic suffix" }] },
+        ],
+      }),
+    ).toEqual({
+      model: "example-model",
+      input: [
+        {
+          role: "system",
+          content: [
+            {
+              type: "input_text",
+              text: "stable prefix",
+              prompt_cache_breakpoint: { mode: "explicit" },
+            },
+          ],
+        },
+        { role: "user", content: "dynamic suffix" },
+      ],
+      prompt_cache_options: { mode: "explicit", ttl: "30m" },
+      reasoning: { effort: "max" },
+    });
+  });
+
   it("creates responses tool result continuation bodies", () => {
     const format = new OpenAIResponsesFormat({ model: "example-model" });
     const toolCall = { id: "call-1", name: "lookup", arguments: { query: "weather" } };
@@ -617,7 +711,7 @@ describe("OpenAI formats", () => {
       'data: {"type":"response.reasoning_summary_text.delta","delta":"think"}\n\n',
       'data: {"type":"response.output_text.delta","delta":"Hel"}\n\n',
       'data: {"type":"response.output_text.delta","delta":"lo"}\n\n',
-      'data: {"type":"response.completed","response":{"usage":{"input_tokens":3,"output_tokens":4,"total_tokens":7}}}\n\n',
+      'data: {"type":"response.completed","response":{"usage":{"input_tokens":3,"input_tokens_details":{"cached_tokens":2,"cache_write_tokens":1},"output_tokens":4,"total_tokens":7}}}\n\n',
     ]);
     const client = new Llm({
       fetch: fetchRecorder.fetch,
@@ -636,13 +730,25 @@ describe("OpenAI formats", () => {
     expect(events).toContainEqual({ type: "text-delta", text: "Hel" });
     expect(events).toContainEqual({
       type: "usage",
-      usage: { inputTokens: 3, outputTokens: 4, totalTokens: 7 },
+      usage: {
+        cacheCreationInputTokens: 1,
+        cacheReadInputTokens: 2,
+        inputTokens: 3,
+        outputTokens: 4,
+        totalTokens: 7,
+      },
     });
     expect(events.at(-1)).toEqual({
       type: "done",
       message: { role: "assistant", content: [{ type: "text", text: "Hello" }], text: "Hello" },
       reasoning: { text: "think" },
-      usage: { inputTokens: 3, outputTokens: 4, totalTokens: 7 },
+      usage: {
+        cacheCreationInputTokens: 1,
+        cacheReadInputTokens: 2,
+        inputTokens: 3,
+        outputTokens: 4,
+        totalTokens: 7,
+      },
       finishReason: "stop",
     });
   });

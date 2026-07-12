@@ -1,11 +1,17 @@
 import { LlmIoError } from "../../../core/errors";
-import type { LlmMessage, LlmToolCallPart, LlmToolResultPart } from "../../../core/message";
+import type {
+  LlmMessage,
+  LlmTextPart,
+  LlmToolCallPart,
+  LlmToolResultPart,
+} from "../../../core/message";
 import { getMessageText } from "../../../core/message";
+import type { JsonObject } from "../../../types/json";
 import type { JsonValue } from "../../../types/json";
 
 export type OpenAIMessage =
   | {
-      content: string;
+      content: string | readonly OpenAITextContentPart[];
       role: "system" | "user";
     }
   | {
@@ -25,6 +31,12 @@ export type OpenAIMessage =
       role: "tool";
       tool_call_id: string;
     };
+
+interface OpenAITextContentPart extends JsonObject {
+  prompt_cache_breakpoint?: LlmTextPart["cacheBreakpoint"];
+  text: string;
+  type: "text";
+}
 
 export function toOpenAIMessage(message: LlmMessage): OpenAIMessage {
   const toolCalls = message.content.filter(isToolCallPart);
@@ -57,8 +69,28 @@ export function toOpenAIMessage(message: LlmMessage): OpenAIMessage {
 
   return {
     role: message.role,
-    content: getMessageText(message),
+    content: createOpenAITextContent(message),
   };
+}
+
+function createOpenAITextContent(message: LlmMessage): string | readonly OpenAITextContentPart[] {
+  const textParts = message.content.filter(isTextPart);
+
+  if (textParts.every((textPart) => textPart.cacheBreakpoint === undefined)) {
+    return getMessageText(message);
+  }
+
+  return textParts.map((textPart) => {
+    if (textPart.cacheBreakpoint === undefined) {
+      return { type: "text", text: textPart.text };
+    }
+
+    return {
+      type: "text",
+      text: textPart.text,
+      prompt_cache_breakpoint: textPart.cacheBreakpoint,
+    };
+  });
 }
 
 function assertOnlyTextContent(message: LlmMessage, formatName: string): void {
@@ -146,6 +178,10 @@ function isToolCallPart(
   contentPart: LlmMessage["content"][number],
 ): contentPart is LlmToolCallPart {
   return contentPart.type === "tool-call";
+}
+
+function isTextPart(contentPart: LlmMessage["content"][number]): contentPart is LlmTextPart {
+  return contentPart.type === "text";
 }
 
 function isToolResultPart(

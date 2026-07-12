@@ -17,6 +17,13 @@ export type OpenAIResponsesInclude =
 /** 프롬프트 캐시를 유지할 기간이다. */
 export type OpenAIResponsesPromptCacheRetention = "in-memory" | "24h";
 
+export interface OpenAIResponsesPromptCacheOptions extends JsonObject {
+  /** implicit breakpoint 생성 여부를 정한다. */
+  mode?: "implicit" | "explicit";
+  /** 모든 breakpoint에 적용할 최소 cache lifetime이다. */
+  ttl?: "30m";
+}
+
 export type OpenAIResponsesReasoningEffort =
   /** 추론 토큰을 쓰지 않도록 요청한다. */
   | "none"
@@ -29,7 +36,9 @@ export type OpenAIResponsesReasoningEffort =
   /** 더 어려운 작업을 위해 높은 추론 예산을 사용한다. */
   | "high"
   /** 지원 모델에서 가장 높은 추론 예산을 요청한다. */
-  | "xhigh";
+  | "xhigh"
+  /** GPT-5.6 이상에서 제공하는 최대 추론 예산을 요청한다. */
+  | "max";
 
 export type OpenAIResponsesReasoningSummary =
   /** 모델/API가 적절한 reasoning summary 수준을 선택한다. */
@@ -279,6 +288,8 @@ export interface OpenAIResponsesExtraBody {
   prompt?: JsonObject;
   /** OpenAI prompt cache를 공유할 키다. */
   prompt_cache_key?: string;
+  /** GPT-5.6 이상에서 prompt cache breakpoint 정책을 지정한다. */
+  prompt_cache_options?: OpenAIResponsesPromptCacheOptions;
   /** OpenAI prompt cache retention 정책이다. */
   prompt_cache_retention?: OpenAIResponsesPromptCacheRetention;
   /** reasoning 모델의 추론 강도와 summary 출력을 설정한다. */

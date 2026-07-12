@@ -14,8 +14,15 @@ export type LlmContentPart =
   | LlmRedactedThinkingPart;
 
 export interface LlmTextPart extends JsonObject {
+  /** 재사용 가능한 prompt prefix의 끝을 표시한다. */
+  cacheBreakpoint?: LlmPromptCacheBreakpoint;
   type: "text";
   text: string;
+}
+
+export interface LlmPromptCacheBreakpoint extends JsonObject {
+  /** provider가 명시적인 cache breakpoint를 생성하도록 요청한다. */
+  mode: "explicit";
 }
 
 export interface LlmToolCall {

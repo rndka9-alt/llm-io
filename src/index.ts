@@ -45,6 +45,7 @@ export type {
   LlmContentPart,
   LlmMessage,
   LlmMessageRole,
+  LlmPromptCacheBreakpoint,
   LlmDocumentPart,
   LlmImagePart,
   LlmRequest,
@@ -109,6 +110,7 @@ export type {
   OpenAIChatCompletionsFormatOptions,
   OpenAIChatCompletionsFunctionTool,
   OpenAIChatCompletionsFunctionToolDefinition,
+  OpenAIChatCompletionsPromptCacheOptions,
   OpenAIChatCompletionsRaw,
   OpenAIChatCompletionsTool,
 } from "./formats/openai-chat-completions/index";
@@ -116,6 +118,7 @@ export type {
   OpenAIResponsesExtraBody,
   OpenAIResponsesExtras,
   OpenAIResponsesFormatOptions,
+  OpenAIResponsesPromptCacheOptions,
   OpenAIResponsesRaw,
 } from "./formats/openai-responses/index";
 export type {

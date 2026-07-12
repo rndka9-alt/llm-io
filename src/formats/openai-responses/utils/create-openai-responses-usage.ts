@@ -10,8 +10,12 @@ export function createOpenAIResponsesUsage(
   }
 
   const reasoningTokens = usage.output_tokens_details?.reasoning_tokens;
+  const cacheCreationInputTokens = usage.input_tokens_details?.cache_write_tokens;
+  const cacheReadInputTokens = usage.input_tokens_details?.cached_tokens;
 
   return omitUndefined({
+    cacheCreationInputTokens,
+    cacheReadInputTokens,
     inputTokens: usage.input_tokens,
     outputTokens: usage.output_tokens,
     reasoningTokens,

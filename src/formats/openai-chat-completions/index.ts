@@ -6,5 +6,6 @@ export type {
   OpenAIChatCompletionsExtraBody,
   OpenAIChatCompletionsFunctionTool,
   OpenAIChatCompletionsFunctionToolDefinition,
+  OpenAIChatCompletionsPromptCacheOptions,
   OpenAIChatCompletionsTool,
 } from "./types";

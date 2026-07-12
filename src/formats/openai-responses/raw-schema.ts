@@ -108,6 +108,13 @@ export const openAIResponsesRawSchema = z
     usage: z
       .object({
         input_tokens: z.number().optional(),
+        input_tokens_details: z
+          .object({
+            cache_write_tokens: z.number().optional(),
+            cached_tokens: z.number().optional(),
+          })
+          .passthrough()
+          .optional(),
         output_tokens: z.number().optional(),
         output_tokens_details: z
           .object({
