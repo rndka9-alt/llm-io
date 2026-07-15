@@ -7,6 +7,10 @@ export function resolveLLMGatewayRequestPath(format: LlmFormat<unknown, unknown,
     return "/chat/completions";
   }
 
+  if (format.id === LLM_FORMAT_IDS.openaiResponses) {
+    return "/responses";
+  }
+
   if (format.id === LLM_FORMAT_IDS.anthropicMessages) {
     return "/messages";
   }

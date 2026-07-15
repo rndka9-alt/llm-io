@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   AnthropicMessagesFormat,
+  GeminiGenerateContentFormat,
   LLMGatewayProvider,
   Llm,
   LlmIoError,
@@ -89,13 +90,52 @@ describe("LLMGatewayProvider", () => {
     expect(readRequestBody(fetchRecorder.calls[0]).stream).toBe(true);
   });
 
-  it("throws before fetch when the Responses format is used", async () => {
+  it("uses the LLM Gateway responses endpoint", async () => {
     const fetchRecorder = createRecordingFetch({
       output: [{ type: "message", content: [{ type: "output_text", text: "ok" }] }],
     });
     const client = new Llm({
       fetch: fetchRecorder.fetch,
       format: new OpenAIResponsesFormat({ model: "gpt-5.6-sol" }),
+      provider: new LLMGatewayProvider({ apiKey: "llm-gateway-key" }),
+    });
+
+    await client.generate({
+      messages: [{ role: "user", content: [{ type: "text", text: "hi" }] }],
+    });
+
+    expect(fetchRecorder.calls[0]?.input).toBe("https://api.llmgateway.io/v1/responses");
+  });
+
+  it("streams through the LLM Gateway responses endpoint", async () => {
+    const fetchRecorder = createStreamFetch([
+      'data: {"type":"response.output_text.delta","delta":"ok"}\n\n',
+      'data: {"type":"response.completed","response":{}}\n\n',
+    ]);
+    const client = new Llm({
+      fetch: fetchRecorder.fetch,
+      format: new OpenAIResponsesFormat({ model: "gpt-5.6-sol" }),
+      provider: new LLMGatewayProvider({ apiKey: "llm-gateway-key" }),
+    });
+
+    const text = await readTextStream(
+      client.streamText({
+        messages: [{ role: "user", content: [{ type: "text", text: "hi" }] }],
+      }),
+    );
+
+    expect(text).toBe("ok");
+    expect(fetchRecorder.calls[0]?.input).toBe("https://api.llmgateway.io/v1/responses");
+    expect(readRequestBody(fetchRecorder.calls[0]).stream).toBe(true);
+  });
+
+  it("throws before fetch when format is unsupported", async () => {
+    const fetchRecorder = createRecordingFetch({
+      candidates: [{ content: { parts: [{ text: "ok" }] } }],
+    });
+    const client = new Llm({
+      fetch: fetchRecorder.fetch,
+      format: new GeminiGenerateContentFormat({ model: "gemini-2.5-flash" }),
       provider: new LLMGatewayProvider({ apiKey: "llm-gateway-key" }),
     });
 
