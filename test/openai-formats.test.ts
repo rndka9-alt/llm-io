@@ -179,6 +179,45 @@ describe("OpenAI formats", () => {
     });
   });
 
+  it("serializes assistant cache breakpoints without changing unmarked content", () => {
+    const format = new OpenAIChatCompletionsFormat({ model: "example-model" });
+
+    expect(
+      format.createRequestBody({
+        messages: [
+          {
+            role: "assistant",
+            content: [
+              {
+                type: "text",
+                text: "stable prefix",
+                cacheBreakpoint: { mode: "explicit" },
+              },
+              { type: "text", text: "dynamic suffix" },
+            ],
+          },
+          { role: "assistant", content: [{ type: "text", text: "plain answer" }] },
+        ],
+      }),
+    ).toEqual({
+      model: "example-model",
+      messages: [
+        {
+          role: "assistant",
+          content: [
+            {
+              type: "text",
+              text: "stable prefix",
+              prompt_cache_breakpoint: { mode: "explicit" },
+            },
+            { type: "text", text: "dynamic suffix" },
+          ],
+        },
+        { role: "assistant", content: "plain answer" },
+      ],
+    });
+  });
+
   it("normalizes chat completions output", async () => {
     const client = new Llm({
       fetch: createJsonFetch({

@@ -15,7 +15,7 @@ export type OpenAIMessage =
       role: "system" | "user";
     }
   | {
-      content: string | null;
+      content: string | readonly OpenAITextContentPart[] | null;
       role: "assistant";
       tool_calls?: {
         function: {
@@ -63,7 +63,7 @@ export function toOpenAIMessage(message: LlmMessage): OpenAIMessage {
   if (message.role === "assistant") {
     return {
       role: "assistant",
-      content: getMessageText(message),
+      content: createOpenAITextContent(message),
     };
   }
 
