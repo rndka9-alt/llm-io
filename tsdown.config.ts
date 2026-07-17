@@ -7,4 +7,5 @@ export default defineConfig({
   format: ["esm", "cjs"],
   platform: "neutral",
   target: "es2022",
+  unbundle: true,
 });
