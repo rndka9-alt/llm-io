@@ -218,6 +218,89 @@ describe("OpenAI formats", () => {
     });
   });
 
+  it("serializes chat completions image inputs in mixed content order", () => {
+    const format = new OpenAIChatCompletionsFormat({ model: "example-model" });
+    const dataUrl = "data:image/png;base64,iVBORw0KGgo=";
+
+    expect(
+      format.createRequestBody({
+        messages: [
+          {
+            role: "user",
+            content: [
+              { type: "text", text: "Compare these images." },
+              {
+                type: "image",
+                source: { type: "url", url: "https://example.test/chart.png" },
+              },
+              {
+                type: "text",
+                text: "Use this context.",
+                cacheBreakpoint: { mode: "explicit" },
+              },
+              { type: "image", source: { type: "url", url: dataUrl } },
+            ],
+          },
+        ],
+      }),
+    ).toEqual({
+      model: "example-model",
+      messages: [
+        {
+          role: "user",
+          content: [
+            { type: "text", text: "Compare these images." },
+            {
+              type: "image_url",
+              image_url: { url: "https://example.test/chart.png" },
+            },
+            {
+              type: "text",
+              text: "Use this context.",
+              prompt_cache_breakpoint: { mode: "explicit" },
+            },
+            { type: "image_url", image_url: { url: dataUrl } },
+          ],
+        },
+      ],
+    });
+  });
+
+  it("throws when chat completions image sources are malformed", () => {
+    const format = new OpenAIChatCompletionsFormat({ model: "example-model" });
+
+    expect(() =>
+      format.createRequestBody({
+        messages: [
+          {
+            role: "user",
+            content: [{ type: "image", source: { type: "url" } }],
+          },
+        ],
+      }),
+    ).toThrow('OpenAI image content parts require a source with type "url" and a string url.');
+  });
+
+  it("throws when chat completions image content is not in a user message", () => {
+    const format = new OpenAIChatCompletionsFormat({ model: "example-model" });
+
+    expect(() =>
+      format.createRequestBody({
+        messages: [
+          {
+            role: "assistant",
+            content: [
+              {
+                type: "image",
+                source: { type: "url", url: "https://example.test/chart.png" },
+              },
+            ],
+          },
+        ],
+      }),
+    ).toThrow("OpenAI image content parts require user messages.");
+  });
+
   it("normalizes chat completions output", async () => {
     const client = new Llm({
       fetch: createJsonFetch({
@@ -471,6 +554,27 @@ describe("OpenAI formats", () => {
         ],
       }),
     ).toThrow(LlmIoError);
+  });
+
+  it("throws when chat completions tool calls are mixed with image content", () => {
+    const format = new OpenAIChatCompletionsFormat({ model: "example-model" });
+
+    expect(() =>
+      format.createRequestBody({
+        messages: [
+          {
+            role: "assistant",
+            content: [
+              { type: "tool-call", id: "call-1", name: "lookup", arguments: {} },
+              {
+                type: "image",
+                source: { type: "url", url: "https://example.test/chart.png" },
+              },
+            ],
+          },
+        ],
+      }),
+    ).toThrow("OpenAI assistant tool-call messages do not support image content parts.");
   });
 
   it("throws when chat completions output text is missing", () => {

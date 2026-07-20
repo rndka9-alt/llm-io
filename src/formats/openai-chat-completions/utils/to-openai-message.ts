@@ -1,5 +1,6 @@
 import { LlmIoError } from "../../../core/errors";
 import type {
+  LlmImagePart,
   LlmMessage,
   LlmTextPart,
   LlmToolCallPart,
@@ -12,7 +13,11 @@ import type { JsonValue } from "../../../types/json";
 export type OpenAIMessage =
   | {
       content: string | readonly OpenAITextContentPart[];
-      role: "system" | "user";
+      role: "system";
+    }
+  | {
+      content: string | readonly OpenAIUserContentPart[];
+      role: "user";
     }
   | {
       content: string | readonly OpenAITextContentPart[] | null;
@@ -38,6 +43,17 @@ interface OpenAITextContentPart extends JsonObject {
   type: "text";
 }
 
+interface OpenAIImageUrl extends JsonObject {
+  url: string;
+}
+
+interface OpenAIImageContentPart extends JsonObject {
+  image_url: OpenAIImageUrl;
+  type: "image_url";
+}
+
+type OpenAIUserContentPart = OpenAITextContentPart | OpenAIImageContentPart;
+
 export function toOpenAIMessage(message: LlmMessage): OpenAIMessage {
   const toolCalls = message.content.filter(isToolCallPart);
   const toolResults = message.content.filter(isToolResultPart);
@@ -56,6 +72,17 @@ export function toOpenAIMessage(message: LlmMessage): OpenAIMessage {
 
   if (message.role === "tool") {
     throw new LlmIoError("OpenAI tool messages require a tool-result content part.");
+  }
+
+  if (message.content.some(isImagePart)) {
+    if (message.role !== "user") {
+      throw new LlmIoError("OpenAI image content parts require user messages.");
+    }
+
+    return {
+      role: "user",
+      content: createOpenAIUserContent(message),
+    };
   }
 
   assertOnlyTextContent(message, "OpenAI");
@@ -80,17 +107,52 @@ function createOpenAITextContent(message: LlmMessage): string | readonly OpenAIT
     return getMessageText(message);
   }
 
-  return textParts.map((textPart) => {
-    if (textPart.cacheBreakpoint === undefined) {
-      return { type: "text", text: textPart.text };
+  return textParts.map(toOpenAITextContentPart);
+}
+
+function createOpenAIUserContent(message: LlmMessage): readonly OpenAIUserContentPart[] {
+  const content: OpenAIUserContentPart[] = [];
+
+  for (const contentPart of message.content) {
+    if (contentPart.type === "text") {
+      content.push(toOpenAITextContentPart(contentPart));
+      continue;
     }
 
-    return {
-      type: "text",
-      text: textPart.text,
-      prompt_cache_breakpoint: textPart.cacheBreakpoint,
-    };
-  });
+    if (contentPart.type === "image") {
+      content.push(toOpenAIImageContentPart(contentPart));
+      continue;
+    }
+
+    throw new LlmIoError(`OpenAI messages do not support ${contentPart.type} content parts.`);
+  }
+
+  return content;
+}
+
+function toOpenAITextContentPart(textPart: LlmTextPart): OpenAITextContentPart {
+  if (textPart.cacheBreakpoint === undefined) {
+    return { type: "text", text: textPart.text };
+  }
+
+  return {
+    type: "text",
+    text: textPart.text,
+    prompt_cache_breakpoint: textPart.cacheBreakpoint,
+  };
+}
+
+function toOpenAIImageContentPart(imagePart: LlmImagePart): OpenAIImageContentPart {
+  if (imagePart.source.type !== "url" || typeof imagePart.source.url !== "string") {
+    throw new LlmIoError(
+      'OpenAI image content parts require a source with type "url" and a string url.',
+    );
+  }
+
+  return {
+    type: "image_url",
+    image_url: { url: imagePart.source.url },
+  };
 }
 
 function assertOnlyTextContent(message: LlmMessage, formatName: string): void {
@@ -109,6 +171,16 @@ function toOpenAIAssistantToolCallMessage(
 ): OpenAIMessage {
   if (message.role !== "assistant") {
     throw new LlmIoError("OpenAI tool-call content parts require assistant messages.");
+  }
+
+  const unsupportedContentPart = message.content.find(
+    (contentPart) => contentPart.type !== "text" && contentPart.type !== "tool-call",
+  );
+
+  if (unsupportedContentPart !== undefined) {
+    throw new LlmIoError(
+      `OpenAI assistant tool-call messages do not support ${unsupportedContentPart.type} content parts.`,
+    );
   }
 
   const text = getMessageText(message);
@@ -178,6 +250,10 @@ function isToolCallPart(
   contentPart: LlmMessage["content"][number],
 ): contentPart is LlmToolCallPart {
   return contentPart.type === "tool-call";
+}
+
+function isImagePart(contentPart: LlmMessage["content"][number]): contentPart is LlmImagePart {
+  return contentPart.type === "image";
 }
 
 function isTextPart(contentPart: LlmMessage["content"][number]): contentPart is LlmTextPart {
