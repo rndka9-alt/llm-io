@@ -36,7 +36,7 @@
     "verify": "npm run format:check && npm run typecheck && npm test && npm run build"
   },
   "dependencies": {
-    "zod": "^3.25.0"
+    "zod": "^3.25.0 || ^4.0.0"
   },
   "devDependencies": {
     "prettier": "^3.8.3",

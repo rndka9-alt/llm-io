@@ -1,4 +1,4 @@
-import { z } from "zod";
+import { z } from "zod/v4";
 
 import { jsonObjectSchema } from "../../utils/json";
 
@@ -20,17 +20,17 @@ export const ollamaChatRawSchema = z
                     arguments: jsonObjectSchema,
                     name: z.string(),
                   })
-                  .passthrough(),
+                  .loose(),
               })
-              .passthrough(),
+              .loose(),
           )
           .optional(),
       })
-      .passthrough()
+      .loose()
       .optional(),
     model: z.string().optional(),
     prompt_eval_count: z.number().optional(),
   })
-  .passthrough();
+  .loose();
 
 export type OllamaChatRaw = z.infer<typeof ollamaChatRawSchema>;

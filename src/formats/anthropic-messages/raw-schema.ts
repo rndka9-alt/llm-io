@@ -1,4 +1,4 @@
-import { z } from "zod";
+import { z } from "zod/v4";
 
 import { jsonObjectSchema } from "../../utils/json";
 
@@ -61,7 +61,7 @@ export const anthropicMessagesUsageSchema = z
     output_tokens: z.number().optional(),
     server_tool_use: jsonObjectSchema.optional(),
   })
-  .passthrough();
+  .loose();
 
 export const anthropicMessagesRawSchema = z
   .object({
@@ -74,7 +74,7 @@ export const anthropicMessagesRawSchema = z
     type: z.literal("message").optional(),
     usage: anthropicMessagesUsageSchema.optional(),
   })
-  .passthrough();
+  .loose();
 
 export type AnthropicMessagesRaw = z.infer<typeof anthropicMessagesRawSchema>;
 export type AnthropicMessagesContentBlock = z.infer<typeof anthropicMessagesContentBlockSchema>;

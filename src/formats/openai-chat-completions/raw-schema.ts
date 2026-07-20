@@ -1,4 +1,4 @@
-import { z } from "zod";
+import { z } from "zod/v4";
 
 import { jsonObjectSchema } from "../../utils/json";
 
@@ -23,17 +23,17 @@ export const openAIChatCompletionsRawSchema = z
                             arguments: z.string(),
                             name: z.string(),
                           })
-                          .passthrough(),
+                          .loose(),
                         id: z.string().optional(),
                         type: z.literal("function"),
                       })
-                      .passthrough(),
+                      .loose(),
                   )
                   .optional(),
               })
-              .passthrough(),
+              .loose(),
           })
-          .passthrough(),
+          .loose(),
       )
       .min(1),
     usage: z
@@ -42,7 +42,7 @@ export const openAIChatCompletionsRawSchema = z
           .object({
             reasoning_tokens: z.number().optional(),
           })
-          .passthrough()
+          .loose()
           .optional(),
         completion_tokens: z.number().optional(),
         cost: z.number().optional(),
@@ -53,15 +53,15 @@ export const openAIChatCompletionsRawSchema = z
             cache_write_tokens: z.number().optional(),
             cached_tokens: z.number().optional(),
           })
-          .passthrough()
+          .loose()
           .optional(),
         prompt_tokens: z.number().optional(),
         total_tokens: z.number().optional(),
       })
-      .passthrough()
+      .loose()
       .optional(),
   })
-  .passthrough();
+  .loose();
 
 export type OpenAIChatCompletionsRaw = z.infer<typeof openAIChatCompletionsRawSchema>;
 
@@ -85,25 +85,25 @@ export const openAIChatCompletionsStreamRawSchema = z
                             arguments: z.string().optional(),
                             name: z.string().optional(),
                           })
-                          .passthrough()
+                          .loose()
                           .optional(),
                         id: z.string().optional(),
                         index: z.number(),
                         type: z.literal("function").optional(),
                       })
-                      .passthrough(),
+                      .loose(),
                   )
                   .optional(),
               })
-              .passthrough(),
+              .loose(),
             finish_reason: z.string().nullable().optional(),
             index: z.number(),
           })
-          .passthrough(),
+          .loose(),
       )
       .optional(),
     usage: openAIChatCompletionsRawSchema.shape.usage.nullable(),
   })
-  .passthrough();
+  .loose();
 
 export type OpenAIChatCompletionsStreamRaw = z.infer<typeof openAIChatCompletionsStreamRawSchema>;

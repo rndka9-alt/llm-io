@@ -1,4 +1,4 @@
-import { z } from "zod";
+import { z } from "zod/v4";
 
 import { LlmIoError } from "../../core/errors";
 import type { LlmToolCall } from "../../core/message";
@@ -12,7 +12,7 @@ import { omitUndefined } from "../../utils/object";
 import { createAnthropicUsage } from "./utils/create-anthropic-usage";
 import { normalizeAnthropicFinishReason } from "./utils/normalize-anthropic-finish-reason";
 
-const anthropicStreamEventSchema = z.object({ type: z.string() }).passthrough();
+const anthropicStreamEventSchema = z.object({ type: z.string() }).loose();
 
 const anthropicUsageSchema = z
   .object({
@@ -21,7 +21,7 @@ const anthropicUsageSchema = z
     input_tokens: z.number().optional(),
     output_tokens: z.number().optional(),
   })
-  .passthrough();
+  .loose();
 
 const anthropicMessageStartEventSchema = z
   .object({
@@ -29,10 +29,10 @@ const anthropicMessageStartEventSchema = z
       .object({
         usage: anthropicUsageSchema.optional(),
       })
-      .passthrough(),
+      .loose(),
     type: z.literal("message_start"),
   })
-  .passthrough();
+  .loose();
 
 const anthropicContentBlockStartEventSchema = z
   .object({
@@ -42,11 +42,11 @@ const anthropicContentBlockStartEventSchema = z
         name: z.string().optional(),
         type: z.string(),
       })
-      .passthrough(),
+      .loose(),
     index: z.number(),
     type: z.literal("content_block_start"),
   })
-  .passthrough();
+  .loose();
 
 const anthropicContentBlockDeltaEventSchema = z
   .object({
@@ -58,11 +58,11 @@ const anthropicContentBlockDeltaEventSchema = z
         thinking: z.string().optional(),
         type: z.string(),
       })
-      .passthrough(),
+      .loose(),
     index: z.number(),
     type: z.literal("content_block_delta"),
   })
-  .passthrough();
+  .loose();
 
 const anthropicMessageDeltaEventSchema = z
   .object({
@@ -70,11 +70,11 @@ const anthropicMessageDeltaEventSchema = z
       .object({
         stop_reason: z.string().nullable().optional(),
       })
-      .passthrough(),
+      .loose(),
     type: z.literal("message_delta"),
     usage: anthropicUsageSchema.optional(),
   })
-  .passthrough();
+  .loose();
 
 const anthropicErrorEventSchema = z
   .object({
@@ -83,10 +83,10 @@ const anthropicErrorEventSchema = z
         message: z.string().optional(),
         type: z.string().optional(),
       })
-      .passthrough(),
+      .loose(),
     type: z.literal("error"),
   })
-  .passthrough();
+  .loose();
 
 interface StreamState {
   finishReason?: LlmFinishReason;

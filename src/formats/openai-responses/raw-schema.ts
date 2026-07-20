@@ -1,4 +1,4 @@
-import { z } from "zod";
+import { z } from "zod/v4";
 
 const openAIResponsesKnownOutputItemTypes = ["function_call", "message", "reasoning"] as const;
 const openAIResponsesKnownMessageContentPartTypes = ["output_text"] as const;
@@ -11,14 +11,14 @@ export const openAIResponsesFunctionCallOutputItemSchema = z
     name: z.string(),
     type: z.literal("function_call"),
   })
-  .passthrough();
+  .loose();
 
 export const openAIResponsesOutputTextContentPartSchema = z
   .object({
     text: z.string(),
     type: z.literal("output_text"),
   })
-  .passthrough();
+  .loose();
 
 export const openAIResponsesUnknownMessageContentPartSchema = z
   .object({
@@ -30,7 +30,7 @@ export const openAIResponsesUnknownMessageContentPartSchema = z
         "Known OpenAI Responses message content part types must match their documented schema.",
       ),
   })
-  .passthrough();
+  .loose();
 
 export const openAIResponsesMessageContentPartSchema = z.union([
   openAIResponsesOutputTextContentPartSchema,
@@ -42,21 +42,21 @@ export const openAIResponsesMessageOutputItemSchema = z
     content: z.array(openAIResponsesMessageContentPartSchema),
     type: z.literal("message"),
   })
-  .passthrough();
+  .loose();
 
 export const openAIResponsesReasoningSummaryPartSchema = z
   .object({
     text: z.string(),
     type: z.literal("summary_text"),
   })
-  .passthrough();
+  .loose();
 
 export const openAIResponsesReasoningTextPartSchema = z
   .object({
     text: z.string(),
     type: z.literal("reasoning_text"),
   })
-  .passthrough();
+  .loose();
 
 export const openAIResponsesUnknownReasoningContentPartSchema = z
   .object({
@@ -68,7 +68,7 @@ export const openAIResponsesUnknownReasoningContentPartSchema = z
         "Known OpenAI Responses reasoning content part types must match their documented schema.",
       ),
   })
-  .passthrough();
+  .loose();
 
 export const openAIResponsesReasoningContentPartSchema = z.union([
   openAIResponsesReasoningTextPartSchema,
@@ -81,7 +81,7 @@ export const openAIResponsesReasoningOutputItemSchema = z
     summary: z.array(openAIResponsesReasoningSummaryPartSchema).optional(),
     type: z.literal("reasoning"),
   })
-  .passthrough();
+  .loose();
 
 export const openAIResponsesUnknownOutputItemSchema = z
   .object({
@@ -92,7 +92,7 @@ export const openAIResponsesUnknownOutputItemSchema = z
         "Known OpenAI Responses output item types must match their documented schema.",
       ),
   })
-  .passthrough();
+  .loose();
 
 export const openAIResponsesOutputItemSchema = z.union([
   openAIResponsesFunctionCallOutputItemSchema,
@@ -113,20 +113,20 @@ export const openAIResponsesRawSchema = z
             cache_write_tokens: z.number().optional(),
             cached_tokens: z.number().optional(),
           })
-          .passthrough()
+          .loose()
           .optional(),
         output_tokens: z.number().optional(),
         output_tokens_details: z
           .object({
             reasoning_tokens: z.number().optional(),
           })
-          .passthrough()
+          .loose()
           .optional(),
         total_tokens: z.number().optional(),
       })
-      .passthrough()
+      .loose()
       .optional(),
   })
-  .passthrough();
+  .loose();
 
 export type OpenAIResponsesRaw = z.infer<typeof openAIResponsesRawSchema>;

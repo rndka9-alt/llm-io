@@ -1,4 +1,4 @@
-import { z } from "zod";
+import { z } from "zod/v4";
 
 import { LlmIoError } from "../../core/errors";
 import type { LlmToolCall } from "../../core/message";
@@ -12,21 +12,21 @@ import { omitUndefined } from "../../utils/object";
 import { openAIResponsesRawSchema } from "./raw-schema";
 import { createOpenAIResponsesUsage } from "./utils/create-openai-responses-usage";
 
-const openAIResponsesStreamEventSchema = z.object({ type: z.string() }).passthrough();
+const openAIResponsesStreamEventSchema = z.object({ type: z.string() }).loose();
 
 const openAIResponsesTextDeltaEventSchema = z
   .object({
     delta: z.string(),
     type: z.literal("response.output_text.delta"),
   })
-  .passthrough();
+  .loose();
 
 const openAIResponsesReasoningDeltaEventSchema = z
   .object({
     delta: z.string(),
     type: z.enum(["response.reasoning_text.delta", "response.reasoning_summary_text.delta"]),
   })
-  .passthrough();
+  .loose();
 
 const openAIResponsesFunctionCallItemSchema = z
   .object({
@@ -35,7 +35,7 @@ const openAIResponsesFunctionCallItemSchema = z
     name: z.string().optional(),
     type: z.literal("function_call"),
   })
-  .passthrough();
+  .loose();
 
 const openAIResponsesOutputItemEventSchema = z
   .object({
@@ -43,7 +43,7 @@ const openAIResponsesOutputItemEventSchema = z
     output_index: z.number(),
     type: z.enum(["response.output_item.added", "response.output_item.done"]),
   })
-  .passthrough();
+  .loose();
 
 const openAIResponsesFunctionCallArgumentsDeltaEventSchema = z
   .object({
@@ -51,7 +51,7 @@ const openAIResponsesFunctionCallArgumentsDeltaEventSchema = z
     output_index: z.number(),
     type: z.literal("response.function_call_arguments.delta"),
   })
-  .passthrough();
+  .loose();
 
 const openAIResponsesFunctionCallArgumentsDoneEventSchema = z
   .object({
@@ -59,14 +59,14 @@ const openAIResponsesFunctionCallArgumentsDoneEventSchema = z
     output_index: z.number(),
     type: z.literal("response.function_call_arguments.done"),
   })
-  .passthrough();
+  .loose();
 
 const openAIResponsesCompletedEventSchema = z
   .object({
     response: openAIResponsesRawSchema,
     type: z.literal("response.completed"),
   })
-  .passthrough();
+  .loose();
 
 interface StreamState {
   finishReason?: LlmFinishReason;

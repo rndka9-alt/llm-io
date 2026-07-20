@@ -1,4 +1,4 @@
-import { z } from "zod";
+import { z } from "zod/v4";
 
 import { jsonObjectSchema, jsonValueSchema } from "../../utils/json";
 
@@ -20,20 +20,20 @@ export const geminiGenerateContentRawSchema = z
                             id: z.string().optional(),
                             name: z.string(),
                           })
-                          .passthrough()
+                          .loose()
                           .optional(),
                         text: z.string().optional(),
                         thought: z.boolean().optional(),
                       })
-                      .passthrough(),
+                      .loose(),
                   )
                   .optional(),
               })
-              .passthrough()
+              .loose()
               .optional(),
             finishReason: z.string().optional(),
           })
-          .passthrough(),
+          .loose(),
       )
       .optional(),
     usageMetadata: z
@@ -49,9 +49,9 @@ export const geminiGenerateContentRawSchema = z
         trafficType: z.string().optional(),
         totalTokenCount: z.number().optional(),
       })
-      .passthrough()
+      .loose()
       .optional(),
   })
-  .passthrough();
+  .loose();
 
 export type GeminiGenerateContentRaw = z.infer<typeof geminiGenerateContentRawSchema>;
