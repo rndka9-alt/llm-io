@@ -49,6 +49,7 @@ interface OpenAIImageUrl extends JsonObject {
 
 interface OpenAIImageContentPart extends JsonObject {
   image_url: OpenAIImageUrl;
+  prompt_cache_breakpoint?: LlmImagePart["cacheBreakpoint"];
   type: "image_url";
 }
 
@@ -149,9 +150,17 @@ function toOpenAIImageContentPart(imagePart: LlmImagePart): OpenAIImageContentPa
     );
   }
 
+  if (imagePart.cacheBreakpoint === undefined) {
+    return {
+      type: "image_url",
+      image_url: { url: imagePart.source.url },
+    };
+  }
+
   return {
     type: "image_url",
     image_url: { url: imagePart.source.url },
+    prompt_cache_breakpoint: imagePart.cacheBreakpoint,
   };
 }
 

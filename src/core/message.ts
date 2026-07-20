@@ -47,6 +47,8 @@ export interface LlmToolResultPart extends LlmToolResult {
 }
 
 export interface LlmImagePart extends JsonObject {
+  /** 재사용 가능한 prompt prefix가 이미지에서 끝날 때 표시한다. */
+  cacheBreakpoint?: LlmPromptCacheBreakpoint;
   source: JsonObject;
   type: "image";
 }
