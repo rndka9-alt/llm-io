@@ -392,7 +392,7 @@ describe("OpenAI formats", () => {
     const fetchRecorder = createStreamFetch([
       'data: {"choices":[{"index":0,"delta":{"content":"ok"},"finish_reason":null}]}\n\n',
       'data: {"choices":[{"index":0,"delta":{},"finish_reason":"stop"}]}\n\n',
-      'data: {"choices":[],"usage":{"prompt_tokens":3,"completion_tokens":1,"total_tokens":4,"prompt_tokens_details":{"cached_tokens":2,"cache_write_tokens":1},"cost":0.125,"cost_details":{"total_cost":0.125}}}\n\n',
+      'data: {"choices":[],"usage":{"prompt_tokens":3,"completion_tokens":1,"total_tokens":4,"prompt_tokens_details":{"cached_tokens":2},"cache_creation_input_tokens":1,"cost":0.125,"cost_details":{"total_cost":0.125}}}\n\n',
       "data: [DONE]\n\n",
     ]);
     const client = new Llm({

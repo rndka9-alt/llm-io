@@ -18,7 +18,8 @@ export function createOpenAIChatCompletionsUsage(
   );
 
   return omitUndefined({
-    cacheCreationInputTokens: usage.prompt_tokens_details?.cache_write_tokens,
+    cacheCreationInputTokens:
+      usage.cache_creation_input_tokens ?? usage.prompt_tokens_details?.cache_write_tokens,
     cacheReadInputTokens: usage.prompt_tokens_details?.cached_tokens,
     details,
     inputTokens: usage.prompt_tokens,
